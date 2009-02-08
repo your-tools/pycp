@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
+
+##########
+# PYCP
+#########
+
+
 Trying to have a progress bar while copying stuff
 
 Main idea : forking `cp` in background, 
@@ -9,6 +15,25 @@ read size of source, and read size of
 destination while copying.
 
 WARNING: for the moment, can only copy one file at a time
+
+##########################################################################
+# Copyright 2009 Dimitri Merejkowsky                                     #
+#                                                                        #
+#  This program is free software: you can redistribute it and/or modify  #
+#  it under the terms of the GNU General Public License as published by  #
+#  the Free Software Foundation, either version 3 of the License, or     #
+#  (at your option) any later version.                                   #
+#                                                                        #
+#  This program is distributed in the hope that it will be useful,       #
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#  GNU General Public License for more details.                          #
+#                                                                        #
+#  You should have received a copy of the GNU General Public License     #
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>. #
+##########################################################################
+
+
 """
 
 __author__ = "Yannick LM"
@@ -71,7 +96,7 @@ def usage():
 def version():
     "Print version of pycp. Used by deploy.sh"
     print "pycp version " + __version__
-    print "Distributed under BSD license"
+    print "Distributed under GPL license"
     
     
 def main():

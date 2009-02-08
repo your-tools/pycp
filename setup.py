@@ -10,9 +10,9 @@ setup(name='pycp',
       requires=['progressbar'],
       author=pycp.__author__,
       author_email=pycp.__author_email__,
-      url='http://yannick-lm.dyndns.org/soft/pycp.html',
+      url='http://gitorious.org/projects/pycp',
       py_modules=['pycp'],
-      license='BSD', 
+      license='GPL', 
       platforms=['Linux'],
       scripts = ["pycp"]
      )
