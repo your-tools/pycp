@@ -7,6 +7,8 @@ Trying to have a progress bar while copying stuff
 Main idea : forking `cp` in background, 
 read size of source, and read size of
 destination while copying.
+
+WARNING: for the moment, can only copy one file at a time
 """
 
 import subprocess
@@ -17,7 +19,7 @@ import time
 try:
     import progressbar 
 except ImportError:
-    print "Error: Unable to find progressbar module, aborting."
+    print "Error: Unable to find progressbar module"
     exit(1)
 
 
@@ -62,6 +64,10 @@ def main():
     "main"
     source = ""
     destination = ""
+
+
+    #________
+    # Do a few checks
     try:
         source = sys.argv[1]
         destination = sys.argv[2]
@@ -71,11 +77,28 @@ def main():
         exit(1)
     
     if not (os.path.exists(source)):
-        print ("Error: file '" + source + "' does not exist, aborting")
+        print ("Error: file '" + source + "' does not exist")
+        exit(1)
+    
+    if (os.path.exists(destination)):
+        if os.path.isdir(destination):
+            # "cp foo /bar" where bar is a  dir, is in fact "cp foo bar/foo"
+            destination = os.path.join(destination, source)
+        else:
+            # refusing to override an exiting file 
+            print ("Error: file '" + destination + "' already exists")
+            exit(1)
+    
+    # Checks if we are trying to do a `cp foo .`:
+    if os.path.abspath(source) == os.path.abspath(destination):
+        print ("Error: '" + 
+                source + "' and '" + destination + "' are the same file") 
         exit(1)
 
-
+    #________
+    # Everything OK, proceed:
     copy_manager = CopyManager(source, destination)
+
     try:
         copy_manager.copy()
     except KeyboardInterrupt:
