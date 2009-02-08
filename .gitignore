@@ -3,5 +3,6 @@
 *.o
 *.pyc
 
-**/tags
+tags
 
+dist/
