@@ -35,7 +35,7 @@ WARNING: for the moment, can only copy one file at a time
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "1.0"
+__version__ = "1.1"
 
 import subprocess
 import sys
@@ -86,17 +86,17 @@ class CopyManager:
 
 def usage():
     "Ouputs short usage message"
-    print "Usage: pycp <SOURCE> <DESTINATION>"
-    print "copy SOURCE to DESTINATION"
-    print """Options:
+    print("Usage: pycp <SOURCE> <DESTINATION>")
+    print("copy SOURCE to DESTINATION")
+    print("""Options:
     --version: outputs version of pycp
     -h, --help: this help
-    """
+    """)
 
 def version():
-    "Print version of pycp. Used by deploy.sh"
-    print "pycp version " + __version__
-    print "Distributed under GPL license"
+    "Print version of pycp."
+    print("pycp version " + __version__)
+    print("Distributed under GPL license")
 
 
 def main():
@@ -105,7 +105,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "version"])
     except getopt.GetoptError, err:
-        print str(err)
+        print(str(err))
         usage()
         exit(2)
 
@@ -128,13 +128,13 @@ def main():
         source = args[0]
         destination = args[1]
     except IndexError:
-        print "Error: wrong number of arguments"
-        print
+        print("Error: wrong number of arguments")
+        print()
         usage()
         exit(1)
 
     if not (os.path.exists(source)):
-        print ("Error: file '" + source + "' does not exist")
+        print("Error: file '" + source + "' does not exist")
         exit(1)
 
     if (os.path.exists(destination)):
@@ -143,13 +143,13 @@ def main():
             destination = os.path.join(destination, source)
         else:
             # refusing to override an exiting file
-            print ("Error: file '" + destination + "' already exists")
+            print("Error: file '" + destination + "' already exists")
             exit(1)
 
     # Checks if we are trying to do a `cp foo .`:
     if os.path.abspath(source) == os.path.abspath(destination):
-        print ("Error: '" +
-                source + "' and '" + destination + "' are the same file")
+        print("Error: '" +
+               source + "' and '" + destination + "' are the same file")
         exit(1)
 
     #________
