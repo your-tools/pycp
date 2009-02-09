@@ -79,6 +79,8 @@ class CopyManager:
             except OSError:  #Maybe file has not been created by cp yet
                 dest_size = 0
             time.sleep(1)
+            if source_size == 0: # Using pycp to copy an empty file. Why not?
+                break
             self.pbar.update( (dest_size / source_size) * 100 )
 
         self.pbar.finish()
