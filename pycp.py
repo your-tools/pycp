@@ -10,7 +10,7 @@
 
 Trying to have a progress bar while copying stuff
 
-Main idea : forking `cp` in background, 
+Main idea : forking `cp` in background,
 read size of source, and read size of
 destination while copying.
 
@@ -47,7 +47,7 @@ import time
 import getopt
 
 try:
-    import progressbar 
+    import progressbar
 except ImportError:
     print "Error: Unable to find progressbar module"
     exit(1)
@@ -77,7 +77,10 @@ class CopyManager:
 
         while (self.cp_process.poll() is None):
             source_size = float(os.path.getsize(self.source))
-            dest_size = float(os.path.getsize(self.destination))
+            try:
+                dest_size = float(os.path.getsize(self.destination))
+            except:
+                dest_size = 0
             time.sleep(1)
             self.pbar.update( (dest_size / source_size) * 100 )
 
@@ -97,8 +100,8 @@ def version():
     "Print version of pycp. Used by deploy.sh"
     print "pycp version " + __version__
     print "Distributed under GPL license"
-    
-    
+
+
 def main():
     "Main: manages options and values"
 
@@ -109,7 +112,7 @@ def main():
         usage()
         exit(2)
 
-    # dummy_value will never be used, 
+    # dummy_value will never be used,
     # none of the options should take an argument
     for opt , dummy_value in opts:
         if opt in ("-h", "--help"):
@@ -129,27 +132,27 @@ def main():
         destination = args[1]
     except IndexError:
         print "Error: wrong number of arguments"
-        print 
+        print
         usage()
         exit(1)
-    
+
     if not (os.path.exists(source)):
         print ("Error: file '" + source + "' does not exist")
         exit(1)
-    
+
     if (os.path.exists(destination)):
         if os.path.isdir(destination):
             # "cp foo /bar" where bar is a  dir, is in fact "cp foo bar/foo"
             destination = os.path.join(destination, source)
         else:
-            # refusing to override an exiting file 
+            # refusing to override an exiting file
             print ("Error: file '" + destination + "' already exists")
             exit(1)
-    
+
     # Checks if we are trying to do a `cp foo .`:
     if os.path.abspath(source) == os.path.abspath(destination):
-        print ("Error: '" + 
-                source + "' and '" + destination + "' are the same file") 
+        print ("Error: '" +
+                source + "' and '" + destination + "' are the same file")
         exit(1)
 
     #________
