@@ -1,20 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-
 ##########
 # PYCP
 #########
-
-
-Trying to have a progress bar while copying stuff
-
-Main idea : forking `cp` in background,
-read size of source, and read size of
-destination while copying.
-
-WARNING: for the moment, can only copy one file at a time
 
 ##########################################################################
 # Copyright 2009 Dimitri Merejkowsky                                     #
@@ -34,6 +23,14 @@ WARNING: for the moment, can only copy one file at a time
 ##########################################################################
 
 
+"""
+Trying to have a progress bar while copying stuff
+
+Main idea : forking `cp` in background,
+read size of source, and read size of
+destination while copying.
+
+WARNING: for the moment, can only copy one file at a time
 """
 
 __author__ = "Yannick LM"
@@ -79,7 +76,7 @@ class CopyManager:
             source_size = float(os.path.getsize(self.source))
             try:
                 dest_size = float(os.path.getsize(self.destination))
-            except:
+            except OSError:  #Maybe file has not been created by cp yet
                 dest_size = 0
             time.sleep(1)
             self.pbar.update( (dest_size / source_size) * 100 )
