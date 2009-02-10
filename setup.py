@@ -12,7 +12,7 @@ setup(name='pycp',
       author_email=pycp.__author_email__,
       url='http://gitorious.org/projects/pycp',
       py_modules=['pycp'],
-      license='GPL', 
+      license='GPL',
       platforms=['Linux'],
       scripts = ["pycp"]
      )

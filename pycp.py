@@ -35,7 +35,7 @@ WARNING: for the moment, can only copy one file at a time
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "1.1"
+__version__ = "1.2"
 
 import subprocess
 import sys
