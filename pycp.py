@@ -35,7 +35,7 @@ WARNING: for the moment, can only copy one file at a time
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "1.2"
+__version__ = "1.3"
 
 import subprocess
 import sys
@@ -141,8 +141,9 @@ def main():
 
     if (os.path.exists(destination)):
         if os.path.isdir(destination):
-            # "cp foo /bar" where bar is a  dir, is in fact "cp foo bar/foo"
-            destination = os.path.join(destination, source)
+            # "cp /paht/to/foo /bar" where bar is a  dir,
+            #is in fact "cp /path/to/foo /bar/foo"
+            destination = os.path.join(destination, os.path.basename(source))
         else:
             # refusing to override an exiting file
             print("Error: file '" + destination + "' already exists")
@@ -152,6 +153,11 @@ def main():
     if os.path.abspath(source) == os.path.abspath(destination):
         print("Error: '" +
                source + "' and '" + destination + "' are the same file")
+        exit(1)
+
+    if os.path.isdir(source):
+        # not ready to do this ... yet ;)
+        print ("Error: '" + source + "' is a directory")
         exit(1)
 
     #________
