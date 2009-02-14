@@ -3,22 +3,33 @@
 pycp \- cp with a progress bar
 .SH SYNOPSIS
 .B pycp
-.RI "source" 
-.RI "destination"
+\fISOURCE\fR  \fIDESTINATION\fR
 .SH DESCRIPTION
 .B pycp
 is a python script that fork a cp process and make use of
 progressbar module.
+.PP
+\fISOURCE\fR
+.B must
+be an existing file. 
+.br
+\fIDESTINATION\fR must not already exist, unless it is a directory.
+.PP
 .SH OPTIONS
-.B \-h, \-\-help
+.TP 
+\fB \-h, \-\-help\fR
 Show summary of options.
-.TP
-.B  \-\-version
+.TP 
+\fB\-\-version\fR
 Show version of program.
+.SH RESSOURCES
+The sources of 
+.B pycp
+are hosted on gitorious: 
+http://gitorious.org/projects/pycp
+.br
 .SH BUGS
-pycp can only copy one file at a time
+.B pycp
+does not handle copy of directories.
 .SH AUTHOR
 pycp was written by Yannick LM <yannicklm1337@gmail.com>
-.PP
-This manual page was written by Yannick LM <yannicklm1337@gmail.com>,
-for the Debian project (but may be used by others).
