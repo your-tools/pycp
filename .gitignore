@@ -4,5 +4,6 @@
 *.pyc
 
 tags
+test/
 
 dist/
