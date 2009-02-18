@@ -43,7 +43,11 @@ import time
 import getopt
 
 try:
-    import progressbar
+    from progressbar import ProgressBar
+    from progressbar import Percentage
+    from progressbar import FileTransferSpeed
+    from progressbar import ETA
+    from progressbar import Bar
 except ImportError:
     print "Error: Unable to find progressbar module"
     exit(1)
@@ -57,7 +61,16 @@ class CopyManager:
         self.cp_process = None
         self.source = source
         self.destination = destination
-        self.pbar = progressbar.ProgressBar()
+
+        # Use of wonderful constructor from progessbar.
+        self.pbar = ProgressBar(widgets=[
+            Percentage(),
+            " "
+            ,Bar(),
+            " - ",
+            FileTransferSpeed(),
+            " | ",
+            ETA() ] )
 
     def copy(self):
         "Main method of CopyManager"
