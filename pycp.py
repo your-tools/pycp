@@ -61,16 +61,7 @@ class CopyManager:
         self.cp_process = None
         self.source = source
         self.destination = destination
-
-        # Use of wonderful constructor from progessbar.
-        self.pbar = ProgressBar(widgets=[
-            Percentage(),
-            " "
-            ,Bar(),
-            " - ",
-            FileTransferSpeed(),
-            " | ",
-            ETA() ] )
+        self.pbar = None
 
     def copy(self):
         "Main method of CopyManager"
@@ -84,16 +75,30 @@ class CopyManager:
     def monitor_copy(self):
         "Executed during copy to print progressbar"
 
+        source_size = float(os.path.getsize(self.source))
+
+        if source_size == 0: # Using pycp to copy an empty file. Why not?
+            return
+
+        # Use of wonderful constructor from progessbar.
+        self.pbar = ProgressBar(
+          widgets = [
+            Percentage()        ,
+            " "                 ,
+            Bar()               ,
+            " - "               ,
+            FileTransferSpeed() ,
+            " | "               ,
+            ETA() ] ,
+         maxval = source_size )
+
         while (self.cp_process.poll() is None):
-            source_size = float(os.path.getsize(self.source))
             try:
                 dest_size = float(os.path.getsize(self.destination))
             except OSError:  #Maybe file has not been created by cp yet
                 dest_size = 0
             time.sleep(1)
-            if source_size == 0: # Using pycp to copy an empty file. Why not?
-                break
-            self.pbar.update( (dest_size / source_size) * 100 )
+            self.pbar.update(dest_size)
 
         self.pbar.finish()
         exit (self.cp_process.returncode)
