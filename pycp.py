@@ -28,19 +28,20 @@ Trying to have a progress bar while copying stuff
 Main idea : forking `cp` in background,
 read size of source, and read size of
 destination while copying.
-
-WARNING: for the moment, can only copy one file at a time
 """
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "1.3.1"
+__version__ = "2.0"
 
 import subprocess
 import sys
-import os
 import time
 import getopt
+
+from os import path
+from os import mkdir
+from os import listdir
 
 try:
     from progressbar import ProgressBar
@@ -56,12 +57,15 @@ except ImportError:
 class CopyManager:
     """
     Class that manages cp process
+
+    It is assumed that source and destination are both files.
+    (No directory here)
     """
     def __init__(self, source, destination):
-        self.cp_process = None
-        self.source = source
-        self.destination = destination
-        self.pbar = None
+        self.cp_process         = None
+        self.source             = source
+        self.destination        = destination
+        self.pbar               = None
 
     def copy(self):
         "Main method of CopyManager"
@@ -75,7 +79,7 @@ class CopyManager:
     def monitor_copy(self):
         "Executed during copy to print progressbar"
 
-        source_size = float(os.path.getsize(self.source))
+        source_size = float(path.getsize(self.source))
 
         if source_size == 0: # Using pycp to copy an empty file. Why not?
             return
@@ -94,28 +98,30 @@ class CopyManager:
 
         while (self.cp_process.poll() is None):
             try:
-                dest_size = float(os.path.getsize(self.destination))
+                dest_size = float(path.getsize(self.destination))
             except OSError:  #Maybe file has not been created by cp yet
                 dest_size = 0
             time.sleep(1)
             self.pbar.update(dest_size)
 
         self.pbar.finish()
-        exit (self.cp_process.returncode)
+        # Useful if something went wrong with cp
+        if (self.cp_process.returncode != 0):
+            exit (self.cp_process.returncode)
 
 def usage():
-    "Ouputs short usage message"
-    print("Usage: pycp <SOURCE> <DESTINATION>")
-    print("copy SOURCE to DESTINATION")
-    print("""Options:
+    "Outputs short usage message"
+    print "Usage: pycp <SOURCE> <DESTINATION>"
+    print "copy SOURCE to DESTINATION"
+    print """Options:
     --version: outputs version of pycp
     -h, --help: this help
-    """)
+    """
 
 def version():
-    "Print version of pycp."
-    print("pycp version " + __version__)
-    print("Distributed under GPL license")
+    "Prints version of pycp."
+    print "pycp version " + __version__
+    print "Distributed under GPL license"
 
 
 def main():
@@ -124,7 +130,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "version"])
     except getopt.GetoptError, err:
-        print(str(err))
+        print err
         usage()
         exit(2)
 
@@ -141,50 +147,89 @@ def main():
     source = ""
     destination = ""
 
-    #________
-    # Do a few checks
+    ##________
+    # Get value of mandatory arguments
     try:
         source = args[0]
         destination = args[1]
     except IndexError:
-        print("Error: wrong number of arguments")
-        print()
+        print "Error: wrong number of arguments"
         usage()
         exit(1)
 
-    if not (os.path.exists(source)):
-        print("Error: file '" + source + "' does not exist")
-        exit(1)
+    ##______
+    # Go!
 
-    if (os.path.exists(destination)):
-        if os.path.isdir(destination):
-            # "cp /paht/to/foo /bar" where bar is a  dir,
-            #is in fact "cp /path/to/foo /bar/foo"
-            destination = os.path.join(destination, os.path.basename(source))
-        else:
-            # refusing to override an exiting file
-            print("Error: file '" + destination + "' already exists")
-            exit(1)
-
-    # Checks if we are trying to do a `cp foo .`:
-    if os.path.abspath(source) == os.path.abspath(destination):
-        print("Error: '" +
-               source + "' and '" + destination + "' are the same file")
-        exit(1)
-
-    if os.path.isdir(source):
-        # not ready to do this ... yet ;)
-        print ("Error: '" + source + "' is a directory")
-        exit(1)
-
-    #________
-    # Everything OK, proceed:
-    copy_manager = CopyManager(source, destination)
+    _prepare_copy()
 
     try:
-        copy_manager.copy()
+        recursive_copy(source, destination)
     except KeyboardInterrupt:
         exit(1)
+
+
+
+def _prepare_copy(source, destination):
+    """" Do all the work needed to get back to a simple case:
+    copying the file foo to the file bar
+
+    Modify source, destination, or create directories when needed.
+
+    Aborts if we are trying to override something
+    """
+
+    # First thing first ;)
+    if not (path.exists(source)):
+        print "Error: file '" + source + "' does not exist"
+        exit(1)
+
+    # If source is a file:
+    if path.isfile(source):
+        if (path.exists(destination)):
+            if path.isdir(destination):
+                # "cp /path/to/foo /bar" where bar is a  dir,
+                # is in fact "cp /path/to/foo /bar/foo"
+                destination = path.join(destination, path.basename(source))
+            else:
+                # refusing to override an exiting file
+                print "Error: file '" + destination + "' already exists"
+                exit(1)
+
+        # Checks if we are trying to do a `cp foo .`:
+        if path.abspath(source) == path.abspath(destination):
+            print "Error: '" + source \
+                             + "' and '" + destination + "' are the same file"
+            exit(1)
+
+    # If source is a dir:
+    if path.isdir(source):
+        # if destination exists, create a dir named source in destination ...
+        if path.exists(destination):
+            new_directory = path.join(destination, path.basename(source))
+            # ... but refuse to override an existing directory
+            if path.exists(new_directory):
+                print "Error: '" + new_directory \
+                                 + "' already exits"
+                exit(1)
+            else:
+                mkdir(new_directory)
+        # if destination does not exist, create a dir named destination
+        else:
+            mkdir(destination)
+
+
+
+
+def recursive_copy(source, destination):
+    "To walk recursively through directories"
+    if path.isdir(source):
+        for file_name in listdir(source):
+            recursive_copy(path.join(source,      file_name),
+                           path.join(destination, file_name))
+    else:
+        copy_manager = CopyManager(source, destination)
+        copy_manager.copy()
+
 
 if __name__ == "__main__" :
     main()
