@@ -1,0 +1,24 @@
+PYCP: cp with a progressbar
+
+DESCRIPTION
+-----------
+
+
+Main idea : forking `cp` in background,
+read size of source, and read size of
+destination while copying.
+
+Make use of the wonderful libraries progressbar by Nilton Volpato,
+and subprocess to fork cp.
+
+
+INSTALL
+------
+
+Simply run:
+  # python setup.py install
+
+BUGS
+---
+
+Pycp will cowardly refuse to override any existing file.
