@@ -32,7 +32,7 @@ destination while copying.
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "2.0"
+__version__ = "2.1"
 
 import subprocess
 import sys
@@ -87,13 +87,13 @@ class CopyManager:
         # Use of wonderful constructor from progessbar.
         self.pbar = ProgressBar(
           widgets = [
-            Percentage()        ,
-            " "                 ,
-            Bar()               ,
-            " - "               ,
-            FileTransferSpeed() ,
-            " | "               ,
-            ETA() ] ,
+            Percentage()                          ,
+            " "                                   ,
+            Bar(marker='#', left='[', right=']' ) ,
+            " - "                                 ,
+            FileTransferSpeed()                   ,
+            " | "                                 ,
+            ETA() ]                               ,
          maxval = source_size )
 
         while (self.cp_process.poll() is None):
@@ -111,12 +111,15 @@ class CopyManager:
 
 def usage():
     "Outputs short usage message"
-    print "Usage: pycp <SOURCE> <DESTINATION>"
-    print "copy SOURCE to DESTINATION"
-    print """Options:
-    --version: outputs version of pycp
-    -h, --help: this help
-    """
+
+    print """Usage: pycp SOURCE DESTINATION"
+          or: pycp SOURCE ... DIRECTORY"
+          copy SOURCE to DESTINATION, or multiple SOURCE(s) to DIRECTORY"
+
+          Options:
+            --version: outputs version of pycp
+            -h, --help: this help
+          """
 
 def version():
     "Prints version of pycp."
@@ -144,39 +147,46 @@ def main():
             version()
             exit(0)
 
-    source = ""
-    destination = ""
-
-    ##________
-    # Get value of mandatory arguments
-    try:
-        source = args[0]
-        destination = args[1]
-    except IndexError:
+    if len(args) < 2:
         print "Error: wrong number of arguments"
         usage()
         exit(1)
 
+    sources = args[:-1]
+    destination = args[-1]
+
+
+    # If there is more than one source, destination must be an
+    # existing directory
+    if len(sources) > 1:
+        if not (path.exists(destination)):
+            print "Error: '" + destination + "' does not exists"
+            exit(1)
+        if not (path.isdir(destination)):
+            print "Error: '" + destination + "' is not a directory"
+            exit(1)
+
     ##______
     # Go!
 
-    _prepare_copy()
-
     try:
-        recursive_copy(source, destination)
+        for source in sources:
+            recursive_copy(source, destination)
     except KeyboardInterrupt:
         exit(1)
 
 
-
 def _prepare_copy(source, destination):
-    """" Do all the work needed to get back to a simple case:
-    copying the file foo to the file bar
+    """ Do all the work needed to get back to a simple case:
+    copying one file to an other file
 
-    Modify source, destination, or create directories when needed.
+    Create directories and modify destination when needed, and returns the new
+    destination.
 
-    Aborts if we are trying to override something
+    Aborts if we are trying to override a file
     """
+
+    new_destination = destination
 
     # First thing first ;)
     if not (path.exists(source)):
@@ -189,7 +199,7 @@ def _prepare_copy(source, destination):
             if path.isdir(destination):
                 # "cp /path/to/foo /bar" where bar is a  dir,
                 # is in fact "cp /path/to/foo /bar/foo"
-                destination = path.join(destination, path.basename(source))
+                new_destination = path.join(destination, path.basename(source))
             else:
                 # refusing to override an exiting file
                 print "Error: file '" + destination + "' already exists"
@@ -206,28 +216,32 @@ def _prepare_copy(source, destination):
         # if destination exists, create a dir named source in destination ...
         if path.exists(destination):
             new_directory = path.join(destination, path.basename(source))
-            # ... but refuse to override an existing directory
-            if path.exists(new_directory):
-                print "Error: '" + new_directory \
-                                 + "' already exits"
-                exit(1)
-            else:
+
+            # destination/source could already exist
+            if not path.exists(new_directory):
                 mkdir(new_directory)
+            new_destination = new_directory
+
         # if destination does not exist, create a dir named destination
         else:
             mkdir(destination)
 
+    return new_destination
 
 
 
 def recursive_copy(source, destination):
     "To walk recursively through directories"
+
+    # First prepare copy (creating directories if needed, and so on)
+    new_destination = _prepare_copy(source, destination)
+
     if path.isdir(source):
         for file_name in listdir(source):
             recursive_copy(path.join(source,      file_name),
-                           path.join(destination, file_name))
+                           path.join(new_destination, file_name))
     else:
-        copy_manager = CopyManager(source, destination)
+        copy_manager = CopyManager(source, new_destination)
         copy_manager.copy()
 
 
