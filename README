@@ -21,4 +21,5 @@ Simply run:
 BUGS
 ---
 
-Pycp will cowardly refuse to override any existing file.
+Pycp would take much longer than cp if you're trying to monitor copy
+of many little files

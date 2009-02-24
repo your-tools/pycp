@@ -23,16 +23,15 @@
 
 
 """
-Trying to have a progress bar while copying stuff
+Having a progress bar while copying stuff
 
-Main idea : forking `cp` in background,
-read size of source, and read size of
-destination while copying.
+Main idea : forking `cp` in background, while reading size of sources and
+destinations while copying.
 """
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "2.1"
+__version__ = "2.2"
 
 import subprocess
 import sys
@@ -61,11 +60,12 @@ class CopyManager:
     It is assumed that source and destination are both files.
     (No directory here)
     """
-    def __init__(self, source, destination):
+    def __init__(self, source, destination, cpopts):
         self.cp_process         = None
         self.source             = source
         self.destination        = destination
         self.pbar               = None
+        self.cpopts             = cpopts
 
     def copy(self):
         "Main method of CopyManager"
@@ -112,13 +112,16 @@ class CopyManager:
 def usage():
     "Outputs short usage message"
 
-    print """Usage: pycp SOURCE DESTINATION"
-          or: pycp SOURCE ... DIRECTORY"
-          copy SOURCE to DESTINATION, or multiple SOURCE(s) to DIRECTORY"
+    print """
+    Usage: pycp SOURCE DESTINATION"
+       or: pycp SOURCE ... DIRECTORY"
+    copy SOURCE to DESTINATION, or multiple SOURCE(s) to DIRECTORY"
 
-          Options:
-            --version: outputs version of pycp
-            -h, --help: this help
+    Options:
+      --version: outputs version of pycp
+      -h, --help: this help
+      -o, --overwrite: overwrite existing files
+          (by default, pycp will skip existing files)
           """
 
 def version():
@@ -131,21 +134,27 @@ def main():
     "Main: manages options and values"
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "version"])
+        opts, args = getopt.getopt(sys.argv[1:], "hvo",
+                                ["help", "version", "overwrite"])
     except getopt.GetoptError, err:
         print err
         usage()
         exit(2)
 
+    cpopts = []
+
     # dummy_value will never be used,
-    # none of the options should take an argument
+    # none of the options take an argument
     for opt , dummy_value in opts:
         if opt in ("-h", "--help"):
             usage()
             exit(0)
-        elif opt == "--version":
+        elif opt in ("-v", "--version"):
             version()
             exit(0)
+        elif opt in ("-o", "--overwrite"):
+            cpopts.append("overwrite")
+
 
     if len(args) < 2:
         print "Error: wrong number of arguments"
@@ -171,22 +180,24 @@ def main():
 
     try:
         for source in sources:
-            recursive_copy(source, destination)
+            recursive_copy(source, destination, cpopts)
     except KeyboardInterrupt:
         exit(1)
 
 
-def _prepare_copy(source, destination):
+def _prepare_copy(source, destination, cpopts):
     """ Do all the work needed to get back to a simple case:
     copying one file to an other file
 
     Create directories and modify destination when needed, and returns the new
     destination.
 
-    Aborts if we are trying to override a file
+    If we are trying to overwrite a file, and that the corresponding option is
+    not present, return (True, new_destination)
     """
 
     new_destination = destination
+    skip            = False
 
     # First thing first ;)
     if not (path.exists(source)):
@@ -199,50 +210,68 @@ def _prepare_copy(source, destination):
             if path.isdir(destination):
                 # "cp /path/to/foo /bar" where bar is a  dir,
                 # is in fact "cp /path/to/foo /bar/foo"
-                new_destination = path.join(destination, path.basename(source))
-            else:
-                # refusing to override an exiting file
-                print "Error: file '" + destination + "' already exists"
-                exit(1)
+                source_file = path.basename(source)
+                destination_file = path.join(destination, source_file)
 
-        # Checks if we are trying to do a `cp foo .`:
-        if path.abspath(source) == path.abspath(destination):
-            print "Error: '" + source \
-                             + "' and '" + destination + "' are the same file"
-            exit(1)
+                # if /bar/foo exists, check if we should overwrite it:
+                if ((path.exists(destination_file))
+                    # refusing to overwrite an exiting file if the -o option is
+                    # not specified
+                    and (not 'overwrite' in cpopts)):
+                    print "file '" + destination_file \
+                                   + "' already exists, skipping"
+                    skip = True
+
+                new_destination = destination_file
+
+            # destination exists and is a file, (not a dir)
+            # checking if we should overwrite it:
+            elif not 'overwrite' in cpopts:
+                # refusing to overwrite an exiting file if the -o option is not
+                # specified
+                print "file '" + destination + "' already exists, skipping"
+                skip = True
+    #! source is a file
 
     # If source is a dir:
     if path.isdir(source):
-        # if destination exists, create a dir named source in destination ...
+        # if destination exists, create a dir named source in destination
         if path.exists(destination):
             new_directory = path.join(destination, path.basename(source))
 
             # destination/source could already exist
             if not path.exists(new_directory):
                 mkdir(new_directory)
-            new_destination = new_directory
+                new_destination = new_directory
 
         # if destination does not exist, create a dir named destination
         else:
             mkdir(destination)
+    #! source is is a dir
 
-    return new_destination
+    # Checks if we are trying to do a `cp foo .`, or something similar:
+    if path.abspath(source) == path.abspath(new_destination):
+        print "Error: '" + source \
+                         + "' and '" + new_destination + "' are the same file"
+        skip = True
+
+    return new_destination, skip
 
 
-
-def recursive_copy(source, destination):
+def recursive_copy(source, destination, cpopts):
     "To walk recursively through directories"
 
     # First prepare copy (creating directories if needed, and so on)
-    new_destination = _prepare_copy(source, destination)
+    new_destination, skip = _prepare_copy(source, destination, cpopts)
 
-    if path.isdir(source):
-        for file_name in listdir(source):
-            recursive_copy(path.join(source,      file_name),
-                           path.join(new_destination, file_name))
-    else:
-        copy_manager = CopyManager(source, new_destination)
-        copy_manager.copy()
+    if (not skip):
+        if path.isdir(source):
+            for file_name in listdir(source):
+                recursive_copy(path.join(source,          file_name),
+                               path.join(new_destination, file_name), cpopts)
+        else:
+            copy_manager = CopyManager(source, new_destination, cpopts)
+            copy_manager.copy()
 
 
 if __name__ == "__main__" :

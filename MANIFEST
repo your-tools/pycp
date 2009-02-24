@@ -1,8 +1,9 @@
-pycp.py
-setup.py
-pycp
-pycp.1
+AUTHORS
 COPYING
-Changelog
 README
 TODO
+Changelog
+pycp
+pycp.1
+pycp.py
+setup.py

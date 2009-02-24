@@ -1,3 +1,11 @@
+2.2
+Skips existing files instead of canceling whole operation
+Implementing -o,--overwrite option.
+
+2.1
+Able to copy multiple files:
+pycp bar foo /path/to/baz
+
 2.0
 Now able to copy recursively files!
 

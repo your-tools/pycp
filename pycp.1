@@ -4,17 +4,17 @@ pycp \- cp with a progress bar
 .SH SYNOPSIS
 .B pycp
 \fISOURCE\fR  \fIDESTINATION\fR
+.br
+\fISOURCES...\fR \fIDIRECTORY\fR
 .SH DESCRIPTION
 .B pycp
 is a python script that fork a cp process and make use of
 progressbar module.
 .PP
-\fISOURCE\fR
-.B must
-be an existing file. 
+Copy \fISOURCE\fR in \fIDESTINATION\fR, or mutliple
+\fISOURCES\fR into a \fIDIRECTORY\fR.
 .br
-\fIDESTINATION\fR must not already exist, unless it is a directory.
-.PP
+By default, existing files will be skipped
 .SH OPTIONS
 .TP 
 \fB \-h, \-\-help\fR
@@ -22,6 +22,9 @@ Show summary of options.
 .TP 
 \fB\-\-version\fR
 Show version of program.
+.TP
+\fB\-o, \-\-overwrite\fR
+Overwrite existing directories instead of skipping them
 .SH RESSOURCES
 The sources of 
 .B pycp
@@ -30,6 +33,4 @@ http://gitorious.org/projects/pycp
 .br
 .SH BUGS
 .B pycp
-does not handle copy of directories.
-.SH AUTHOR
-pycp was written by Yannick LM <yannicklm1337@gmail.com>
+will take much longer than cp if you're trying to copy several little files
