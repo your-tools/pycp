@@ -11,6 +11,8 @@ destination while copying.
 Make use of the wonderful libraries progressbar by Nilton Volpato,
 and subprocess to fork cp.
 
+Also comes with pymv, a little script that uses pycp module, with an extra
+option for removing files after copy.
 
 INSTALL
 ------
