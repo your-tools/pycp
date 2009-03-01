@@ -1,0 +1,10 @@
+#!/usr/bin/python
+
+"""
+Just a wrapper to call
+pycp.main with delete_aftewards=True
+"""
+
+import pycp
+
+pycp.main(delete_aftewards=True)

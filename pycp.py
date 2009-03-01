@@ -31,7 +31,7 @@ destinations while copying.
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "2.2"
+__version__ = "3.0"
 
 import subprocess
 import sys
@@ -41,6 +41,7 @@ import getopt
 from os import path
 from os import mkdir
 from os import listdir
+from os import remove
 
 try:
     from progressbar import ProgressBar
@@ -109,6 +110,11 @@ class CopyManager:
         if (self.cp_process.returncode != 0):
             exit (self.cp_process.returncode)
 
+        # Will be called by pymv:
+        if ('delete_afterwards' in self.cpopts):
+            remove(self.source)
+
+
 def usage():
     "Outputs short usage message"
 
@@ -130,8 +136,11 @@ def version():
     print "Distributed under GPL license"
 
 
-def main():
-    "Main: manages options and values"
+def main(delete_aftewards = False):
+    """Main: manages options and values
+
+    Also: pymv will call main with delete_aftewards=True
+    """
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hvo",
@@ -142,6 +151,9 @@ def main():
         exit(2)
 
     cpopts = []
+
+    if delete_aftewards:
+        cpopts.append("delete_afterwards")
 
     # dummy_value will never be used,
     # none of the options take an argument

@@ -1,3 +1,6 @@
+3.0
+Little trick to have a pymv
+
 2.2
 Skips existing files instead of canceling whole operation
 Implementing -o,--overwrite option.

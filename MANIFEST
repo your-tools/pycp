@@ -3,7 +3,9 @@ COPYING
 README
 TODO
 Changelog
-pycp
-pycp.1
 pycp.py
 setup.py
+bin/pycp
+bin/pymv
+doc/pycp.1
+doc/pymv.1

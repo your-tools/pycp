@@ -14,5 +14,6 @@ setup(name='pycp',
       py_modules=['pycp'],
       license='GPL',
       platforms=['Linux'],
-      scripts = ["pycp"]
+      scripts = ["bin/pycp", "bin/pymv"],
+      data_files   =  [ ("/usr/share/man/man1", ["doc/pycp.1","doc/pymv.1"]) ]
      )

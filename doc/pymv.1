@@ -1,0 +1,36 @@
+.TH PYMV 1 "March 1, 2009"
+.SH NAME
+pymv \- mv with a progress bar
+.SH SYNOPSIS
+.B pymv
+\fISOURCE\fR  \fIDESTINATION\fR
+.br
+\fISOURCES...\fR \fIDIRECTORY\fR
+.SH DESCRIPTION
+.B pymv
+is a python script that emulates a `mv' process and makes use of
+progressbar module.
+.PP
+Move \fISOURCE\fR in \fIDESTINATION\fR, or mutliple
+\fISOURCES\fR into a \fIDIRECTORY\fR.
+.br
+By default, existing files will be skipped
+.SH OPTIONS
+.TP
+\fB \-h, \-\-help\fR
+Show summary of options.
+.TP
+\fB\-\-version\fR
+Show version of program.
+.TP
+\fB\-o, \-\-overwrite\fR
+Overwrite existing files instead of skipping them
+.SH CAVEATS
+.B pymv
+is just a quick script that uses
+.B pycp
+with other options.
+.SH "SEE ALSO"
+.BR pycp (1)
+pycp
+
