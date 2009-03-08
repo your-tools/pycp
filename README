@@ -4,15 +4,14 @@ DESCRIPTION
 -----------
 
 
-Main idea : forking `cp` in background,
-read size of source, and read size of
-destination while copying.
+Main idea : forking a file transfer in background,
+while reading source and destination files.
 
-Make use of the wonderful libraries progressbar by Nilton Volpato,
-and subprocess to fork cp.
+Make use of the wonderful libraries progressbar by Nilton Volpato.
 
-Also comes with pymv, a little script that uses pycp module, with an extra
-option for removing files after copy.
+Comes with two scripts: pycp and pymv, calling FileTransferManager with
+proper action (copy or move)
+
 
 INSTALL
 ------

@@ -151,8 +151,12 @@ def main(action):
     executable = _get_exectuable(action)
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hvo",
-                                ["help", "version", "overwrite"])
+        opts, args = getopt.getopt(sys.argv[1:], "hvoif",
+                                ["help"      ,
+                                "version"    ,
+                                "overwrite"  ,
+                                "interactive",
+                                "force"])
     except getopt.GetoptError, err:
         print err
         usage()
@@ -167,8 +171,10 @@ def main(action):
         elif opt in ("-v", "--version"):
             version()
             exit(0)
-        elif opt in ("-o", "--overwrite"):
-            file_transfer_opts.append("overwrite")
+        elif opt in ("-i", "--interactive"):
+            file_transfer_opts.append("interactive")
+        elif opt in ("-f", "--force"):
+            file_transfer_opts.append("force")
 
 
     if len(args) < 2:
@@ -197,7 +203,10 @@ def main(action):
 
     try:
         for source in sources:
-            recursive_file_transfer(source, destination, executable, file_transfer_opts)
+            recursive_file_transfer(source,
+                    destination,
+                    executable,
+                    file_transfer_opts)
     except KeyboardInterrupt:
         exit(1)
 
@@ -226,7 +235,7 @@ def _prepare_file_transfer(source, destination, opts):
 
     # If source is a file:
     if path.isfile(source):
-        if (path.exists(destination)):
+        if path.exists(destination):
             if path.isdir(destination):
                 # "cp /path/to/foo /bar" where bar is a  dir,
                 # is in fact "cp /path/to/foo /bar/foo"
@@ -234,23 +243,15 @@ def _prepare_file_transfer(source, destination, opts):
                 destination_file = path.join(destination, source_file)
 
                 # if /bar/foo exists, check if we should overwrite it:
-                if ((path.exists(destination_file))
-                    # refusing to overwrite an exiting file if the -o option is
-                    # not specified
-                    and (not 'overwrite' in opts)):
-                    print "file '" + destination_file \
-                                   + "' already exists, skipping"
-                    skip = True
+                if path.exists(destination_file):
+                    skip = _should_skip(destination_file, opts)
+                    new_destination = destination_file
 
-                new_destination = destination_file
+            else:
+                # destination exists and is a file, (not a dir)
+                # checking if we should overwrite it:
+                skip = _should_skip(destination, opts)
 
-            # destination exists and is a file, (not a dir)
-            # checking if we should overwrite it:
-            elif not 'overwrite' in opts:
-                # refusing to overwrite an exiting file if the -o option is not
-                # specified
-                print "file '" + destination + "' already exists, skipping"
-                skip = True
     #! source is a file
 
     # If source is a dir:
@@ -281,15 +282,15 @@ def _prepare_file_transfer(source, destination, opts):
 def recursive_file_transfer(source, destination, executable, opts):
     "To walk recursively through directories"
 
-    # First prepare copy (creating directories if needed, and so on)
+    # First prepare file transfer (creating directories if needed, and so on)
     new_destination, skip = _prepare_file_transfer(source,
             destination,
             opts)
 
-    if (not skip):
+    if not skip:
         if path.isdir(source):
             for file_name in listdir(source):
-                recursive_file_transfer(path.join(source,          file_name),
+                recursive_file_transfer(path.join(source, file_name),
                                path.join(new_destination, file_name),
                                executable,
                                opts)
@@ -301,21 +302,40 @@ def recursive_file_transfer(source, destination, executable, opts):
             file_transfer_manager.transfer_file()
 
 
+def _should_skip(destination, opts):
+    """
+    Returns True is we should skip the file.
+    Ask for user confirmation if FileTransferManager was
+    called with -i
+    """
+
+    if 'interactive' in opts:
+        print "File: '" + destination +"' already exists"
+        print "Overwrite?"
+        user_input = raw_input()
+        if (user_input == "y"):
+            return False
+        else:
+            return True
+    else:
+        return False
+
+
 def _get_exectuable(action):
     """
     Check that executable exists.
 
     Return full path of the executable
     """
-    if (action == "copy"):
+    if action == "copy":
         executable_full_path = "/bin/cp"
-    elif(action == "move"):
+    elif action == "move":
         executable_full_path = "/bin/mv"
     else:
         print "Error: action: " + action + "not supported (yet)"
         exit(1)
 
-    if (not access(executable_full_path, os.X_OK)):
+    if not access(executable_full_path, os.X_OK):
         print "Error: could not exectue " + executable_full_path + "!"
         exit(1)
 

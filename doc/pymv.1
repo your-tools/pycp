@@ -1,4 +1,4 @@
-.TH PYMV 1 "March 1, 2009"
+.TH PYMV 1 "March 8, 2009"
 .SH NAME
 pymv \- mv with a progress bar
 .SH SYNOPSIS
@@ -8,13 +8,13 @@ pymv \- mv with a progress bar
 \fISOURCES...\fR \fIDIRECTORY\fR
 .SH DESCRIPTION
 .B pymv
-is a python script that emulates a `mv' process and makes use of
+is a python script that forks a `mv' process and makes use of
 progressbar module.
 .PP
 Move \fISOURCE\fR in \fIDESTINATION\fR, or mutliple
 \fISOURCES\fR into a \fIDIRECTORY\fR.
 .br
-By default, existing files will be skipped
+By default, existing files will be overwritten
 .SH OPTIONS
 .TP
 \fB \-h, \-\-help\fR
@@ -23,8 +23,8 @@ Show summary of options.
 \fB\-\-version\fR
 Show version of program.
 .TP
-\fB\-o, \-\-overwrite\fR
-Overwrite existing files instead of skipping them
+\fB\-i, \-\-interactive\fR
+Ask for confirmation before overwriting existing files
 .SH CAVEATS
 .B pymv
 is just a quick script that uses

@@ -1,4 +1,4 @@
-.TH PYCP 1 "February 14, 2009"
+.TH PYCP 1 "March 8, 2009"
 .SH NAME
 pycp \- cp with a progress bar
 .SH SYNOPSIS
@@ -14,7 +14,7 @@ the progressbar module.
 Copy \fISOURCE\fR in \fIDESTINATION\fR, or mutliple
 \fISOURCES\fR into a \fIDIRECTORY\fR.
 .br
-By default, existing files will be skipped
+By default, existing files will be overwritten
 .SH OPTIONS
 .TP
 \fB \-h, \-\-help\fR
@@ -23,8 +23,8 @@ Show summary of options.
 \fB\-\-version\fR
 Show version of program.
 .TP
-\fB\-o, \-\-overwrite\fR
-Overwrite existing files instead of skipping them
+\fB\-i, \-\-interactive\fR
+Ask for confirmation before overwriting existing files
 .SH RESSOURCES
 The sources of
 .B pycp

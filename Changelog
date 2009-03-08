@@ -1,5 +1,10 @@
 3.1
-Now using /bin/cp instead of cp.
+Now using /bin/cp instead of cp (thanks, Chris Gilles)
+
+No more -o option. Files are now overwritten by default.
+Pass a -i, --interactive option if you want to be asked 
+for confirmation before overwritting files
+Mimic cp behaviour. (thanks, ctaf)
 
 3.0
 Little trick to have a pymv
