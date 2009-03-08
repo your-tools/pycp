@@ -2,9 +2,9 @@
 
 """
 Just a wrapper to call
-pycp.main with delete_aftewards=True
+pycp.main with action="move"
 """
 
 import pycp
 
-pycp.main(delete_aftewards=True)
+pycp.main("move")

@@ -23,25 +23,28 @@
 
 
 """
-Having a progress bar while copying stuff
+Having a progress bar while transferring files
 
-Main idea : forking `cp` in background, while reading size of sources and
-destinations while copying.
+Main idea : forking the file transfer in background, while reading size of
+sources and destinations.
+
+Module is called pycp because only copy was supported at the beginning
 """
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "3.0"
+__version__ = "3.1"
 
 import subprocess
 import sys
 import time
 import getopt
 
+import os
 from os import path
 from os import mkdir
 from os import listdir
-from os import remove
+from os import access
 
 try:
     from progressbar import ProgressBar
@@ -54,31 +57,34 @@ except ImportError:
     exit(1)
 
 
-class CopyManager:
+class FileTransferManager:
     """
-    Class that manages cp process
+    Class that manages file transfer process
 
     It is assumed that source and destination are both files.
     (No directory here)
     """
-    def __init__(self, source, destination, cpopts):
-        self.cp_process         = None
-        self.source             = source
-        self.destination        = destination
-        self.pbar               = None
-        self.cpopts             = cpopts
+    def __init__(self, source, destination, executable, opts):
+        self.file_transfer_process = None
+        self.source                = source
+        self.destination           = destination
+        self.pbar                  = None
+        self.executable            = executable
+        self.opts                  = opts
 
-    def copy(self):
-        "Main method of CopyManager"
-        self.cp_process = subprocess.Popen(["cp",
-            self.source,
-            self.destination],
-            stdout=subprocess.PIPE)
+    def transfer_file(self):
+        "Main method of FileTransferManager"
+
+        self.file_transfer_process = subprocess.Popen([self.executable,
+        self.source,
+        self.destination],
+        stdout=subprocess.PIPE)
+
         print self.source + " -> " + self.destination
-        self.monitor_copy()
+        self.monitor_file_transfer()
 
-    def monitor_copy(self):
-        "Executed during copy to print progressbar"
+    def monitor_file_transfer(self):
+        "Executed during file transfer to print progressbar"
 
         source_size = float(path.getsize(self.source))
 
@@ -97,22 +103,18 @@ class CopyManager:
             ETA() ]                               ,
          maxval = source_size )
 
-        while (self.cp_process.poll() is None):
+        while (self.file_transfer_process.poll() is None):
             try:
                 dest_size = float(path.getsize(self.destination))
-            except OSError:  #Maybe file has not been created by cp yet
+            except OSError:  # Maybe file has not been created yet
                 dest_size = 0
             time.sleep(1)
             self.pbar.update(dest_size)
 
         self.pbar.finish()
-        # Useful if something went wrong with cp
-        if (self.cp_process.returncode != 0):
-            exit (self.cp_process.returncode)
-
-        # Will be called by pymv:
-        if ('delete_afterwards' in self.cpopts):
-            remove(self.source)
+        # Useful if something went wrong.
+        if (self.file_transfer_process.returncode != 0):
+            exit (self.file_transfer_process.returncode)
 
 
 def usage():
@@ -128,7 +130,7 @@ def usage():
       -h, --help: this help
       -o, --overwrite: overwrite existing files
           (by default, pycp will skip existing files)
-          """
+      """
 
 def version():
     "Prints version of pycp."
@@ -136,11 +138,17 @@ def version():
     print "Distributed under GPL license"
 
 
-def main(delete_aftewards = False):
-    """Main: manages options and values
-
-    Also: pymv will call main with delete_aftewards=True
+def main(action):
     """
+    Main: manages options and values
+
+    The parameter action is the kind of file transfer we wish to do.
+    (move or copy, for the moment)
+    """
+
+
+    file_transfer_opts = []
+    executable = _get_exectuable(action)
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hvo",
@@ -149,11 +157,6 @@ def main(delete_aftewards = False):
         print err
         usage()
         exit(2)
-
-    cpopts = []
-
-    if delete_aftewards:
-        cpopts.append("delete_afterwards")
 
     # dummy_value will never be used,
     # none of the options take an argument
@@ -165,13 +168,15 @@ def main(delete_aftewards = False):
             version()
             exit(0)
         elif opt in ("-o", "--overwrite"):
-            cpopts.append("overwrite")
+            file_transfer_opts.append("overwrite")
 
 
     if len(args) < 2:
         print "Error: wrong number of arguments"
         usage()
         exit(1)
+
+
 
     sources = args[:-1]
     destination = args[-1]
@@ -192,14 +197,17 @@ def main(delete_aftewards = False):
 
     try:
         for source in sources:
-            recursive_copy(source, destination, cpopts)
+            recursive_file_transfer(source, destination, executable, file_transfer_opts)
     except KeyboardInterrupt:
         exit(1)
 
 
-def _prepare_copy(source, destination, cpopts):
-    """ Do all the work needed to get back to a simple case:
-    copying one file to an other file
+
+
+def _prepare_file_transfer(source, destination, opts):
+    """
+    Do all the work needed to get back to a simple case:
+    copying or move one file to an other file
 
     Create directories and modify destination when needed, and returns the new
     destination.
@@ -229,7 +237,7 @@ def _prepare_copy(source, destination, cpopts):
                 if ((path.exists(destination_file))
                     # refusing to overwrite an exiting file if the -o option is
                     # not specified
-                    and (not 'overwrite' in cpopts)):
+                    and (not 'overwrite' in opts)):
                     print "file '" + destination_file \
                                    + "' already exists, skipping"
                     skip = True
@@ -238,7 +246,7 @@ def _prepare_copy(source, destination, cpopts):
 
             # destination exists and is a file, (not a dir)
             # checking if we should overwrite it:
-            elif not 'overwrite' in cpopts:
+            elif not 'overwrite' in opts:
                 # refusing to overwrite an exiting file if the -o option is not
                 # specified
                 print "file '" + destination + "' already exists, skipping"
@@ -270,20 +278,49 @@ def _prepare_copy(source, destination, cpopts):
     return new_destination, skip
 
 
-def recursive_copy(source, destination, cpopts):
+def recursive_file_transfer(source, destination, executable, opts):
     "To walk recursively through directories"
 
     # First prepare copy (creating directories if needed, and so on)
-    new_destination, skip = _prepare_copy(source, destination, cpopts)
+    new_destination, skip = _prepare_file_transfer(source,
+            destination,
+            opts)
 
     if (not skip):
         if path.isdir(source):
             for file_name in listdir(source):
-                recursive_copy(path.join(source,          file_name),
-                               path.join(new_destination, file_name), cpopts)
+                recursive_file_transfer(path.join(source,          file_name),
+                               path.join(new_destination, file_name),
+                               executable,
+                               opts)
         else:
-            copy_manager = CopyManager(source, new_destination, cpopts)
-            copy_manager.copy()
+            file_transfer_manager = FileTransferManager(source,
+                    new_destination,
+                    executable,
+                    opts)
+            file_transfer_manager.transfer_file()
+
+
+def _get_exectuable(action):
+    """
+    Check that executable exists.
+
+    Return full path of the executable
+    """
+    if (action == "copy"):
+        executable_full_path = "/bin/cp"
+    elif(action == "move"):
+        executable_full_path = "/bin/mv"
+    else:
+        print "Error: action: " + action + "not supported (yet)"
+        exit(1)
+
+    if (not access(executable_full_path, os.X_OK)):
+        print "Error: could not exectue " + executable_full_path + "!"
+        exit(1)
+
+    return executable_full_path
+
 
 
 if __name__ == "__main__" :

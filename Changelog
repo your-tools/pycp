@@ -1,3 +1,6 @@
+3.1
+Now using /bin/cp instead of cp.
+
 3.0
 Little trick to have a pymv
 
