@@ -26,3 +26,5 @@ BUGS
 
 Pycp would take much longer than cp if you're trying to monitor copy
 of many little files
+
+Option -f exists but does nothing
