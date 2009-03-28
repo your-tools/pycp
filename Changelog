@@ -1,3 +1,6 @@
+3.2
+Switch from getopt to OptionParser (much better)
+
 3.1
 Now using /bin/cp instead of cp (thanks, Chris Gilles)
 

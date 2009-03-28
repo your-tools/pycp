@@ -33,12 +33,12 @@ Module is called pycp because only copy was supported at the beginning
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "3.1"
+__version__ = "3.2"
 
 import subprocess
-import sys
 import time
-import getopt
+
+from optparse import OptionParser
 
 import os
 from os import path
@@ -117,28 +117,7 @@ class FileTransferManager:
             exit (self.file_transfer_process.returncode)
 
 
-def usage():
-    "Outputs short usage message"
-
-    print """
-    Usage: pycp SOURCE DESTINATION"
-       or: pycp SOURCE ... DIRECTORY"
-    copy SOURCE to DESTINATION, or multiple SOURCE(s) to DIRECTORY"
-
-    Options:
-      --version: outputs version of pycp
-      -h, --help: this help
-      -o, --overwrite: overwrite existing files
-          (by default, pycp will skip existing files)
-      """
-
-def version():
-    "Prints version of pycp."
-    print "pycp version " + __version__
-    print "Distributed under GPL license"
-
-
-def main(action):
+def main(action="copy"):
     """
     Main: manages options and values
 
@@ -150,39 +129,35 @@ def main(action):
     file_transfer_opts = []
     executable = _get_exectuable(action)
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hvoif",
-                                ["help"      ,
-                                "version"    ,
-                                "overwrite"  ,
-                                "interactive",
-                                "force"])
-    except getopt.GetoptError, err:
-        print err
-        usage()
-        exit(2)
+    prog_name = "pycp"
+    if action == "move":
+        prog_name = "pymv"
 
-    # dummy_value will never be used,
-    # none of the options take an argument
-    for opt , dummy_value in opts:
-        if opt in ("-h", "--help"):
-            usage()
-            exit(0)
-        elif opt in ("-v", "--version"):
-            version()
-            exit(0)
-        elif opt in ("-i", "--interactive"):
-            file_transfer_opts.append("interactive")
-        elif opt in ("-f", "--force"):
-            file_transfer_opts.append("force")
+    usage   =                                                      \
+      "usage: " + prog_name + " [options] SOURCE DESTINATION\n"    \
+    + "       " + prog_name + " [options] SOURCE ... DIRECTORY\n"  \
+    + action + " SOURCE to DESTINATION, or multiple SOURCE(s) to DIRECTORY"
+
+    version = prog_name + " version " + __version__ + "\n" \
+              + "Distributed under GPL license"
+
+    parser = OptionParser(usage, version=version)
+
+    parser.add_option("-i", "--interactive",
+            action  = "store_true",
+            dest    = "interactive",
+            help    = "ask before overwriting existing files",
+            default = False)
+
+    (options, args) = parser.parse_args()
 
 
     if len(args) < 2:
-        print "Error: wrong number of arguments"
-        usage()
-        exit(1)
+        parser.error("Incorrect number of arguments")
 
 
+    if options.interactive:
+        file_transfer_opts.append("interactive")
 
     sources = args[:-1]
     destination = args[-1]

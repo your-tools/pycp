@@ -12,9 +12,6 @@ Make use of the wonderful libraries progressbar by Nilton Volpato.
 Comes with two scripts: pycp and pymv, calling FileTransferManager with
 proper action (copy or move)
 
-Also comes with pymv, a little script that uses pycp module, with an extra
-option for removing files after copy.
-
 INSTALL
 ------
 
@@ -26,5 +23,3 @@ BUGS
 
 Pycp would take much longer than cp if you're trying to monitor copy
 of many little files
-
-Option -f exists but does nothing
