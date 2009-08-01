@@ -216,6 +216,7 @@ def _prepare_file_transfer(source, destination, opts):
                 # is in fact "cp /path/to/foo /bar/foo"
                 source_file = path.basename(source)
                 destination_file = path.join(destination, source_file)
+                new_destination = destination_file
 
                 # if /bar/foo exists, check if we should overwrite it:
                 if path.exists(destination_file):
