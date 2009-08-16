@@ -1,3 +1,9 @@
+4.0
+Now using shutil and thread modules instead of subprocess.
+(Replacing supbrocess.popen("/bin/cp") by calling a thread
+running shutil.copy)
+Bonus: pycp might become cross-platform
+
 3.2
 Switch from getopt to OptionParser (much better)
 

@@ -33,18 +33,18 @@ Module is called pycp because only copy was supported at the beginning
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "3.2"
+__version__ = "4.0"
 
-import subprocess
 import time
+import shutil
 
+from threading import Thread
+from threading import Event
 from optparse import OptionParser
 
-import os
 from os import path
 from os import mkdir
 from os import listdir
-from os import access
 
 try:
     from progressbar import ProgressBar
@@ -63,29 +63,36 @@ class FileTransferManager:
 
     It is assumed that source and destination are both files.
     (No directory here)
+
     """
-    def __init__(self, source, destination, executable, opts):
-        self.file_transfer_process = None
-        self.source                = source
-        self.destination           = destination
-        self.pbar                  = None
-        self.executable            = executable
-        self.opts                  = opts
+    def __init__(self, source, destination, action, opts):
+        self.file_transfer = None
+        self.source        = source
+        self.destination   = destination
+        self.pbar          = None
+        self.action        = action
+        self.opts          = opts
+
 
     def transfer_file(self):
-        "Main method of FileTransferManager"
+        """
+        Create a FileTransfer instance to start transfer
+        in a thread, and start monitoring transfer
 
-        self.file_transfer_process = subprocess.Popen([self.executable,
-        self.source,
-        self.destination],
-        stdout=subprocess.PIPE)
-
+        """
+        self.file_transfer = FileTransfer(self.source,
+                self.destination,
+                self.action)
+        self.file_transfer.start()
         print self.source + " -> " + self.destination
         self.monitor_file_transfer()
 
-    def monitor_file_transfer(self):
-        "Executed during file transfer to print progressbar"
 
+    def monitor_file_transfer(self):
+        """
+        Executed during file transfer to update the progressbar
+
+        """
         source_size = float(path.getsize(self.source))
 
         if source_size == 0: # Using pycp to copy an empty file. Why not?
@@ -103,7 +110,7 @@ class FileTransferManager:
             ETA() ]                               ,
          maxval = source_size )
 
-        while (self.file_transfer_process.poll() is None):
+        while (not self.file_transfer.is_finished()):
             try:
                 dest_size = float(path.getsize(self.destination))
             except OSError:  # Maybe file has not been created yet
@@ -112,10 +119,6 @@ class FileTransferManager:
             self.pbar.update(dest_size)
 
         self.pbar.finish()
-        # Useful if something went wrong.
-        if (self.file_transfer_process.returncode != 0):
-            exit (self.file_transfer_process.returncode)
-
 
 def main(action="copy"):
     """
@@ -123,11 +126,9 @@ def main(action="copy"):
 
     The parameter action is the kind of file transfer we wish to do.
     (move or copy, for the moment)
+
     """
-
-
     file_transfer_opts = []
-    executable = _get_exectuable(action)
 
     prog_name = "pycp"
     if action == "move":
@@ -151,17 +152,14 @@ def main(action="copy"):
 
     (options, args) = parser.parse_args()
 
-
     if len(args) < 2:
         parser.error("Incorrect number of arguments")
-
 
     if options.interactive:
         file_transfer_opts.append("interactive")
 
     sources = args[:-1]
     destination = args[-1]
-
 
     # If there is more than one source, destination must be an
     # existing directory
@@ -180,11 +178,10 @@ def main(action="copy"):
         for source in sources:
             recursive_file_transfer(source,
                     destination,
-                    executable,
+                    action,
                     file_transfer_opts)
     except KeyboardInterrupt:
         exit(1)
-
 
 
 
@@ -198,8 +195,8 @@ def _prepare_file_transfer(source, destination, opts):
 
     If we are trying to overwrite a file, and that the corresponding option is
     not present, return (True, new_destination)
-    """
 
+    """
     new_destination = destination
     skip            = False
 
@@ -255,9 +252,11 @@ def _prepare_file_transfer(source, destination, opts):
     return new_destination, skip
 
 
-def recursive_file_transfer(source, destination, executable, opts):
-    "To walk recursively through directories"
+def recursive_file_transfer(source, destination, action, opts):
+    """
+    Recursively wakl through directories,
 
+    """
     # First prepare file transfer (creating directories if needed, and so on)
     new_destination, skip = _prepare_file_transfer(source,
             destination,
@@ -268,12 +267,12 @@ def recursive_file_transfer(source, destination, executable, opts):
             for file_name in listdir(source):
                 recursive_file_transfer(path.join(source, file_name),
                                path.join(new_destination, file_name),
-                               executable,
+                               action,
                                opts)
         else:
             file_transfer_manager = FileTransferManager(source,
                     new_destination,
-                    executable,
+                    action,
                     opts)
             file_transfer_manager.transfer_file()
 
@@ -283,8 +282,8 @@ def _should_skip(destination, opts):
     Returns True is we should skip the file.
     Ask for user confirmation if FileTransferManager was
     called with -i
-    """
 
+    """
     if 'interactive' in opts:
         print "File: '" + destination +"' already exists"
         print "Overwrite?"
@@ -297,25 +296,39 @@ def _should_skip(destination, opts):
         return False
 
 
-def _get_exectuable(action):
+
+class FileTransfer(Thread):
     """
-    Check that executable exists.
+    Lauch a shutil command in a thread
 
-    Return full path of the executable
     """
-    if action == "copy":
-        executable_full_path = "/bin/cp"
-    elif action == "move":
-        executable_full_path = "/bin/mv"
-    else:
-        print "Error: action: " + action + "not supported (yet)"
-        exit(1)
+    def __init__(self, source, destination, action):
+        self.source      = source
+        self.destination = destination
+        self.action      = action
+        self._is_finished = Event()
+        self._is_finished.clear()
+        Thread.__init__(self)
 
-    if not access(executable_full_path, os.X_OK):
-        print "Error: could not exectue " + executable_full_path + "!"
-        exit(1)
 
-    return executable_full_path
+    def run(self):
+        """
+        Main method of FileTransfer
+
+        Executed when start() is called
+        """
+        if self.action == "copy":
+            shutil.copy(self.source, self.destination)
+        elif self.action == "move":
+            shutil.move(self.source, self.destination)
+        self._is_finished.set()
+
+    def is_finished(self):
+        """
+        Getter for _is_finished Event
+
+        """
+        return self._is_finished.is_set()
 
 
 
