@@ -1,3 +1,7 @@
+4.0.1
+Fix bug for python2.5: threading module still has
+only camelCase functions.
+
 4.0
 Now using shutil and thread modules instead of subprocess.
 (Replacing supbrocess.popen("/bin/cp") by calling a thread
