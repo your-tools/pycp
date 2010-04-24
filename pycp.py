@@ -35,6 +35,7 @@ __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
 __version__ = "4.0.1"
 
+import sys
 import time
 import shutil
 
@@ -54,7 +55,7 @@ try:
     from progressbar import Bar
 except ImportError:
     print "Error: Unable to find progressbar module"
-    exit(1)
+    sys.exit(1)
 
 
 class FileTransferManager:
@@ -166,10 +167,10 @@ def main(action="copy"):
     if len(sources) > 1:
         if not (path.exists(destination)):
             print "Error: '" + destination + "' does not exists"
-            exit(1)
+            sys.exit(1)
         if not (path.isdir(destination)):
             print "Error: '" + destination + "' is not a directory"
-            exit(1)
+            sys.exit(1)
 
     ##______
     # Go!
@@ -181,7 +182,7 @@ def main(action="copy"):
                     action,
                     file_transfer_opts)
     except KeyboardInterrupt:
-        exit(1)
+        sys.exit(1)
 
 
 
@@ -203,7 +204,7 @@ def _prepare_file_transfer(source, destination, opts):
     # First thing first ;)
     if not (path.exists(source)):
         print "Error: file '" + source + "' does not exist"
-        exit(1)
+        sys.exit(1)
 
     # If source is a file:
     if path.isfile(source):
@@ -227,7 +228,7 @@ def _prepare_file_transfer(source, destination, opts):
         else:
             # destination does not exists
             print "Error %s does not exists" % destination
-            exit(1)
+            sys.exit(1)
 
     #! source is a file
 
