@@ -1,3 +1,6 @@
+4.0.2
+Lots of bug fixes, introducing automatic tests
+
 4.0.1
 Fix bug for python2.5: threading module still has
 only camelCase functions.
@@ -15,7 +18,7 @@ Switch from getopt to OptionParser (much better)
 Now using /bin/cp instead of cp (thanks, Chris Gilles)
 
 No more -o option. Files are now overwritten by default.
-Pass a -i, --interactive option if you want to be asked 
+Pass a -i, --interactive option if you want to be asked
 for confirmation before overwritting files
 Mimic cp behaviour. (thanks, ctaf)
 
