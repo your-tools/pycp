@@ -34,6 +34,18 @@ class CpTestCase(unittest.TestCase):
         self.assertRaises(SystemExit, pycp.main, "copy")
 
 
+    def test_cp_self_1(self):
+        "a_file -> a_file"
+        a_file      = os.path.join(self.test_dir, "a_file")
+        sys.argv = ["pycp", a_file, a_file]
+        self.assertRaises(SystemExit, pycp.main, "copy")
+
+    def test_cp_self_2(self):
+        "a_file -> ."
+        a_file      = os.path.join(self.test_dir, "a_file")
+        sys.argv = ["pycp", a_file, self.test_dir]
+        self.assertRaises(SystemExit, pycp.main, "copy")
+
     def test_cp_file_file(self):
         "a_file -> a_file.back"
         # cp a_file a_file.back

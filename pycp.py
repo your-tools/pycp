@@ -260,7 +260,7 @@ def _prepare_file_transfer(source, destination, opts):
     if path.abspath(source) == path.abspath(new_destination):
         print "Error: '" + source \
                          + "' and '" + new_destination + "' are the same file"
-        skip = True
+        sys.exit(2)
 
     return new_destination, skip
 
