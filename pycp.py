@@ -129,8 +129,6 @@ def main(action="copy"):
     (move or copy, for the moment)
 
     """
-    file_transfer_opts = []
-
     prog_name = "pycp"
     if action == "move":
         prog_name = "pymv"
@@ -170,9 +168,6 @@ def main(action="copy"):
     if len(args) < 2:
         parser.error("Incorrect number of arguments")
 
-    if options.interactive:
-        file_transfer_opts.append("interactive")
-
     sources = args[:-1]
     destination = args[-1]
 
@@ -191,7 +186,7 @@ def main(action="copy"):
             recursive_file_transfer(source,
                     destination,
                     action,
-                    file_transfer_opts)
+                    options)
     except KeyboardInterrupt:
         sys.exit(1)
 
@@ -303,7 +298,11 @@ def _should_skip(destination, opts):
     called with -i
 
     """
-    if 'interactive' in opts:
+    if opts.safe:
+        print "Warning: skipping", destination
+        return True
+
+    if opts.interactive:
         print "File: '" + destination +"' already exists"
         print "Overwrite?"
         user_input = raw_input()
