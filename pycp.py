@@ -134,9 +134,8 @@ def main(action="copy"):
         prog_name = "pymv"
 
     usage   =                                                      \
-      "usage: " + prog_name + " [options] SOURCE DESTINATION\n"    \
-    + "       " + prog_name + " [options] SOURCE ... DIRECTORY\n"  \
-    + action + " SOURCE to DESTINATION, or multiple SOURCE(s) to DIRECTORY"
+      "usage: " + prog_name + " [options] SOURCE... DESTINATION\n"    \
+    + action + " SOURCE(s) to DESTINATION\n"
 
     version = prog_name + " version " + __version__ + "\n" \
               + "Distributed under GPL license"
