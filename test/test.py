@@ -29,6 +29,10 @@ class CpTestCase(unittest.TestCase):
         shutil.copytree(cur_test, self.test_dir)
         self.previous_dir = os.getcwd()
 
+    def test_zero(self):
+        sys.argv=["pycp"]
+        self.assertRaises(SystemExit, pycp.main, "copy")
+
 
     def test_cp_file_file(self):
         "a_file -> a_file.back"
@@ -52,8 +56,8 @@ class CpTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(dest))
 
 
-    def test_cp_dir_dir(self):
-        "a_dir -> a_dir"
+    def test_cp_dir_dir_1(self):
+        "a_dir -> b_dir (b_dir does not exist)"
         a_dir = os.path.join(self.test_dir, "a_dir")
         b_dir = os.path.join(self.test_dir, "b_dir")
         sys.argv = ["pycp", a_dir, b_dir]
@@ -63,6 +67,17 @@ class CpTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(c_file))
         self.assertTrue(os.path.exists(d_file))
 
+    def test_cp_dir_dir_2(self):
+        "a_dir -> b_dir (b_dir exists)"
+        a_dir = os.path.join(self.test_dir, "a_dir")
+        b_dir = os.path.join(self.test_dir, "b_dir")
+        os.mkdir(b_dir)
+        sys.argv = ["pycp", a_dir, b_dir]
+        pycp.main("copy")
+        c_file = os.path.join(b_dir, "a_dir", "c_file")
+        d_file = os.path.join(b_dir, "a_dir", "c_file")
+        self.assertTrue(os.path.exists(c_file))
+        self.assertTrue(os.path.exists(d_file))
 
     def test_no_source(self):
         "d_file -> d_file.back but d_file does not exists"
