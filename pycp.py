@@ -222,10 +222,13 @@ def _prepare_file_transfer(source, destination, opts):
                 # destination exists and is a file, (not a dir)
                 # checking if we should overwrite it:
                 skip = _should_skip(destination, opts)
+
         else:
-            # destination does not exists
-            print "Error %s does not exists" % destination
-            sys.exit(1)
+            # destination does not exist
+            if destination.endswith("/"):
+                print "Error, directory destination: %s does not exists" % \
+                    destination
+                sys.exit(1)
 
     #! source is a file
 
