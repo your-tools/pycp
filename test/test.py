@@ -22,9 +22,11 @@ class CpTestCase(unittest.TestCase):
         directory
 
         """
+        cur_dir = os.path.abspath(os.path.dirname(__file__))
+        cur_test = os.path.join(cur_dir, "test_dir")
         temp_dir = tempfile.mkdtemp("pycp-test")
         self.test_dir = os.path.join(temp_dir, "test_dir")
-        shutil.copytree("test_dir", self.test_dir)
+        shutil.copytree(cur_test, self.test_dir)
         self.previous_dir = os.getcwd()
 
 
