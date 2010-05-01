@@ -148,8 +148,22 @@ def main(action="copy"):
     parser.add_option("-i", "--interactive",
             action  = "store_true",
             dest    = "interactive",
-            help    = "ask before overwriting existing files",
-            default = False)
+            help    = "ask before overwriting existing files")
+
+    parser.add_option("-s", "--safe",
+            action  = "store_true",
+            dest    = "safe",
+            help    = "never overwirte existing files")
+
+    parser.add_option("-f", "--force",
+            action  = "store_false",
+            dest    = "safe",
+            help    = "silently overwirte existing files " + \
+                "(this is the default)")
+
+    parser.set_defaults(
+        safe       = False,
+        interactive = False)
 
     (options, args) = parser.parse_args()
 
