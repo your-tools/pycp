@@ -97,6 +97,30 @@ class CpTestCase(unittest.TestCase):
         self.assertRaises(SystemExit, pycp.main, "copy")
 
 
+    def test_overwrite_1(self):
+        "a_file -> b_file and b_file already exists (unsafe)"
+        a_file = os.path.join(self.test_dir, "a_file")
+        b_file = os.path.join(self.test_dir, "b_file")
+        sys.argv = ["pycp", a_file, b_file]
+        pycp.main("copy")
+        b_file_desc = open(b_file, "r")
+        b_contents  = b_file_desc.read()
+        b_file_desc.close()
+        self.assertEquals(b_contents, "a\n")
+
+
+    def test_overwrite_2(self):
+        "a_file -> b_file and b_file already exists (safe)"
+        a_file = os.path.join(self.test_dir, "a_file")
+        b_file = os.path.join(self.test_dir, "b_file")
+        sys.argv = ["pycp", "--safe",  a_file, b_file]
+        pycp.main("copy")
+        b_file_desc = open(b_file, "r")
+        b_contents  = b_file_desc.read()
+        b_file_desc.close()
+        self.assertEquals(b_contents, "b\n")
+
+
     def tearDown(self):
         """Remove the temporary directory
 
