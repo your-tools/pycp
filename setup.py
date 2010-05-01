@@ -7,7 +7,7 @@ import subprocess
 
 def gen_man_pages():
     """Simply call help2man bin/pycp """
-    res = {}
+    man_pages = {}
     for f in ["pycp", "pymv"]:
         try:
             bin = os.path.join("bin", f)
@@ -16,18 +16,18 @@ def gen_man_pages():
             res[f] = out
         except OSError, e:
             print "help2man failed. Error was", e
-            return None
-    return res
+            return
 
-man_pages = gen_man_pages()
-if not os.path.exists("doc"):
-    os.mkdir("doc")
+    if not os.path.exists("doc"):
+        os.mkdir("doc")
 
-for f in ["pycp", "pymv"]:
-    man = os.path.join("doc", f + ".1")
-    f_desc = open(man, "w")
-    f_desc.write(man_pages[f])
-    f_desc.close()
+    for f in ["pycp", "pymv"]:
+        man = os.path.join("doc", f + ".1")
+        f_desc = open(man, "w")
+        f_desc.write(man_pages[f])
+        f_desc.close()
+
+gen_man_pages()
 
 
 setup(name='pycp',
