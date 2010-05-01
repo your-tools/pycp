@@ -165,11 +165,8 @@ def main(action="copy"):
     # If there is more than one source, destination must be an
     # existing directory
     if len(sources) > 1:
-        if not (path.exists(destination)):
-            print "Error: '" + destination + "' does not exists"
-            sys.exit(1)
         if not (path.isdir(destination)):
-            print "Error: '" + destination + "' is not a directory"
+            print "Error: '" + destination + "' is not an existing directory"
             sys.exit(1)
 
     ##______
