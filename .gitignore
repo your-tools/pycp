@@ -1,9 +1,14 @@
-*.swp
-*~
-*.o
+#Python:
 *.pyc
 
-tags
-
+#Created by setup.py:
 dist/
 build/
+doc/
+
+# created by PKGBUILD:
+src/
+pkg/
+*.tar.xz
+*.tar.gz
+
