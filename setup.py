@@ -13,7 +13,7 @@ def gen_man_pages():
             bin = os.path.join("bin", f)
             p = subprocess.Popen(["help2man", "-N", bin], stdout=subprocess.PIPE)
             out = p.communicate()[0]
-            res[f] = out
+            man_pages[f] = out
         except OSError, e:
             print "help2man failed. Error was", e
             return
