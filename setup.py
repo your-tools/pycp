@@ -57,4 +57,13 @@ setup(name='pycp',
       license          =' GPL',
       scripts          = scripts,
       data_files       = data_files,
+      classifiers      = [
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Console",
+        "License :: OSI Approved :: GNU General Public License (GPL)",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "PythonTopic :: System :: Shells",
+      ],
+
      )
