@@ -140,7 +140,7 @@ def main(action="copy"):
     version = prog_name + " version " + __version__ + "\n" \
               + "Distributed under GPL license"
 
-    parser = OptionParser(usage, version=version)
+    parser = OptionParser(usage, version=version, prog=prog_name)
 
     parser.add_option("-i", "--interactive",
             action  = "store_true",
