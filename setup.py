@@ -36,7 +36,7 @@ def gen_man_pages():
 
 if not ON_WINDOWS:
     gen_man_pages()
-    data_files = [ ("/usr/share/man/man1", ["doc/pycp.1","doc/pymv.1"]) ],
+    data_files = [("/usr/share/man/man1", ["doc/pycp.1","doc/pymv.1"])]
     scripts    = ["bin/pycp", "bin/pymv"]
 
 else:
