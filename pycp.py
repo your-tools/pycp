@@ -33,7 +33,7 @@ Module is called pycp because only copy was supported at the beginning
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "4.1"
+__version__ = "4.2.1"
 
 import sys
 import time
