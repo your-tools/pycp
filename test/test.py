@@ -9,12 +9,12 @@ to not remove temporary directories created during test.
 import unittest
 import tempfile  # for mkdtemp
 import shutil
-import pycp
 import sys
 import os
 import time
 
 
+import pycp
 
 class CpTestCase(unittest.TestCase):
     def setUp(self):
@@ -157,6 +157,38 @@ class CpTestCase(unittest.TestCase):
         else:
             shutil.rmtree(self.test_dir)
 
+
+
+class PrintTransferTestCase(unittest.TestCase):
+    def test_01(self):
+        src  = "/path/to/foo"
+        dest = "/path/to/bar"
+        res  = pycp.pprint_transfer(src, dest)
+        self.assertEquals(res, "/path/to/{foo => bar}")
+
+    def test_02(self):
+        src  = "/path/to/foo/a/b"
+        dest = "/path/to/spam/a/b"
+        res  = pycp.pprint_transfer(src, dest)
+        self.assertEquals(res, "/path/to/{foo => spam}/a/b")
+
+    def test_03(self):
+        src  = "/path/to/foo/a/b"
+        dest = "/path/to/foo/bar/a/b"
+        res  = pycp.pprint_transfer(src, dest)
+        self.assertEquals(res, "/path/to/foo/{ => bar}/a/b")
+
+    def test_no_pfx(self):
+        src  = "/path/to/foo/a/b"
+        dest = "/other/a/b"
+        res  = pycp.pprint_transfer(src, dest)
+        self.assertEquals(res, "{/path/to/foo => /other}/a/b")
+
+    def test_no_sfx(self):
+        src  = "/path/to/foo/a"
+        dest = "/path/to/foo/b"
+        res  = pycp.pprint_transfer(src, dest)
+        self.assertEquals(res, "/path/to/foo/{a => b}")
 
 
 

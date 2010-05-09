@@ -85,7 +85,8 @@ class FileTransferManager:
                 self.destination,
                 self.action)
         self.file_transfer.start()
-        print self.source + " -> " + self.destination
+        to_print = pprint_transfer(self.source, self.destination)
+        print to_print
         self.monitor_file_transfer()
 
 
@@ -347,6 +348,52 @@ class FileTransfer(Thread):
         """
         return self._is_finished.isSet()
 
+
+
+def pprint_transfer(a, b):
+    """
+    Directly borrowed from git's diff.c file.
+
+    *pprint_rename(const char *a, const char *b)
+    """
+    len_a = len(a)
+    len_b = len(b)
+
+    # Find common prefix
+    pfx_length = 0
+    i1 = 0
+    i2 = 0
+    while (i1 < len_a and i2 < len_b and a[i1] == b[i2]):
+        if a[i1] == "/":
+            pfx_length = i1 + 1
+        i1 += 1
+        i2 += 1
+
+    # Find common suffix
+    sfx_length = 0
+    i1 = len_a - 1
+    i2 = len_b - 1
+    while (i1 > 0 and i2 > 0 and a[i1] == b[i2]):
+        if a[i1] == "/":
+            sfx_length = len_a - i1
+        i1 -= 1
+        i2 -= 1
+
+    a_midlen = len_a - pfx_length - sfx_length
+    b_midlen = len_b - pfx_length - sfx_length
+
+    pfx   = a[:pfx_length]
+    sfx   = b[len_b - sfx_length:]
+    a_mid = a[pfx_length:pfx_length+a_midlen]
+    b_mid = b[pfx_length:pfx_length+b_midlen]
+
+    if pfx == "/":
+        pfx = ""
+        a_mid = "/" + a_mid
+        b_mid = "/" + b_mid
+
+    res = "%s{%s => %s}%s" % (pfx, a_mid, b_mid, sfx)
+    return res
 
 
 if __name__ == "__main__" :
