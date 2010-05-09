@@ -190,6 +190,12 @@ class PrintTransferTestCase(unittest.TestCase):
         res  = pycp.pprint_transfer(src, dest)
         self.assertEquals(res, "/path/to/foo/{a => b}")
 
+    def test_no_dir(self):
+        src  = "a"
+        dest = "b"
+        res  = pycp.pprint_transfer(src, dest)
+        self.assertEquals(res, "a => b")
+
 
 
 if __name__ == "__main__" :

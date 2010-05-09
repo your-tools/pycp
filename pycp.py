@@ -392,6 +392,9 @@ def pprint_transfer(a, b):
         a_mid = "/" + a_mid
         b_mid = "/" + b_mid
 
+    if not pfx and not sfx:
+        return "%s => %s" % (a, b)
+
     res = "%s{%s => %s}%s" % (pfx, a_mid, b_mid, sfx)
     return res
 
