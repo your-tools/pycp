@@ -18,7 +18,10 @@ def gen_man_pages():
     for f in ["pycp", "pymv"]:
         try:
             bin = os.path.join("bin", f)
-            p = subprocess.Popen(["help2man", "-N", bin], stdout=subprocess.PIPE)
+            p = subprocess.Popen("help2man -N %s" %  bin,
+                stdout=subprocess.PIPE,
+                env = {"PYTHONPATH" : "."},
+                shell = True)
             out = p.communicate()[0]
             man_pages[f] = out
         except OSError, e:
