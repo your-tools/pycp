@@ -33,15 +33,19 @@ def gen_man_pages():
         f_desc = open(man, "w")
         f_desc.write(man_pages[f])
         f_desc.close()
+    return man_pages
 
 if not ON_WINDOWS:
-    gen_man_pages()
-    data_files = [("/usr/share/man/man1", ["doc/pycp.1","doc/pymv.1"])]
     scripts    = ["bin/pycp", "bin/pymv"]
+    man_pages = gen_man_pages()
+    if man_pages:
+        data_files = [("/usr/share/man/man1", ["doc/pycp.1","doc/pymv.1"])]
+    else:
+        data_files = []
 
 else:
-    data_files = []
     scripts    = [r"bin\pycp.bat", r"bin\pymv.bat"]
+    data_files = []
 
 
 
