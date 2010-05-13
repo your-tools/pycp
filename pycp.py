@@ -234,7 +234,7 @@ def _prepare_file_transfer(source, destination, opts):
 
         else:
             # destination does not exist
-            if destination.endswith("/"):
+            if destination.endswith(path.sep):
                 print "Error, directory destination: %s does not exists" % \
                     destination
                 sys.exit(1)
@@ -364,7 +364,7 @@ def pprint_transfer(a, b):
     i1 = 0
     i2 = 0
     while (i1 < len_a and i2 < len_b and a[i1] == b[i2]):
-        if a[i1] == "/":
+        if a[i1] == path.sep:
             pfx_length = i1 + 1
         i1 += 1
         i2 += 1
@@ -374,7 +374,7 @@ def pprint_transfer(a, b):
     i1 = len_a - 1
     i2 = len_b - 1
     while (i1 > 0 and i2 > 0 and a[i1] == b[i2]):
-        if a[i1] == "/":
+        if a[i1] == path.sep:
             sfx_length = len_a - i1
         i1 -= 1
         i2 -= 1
@@ -387,10 +387,10 @@ def pprint_transfer(a, b):
     a_mid = a[pfx_length:pfx_length+a_midlen]
     b_mid = b[pfx_length:pfx_length+b_midlen]
 
-    if pfx == "/":
+    if pfx == path.sep:
         pfx = ""
-        a_mid = "/" + a_mid
-        b_mid = "/" + b_mid
+        a_mid = path.sep + a_mid
+        b_mid = path.sep + b_mid
 
     if not pfx and not sfx:
         return "%s => %s" % (a, b)

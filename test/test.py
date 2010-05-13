@@ -101,7 +101,7 @@ class CpTestCase(unittest.TestCase):
     def test_no_dest(self):
         "a_file -> d_dir but d_dir does not exists"
         a_file = os.path.join(self.test_dir, "a_file")
-        d_dir  = os.path.join(self.test_dir, "d_dir/")
+        d_dir  = os.path.join(self.test_dir, "d_dir" + os.path.sep)
         sys.argv = ["pycp", a_file, d_dir]
         self.assertRaises(SystemExit, pycp.main, "copy")
 
@@ -159,44 +159,82 @@ class CpTestCase(unittest.TestCase):
 
 
 
-class PrintTransferTestCase(unittest.TestCase):
-    def test_01(self):
-        src  = "/path/to/foo"
-        dest = "/path/to/bar"
-        res  = pycp.pprint_transfer(src, dest)
-        self.assertEquals(res, "/path/to/{foo => bar}")
+if os.name == "posix":
+    class UnixPrintTransferTestCase(unittest.TestCase):
+        def test_01(self):
+            src  = "/path/to/foo"
+            dest = "/path/to/bar"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, "/path/to/{foo => bar}")
 
-    def test_02(self):
-        src  = "/path/to/foo/a/b"
-        dest = "/path/to/spam/a/b"
-        res  = pycp.pprint_transfer(src, dest)
-        self.assertEquals(res, "/path/to/{foo => spam}/a/b")
+        def test_02(self):
+            src  = "/path/to/foo/a/b"
+            dest = "/path/to/spam/a/b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, "/path/to/{foo => spam}/a/b")
 
-    def test_03(self):
-        src  = "/path/to/foo/a/b"
-        dest = "/path/to/foo/bar/a/b"
-        res  = pycp.pprint_transfer(src, dest)
-        self.assertEquals(res, "/path/to/foo/{ => bar}/a/b")
+        def test_03(self):
+            src  = "/path/to/foo/a/b"
+            dest = "/path/to/foo/bar/a/b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, "/path/to/foo/{ => bar}/a/b")
 
-    def test_no_pfx(self):
-        src  = "/path/to/foo/a/b"
-        dest = "/other/a/b"
-        res  = pycp.pprint_transfer(src, dest)
-        self.assertEquals(res, "{/path/to/foo => /other}/a/b")
+        def test_no_pfx(self):
+            src  = "/path/to/foo/a/b"
+            dest = "/other/a/b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, "{/path/to/foo => /other}/a/b")
 
-    def test_no_sfx(self):
-        src  = "/path/to/foo/a"
-        dest = "/path/to/foo/b"
-        res  = pycp.pprint_transfer(src, dest)
-        self.assertEquals(res, "/path/to/foo/{a => b}")
+        def test_no_sfx(self):
+            src  = "/path/to/foo/a"
+            dest = "/path/to/foo/b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, "/path/to/foo/{a => b}")
 
-    def test_no_dir(self):
-        src  = "a"
-        dest = "b"
-        res  = pycp.pprint_transfer(src, dest)
-        self.assertEquals(res, "a => b")
+        def test_no_dir(self):
+            src  = "a"
+            dest = "b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, "a => b")
 
 
+if os.name == "nt":
+    class DosPrintTransferTestCase(unittest.TestCase):
+        def test_01(self):
+            src  = r"c:\path\to\foo"
+            dest = r"c:\path\to\bar"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, r"c:\path\to\{foo => bar}")
+
+        def test_02(self):
+            src  = r"c:\path\to\foo\a\b"
+            dest = r"c:\path\to\spam\a\b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, r"c:\path\to\{foo => spam}\a\b")
+
+        def test_03(self):
+            src  = r"c:\path\to\foo\a\b"
+            dest = r"c:\path\to\foo\bar\a\b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, r"c:\path\to\foo\{ => bar}\a\b")
+
+        def test_other_drive(self):
+            src  = r"c:\path\to\foo\a\b"
+            dest = r"d:\other\a\b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, r"{c:\path\to\foo => d:\other}\a\b")
+
+        def test_no_sfx(self):
+            src  = r"c:\path\to\foo\a"
+            dest = r"c:\path\to\foo\b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, r"c:\path\to\foo\{a => b}")
+
+        def test_no_dir(self):
+            src  = "a"
+            dest = "b"
+            res  = pycp.pprint_transfer(src, dest)
+            self.assertEquals(res, "a => b")
 
 if __name__ == "__main__" :
     unittest.main()
