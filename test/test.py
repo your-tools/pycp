@@ -294,6 +294,15 @@ class MvTestCase(unittest.TestCase):
         self.assertEquals(b_contents, "b\n")
         self.assertTrue(os.path.exists(a_file))
 
+    def test_empty(self):
+        "a_dir/empty -> b_dir"
+        a_dir = os.path.join(self.test_dir, "a_dir")
+        empty = os.path.join(self.test_dir, "a_dir", "empty")
+        b_dir = os.path.join(self.test_dir, "b_dir")
+        sys.argv = ["pycp", a_dir, b_dir]
+        pycp.main("move")
+
+
 
     def tearDown(self):
         """Remove the temporary directory

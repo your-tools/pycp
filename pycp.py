@@ -95,9 +95,18 @@ class FileTransferManager:
         Executed during file transfer to update the progressbar
 
         """
-        source_size = float(path.getsize(self.source))
+        # If we were moving a small file, it's possible source
+        # already has been removed:
+        try:
+            source_size = float(path.getsize(self.source))
+        except OSError:
+            self.file_transfer.join()
+            return
 
-        if source_size == 0: # Using pycp to copy an empty file. Why not?
+        if source_size == 0:
+            # Using pycp to copy an empty file:
+            # Wait for the file transfer to finish, and returns
+            self.file_transfer.join()
             return
 
         # Use of wonderful constructor from progessbar.
