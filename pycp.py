@@ -190,6 +190,14 @@ def main(action="copy"):
     except KeyboardInterrupt:
         sys.exit(1)
 
+    ##
+    # If we were moving a directory, remove it now:
+    # (FileTransferManager only deals with files)
+    if action == "move":
+        if len(sources) == 1:
+            src = sources[0]
+            if path.isdir(src):
+                shutil.rmtree(source)
 
 
 def _prepare_file_transfer(source, destination, opts):
