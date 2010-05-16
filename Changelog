@@ -1,3 +1,16 @@
+4.3.1
+Bug fix: pymv a_dir b_dir left an empty a_dir behind
+
+4.3
+Nicer print of what is beeing tranferred:
+/path/to/{foo => bar}/a/b
+instead of:
+/path/to/foo/a/b -> /path/to/bar/a/b
+
+4.2
+Pycp now is available on Pypi:
+http://pypi.python.org/pypi/pycp/
+
 4.1
 You can now use --safe to never overwrite files.
 
