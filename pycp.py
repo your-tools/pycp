@@ -143,12 +143,14 @@ def main(action="copy"):
     if action == "move":
         prog_name = "pymv"
 
-    usage   =                                                      \
-      "usage: " + prog_name + " [options] SOURCE... DESTINATION\n"    \
-    + action + " SOURCE(s) to DESTINATION\n"
+    usage = """
+    %s [options] SOURCE DESTINATION
+    %s [options] SOURCE... DIRECTORY
 
-    version = prog_name + " version " + __version__ + "\n" \
-              + "Distributed under GPL license"
+    %s SOURCE to DESTINATION or mutliple SOURCE(s) to DIRECTORY
+    """ % (prog_name, prog_name, action)
+
+    version = "%s version %s" % (prog_name, __version__)
 
     parser = OptionParser(usage, version=version, prog=prog_name)
 
@@ -276,8 +278,8 @@ def _prepare_file_transfer(source, destination, opts):
 
     # Checks if we are trying to do a `cp foo .`, or something similar:
     if path.abspath(source) == path.abspath(new_destination):
-        print "Error: '" + source \
-                         + "' and '" + new_destination + "' are the same file"
+        print "Error: '%s' and '%s' are the same file" % \
+            (source, new_destination)
         sys.exit(2)
 
     return new_destination, skip
@@ -320,7 +322,7 @@ def _should_skip(destination, opts):
         return True
 
     if opts.interactive:
-        print "File: '" + destination +"' already exists"
+        print "File: '%s' already exists" % destination
         print "Overwrite?"
         user_input = raw_input()
         if (user_input == "y"):
@@ -371,7 +373,7 @@ def pprint_transfer(src, dest):
     """
     Directly borrowed from git's diff.c file.
 
-    *pprint_rename(const char *a, const char *b)
+    pprint_rename(const char *a, const char *b)
     """
     len_src = len(src)
     len_dest = len(dest)
