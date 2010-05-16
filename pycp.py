@@ -206,7 +206,7 @@ def main(action="copy"):
         if len(sources) == 1:
             src = sources[0]
             if path.isdir(src):
-                shutil.rmtree(source)
+                shutil.rmtree(src)
 
 
 def _prepare_file_transfer(source, destination, opts):
@@ -367,52 +367,55 @@ class FileTransfer(Thread):
 
 
 
-def pprint_transfer(a, b):
+def pprint_transfer(src, dest):
     """
     Directly borrowed from git's diff.c file.
 
     *pprint_rename(const char *a, const char *b)
     """
-    len_a = len(a)
-    len_b = len(b)
+    len_src = len(src)
+    len_dest = len(dest)
 
     # Find common prefix
     pfx_length = 0
-    i1 = 0
-    i2 = 0
-    while (i1 < len_a and i2 < len_b and a[i1] == b[i2]):
-        if a[i1] == path.sep:
-            pfx_length = i1 + 1
-        i1 += 1
-        i2 += 1
+    i = 0
+    j = 0
+    while (i < len_src and j < len_dest and src[i] == dest[j]):
+        if src[i] == path.sep:
+            pfx_length = i + 1
+        i += 1
+        j += 1
 
     # Find common suffix
     sfx_length = 0
-    i1 = len_a - 1
-    i2 = len_b - 1
-    while (i1 > 0 and i2 > 0 and a[i1] == b[i2]):
-        if a[i1] == path.sep:
-            sfx_length = len_a - i1
-        i1 -= 1
-        i2 -= 1
+    i  = len_src - 1
+    j = len_dest - 1
+    while (i > 0 and j > 0 and src[i] == dest[j]):
+        if src[i] == path.sep:
+            sfx_length = len_src - i
+        i -= 1
+        j -= 1
 
-    a_midlen = len_a - pfx_length - sfx_length
-    b_midlen = len_b - pfx_length - sfx_length
+    src_midlen  = len_src  - pfx_length - sfx_length
+    dest_midlen = len_dest - pfx_length - sfx_length
 
-    pfx   = a[:pfx_length]
-    sfx   = b[len_b - sfx_length:]
-    a_mid = a[pfx_length:pfx_length+a_midlen]
-    b_mid = b[pfx_length:pfx_length+b_midlen]
+    pfx   = src[:pfx_length]
+    sfx   = dest[len_dest - sfx_length:]
+    src_mid  = src [pfx_length:pfx_length + src_midlen ]
+    dest_mid = dest[pfx_length:pfx_length + dest_midlen]
 
     if pfx == path.sep:
+        # The common prefix is / ,
+        # avoid print /{etc => tmp}/foo, and
+        # print {/etc => /tmp}/foo
         pfx = ""
-        a_mid = path.sep + a_mid
-        b_mid = path.sep + b_mid
+        src_mid  = path.sep + src_mid
+        dest_mid = path.sep + dest_mid
 
     if not pfx and not sfx:
-        return "%s => %s" % (a, b)
+        return "%s => %s" % (src, dest)
 
-    res = "%s{%s => %s}%s" % (pfx, a_mid, b_mid, sfx)
+    res = "%s{%s => %s}%s" % (pfx, src_mid, dest_mid, sfx)
     return res
 
 
