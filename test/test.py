@@ -223,7 +223,7 @@ class MvTestCase(unittest.TestCase):
         self.assertTrue (os.path.exists(d_file))
         self.assertFalse(os.path.exists(a_dir))
 
-    def test_cp_dir_dir_2(self):
+    def test_mv_dir_dir_2(self):
         "a_dir -> b_dir (b_dir exists)"
         a_dir = os.path.join(self.test_dir, "a_dir")
         b_dir = os.path.join(self.test_dir, "b_dir")
@@ -287,7 +287,7 @@ class MvTestCase(unittest.TestCase):
         a_file = os.path.join(self.test_dir, "a_file")
         b_file = os.path.join(self.test_dir, "b_file")
         sys.argv = ["pycp", "--safe",  a_file, b_file]
-        pycp.main("copy")
+        pycp.main("move")
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
