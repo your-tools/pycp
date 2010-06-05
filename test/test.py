@@ -11,6 +11,7 @@ import tempfile  # for mkdtemp
 import shutil
 import sys
 import os
+import stat
 import time
 
 
@@ -146,6 +147,15 @@ class CpTestCase(unittest.TestCase):
         b_contents  = b_file_desc.read()
         b_file_desc.close()
         self.assertEquals(b_contents, "b\n")
+
+    def test_copy_readonly(self):
+        "a_file -> ro_dir but ro_dir is read only"
+        a_file = os.path.join(self.test_dir, "a_file")
+        ro_dir = tempfile.mkdtemp("pycp-test-ro")
+        os.chmod(ro_dir, stat.S_IRUSR | stat.S_IXUSR)
+        sys.argv = ["pycp", a_file, ro_dir]
+        self.assertRaises(SystemExit, pycp.main, "copy")
+        shutil.rmtree(ro_dir)
 
 
     def tearDown(self):

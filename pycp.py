@@ -58,6 +58,8 @@ except ImportError:
     sys.exit(1)
 
 
+_EXIT_CODE = 0
+
 class FileTransferManager:
     """
     Class that manages file transfer process
@@ -129,7 +131,12 @@ class FileTransferManager:
             time.sleep(1)
             self.pbar.update(dest_size)
 
-        self.pbar.finish()
+        # File transfer is finished but may not have succeed:
+        if self.file_transfer.succeed:
+            self.pbar.finish()
+        else:
+            global _EXIT_CODE
+            _EXIT_CODE = 1
 
 def main(action="copy"):
     """
@@ -209,6 +216,8 @@ def main(action="copy"):
             src = sources[0]
             if path.isdir(src):
                 shutil.rmtree(src)
+
+    sys.exit(_EXIT_CODE)
 
 
 def _prepare_file_transfer(source, destination, opts):
@@ -345,6 +354,8 @@ class FileTransfer(Thread):
         self.action      = action
         self._is_finished = Event()
         self._is_finished.clear()
+        self.succeed = False
+        self.should_abort = False
         Thread.__init__(self)
 
 
@@ -353,11 +364,26 @@ class FileTransfer(Thread):
         Main method of FileTransfer
 
         Executed when start() is called
+
+
         """
-        if self.action == "copy":
-            shutil.copy(self.source, self.destination)
-        elif self.action == "move":
-            shutil.move(self.source, self.destination)
+        try:
+            if self.action == "copy":
+                shutil.copy(self.source, self.destination)
+                self.succeed = True
+            elif self.action == "move":
+                shutil.move(self.source, self.destination)
+                self.succeed = True
+        except IOError, err:
+            print "Error occured while transferring files"
+            print err
+        except OSError, err:
+            print "Error occured while transferring files"
+            # OSError are likely to occur *after* the tranfer,
+            # for instance when calling shutil.copymode or
+            # shutil.copystat:
+            self.succeed = True
+
         self._is_finished.set()
 
     def is_finished(self):
