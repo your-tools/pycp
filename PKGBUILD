@@ -1,7 +1,7 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
 pkgname=pycp-git
-pkgver=20100501
+pkgver=20100626
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://sd-5791.dedibox.fr/prog/pycp.txt"

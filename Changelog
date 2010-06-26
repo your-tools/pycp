@@ -1,3 +1,7 @@
+4.3.3
+pycp no longer hangs when copy fails.
+error code is non zero when serious problems occurs.
+
 4.3.2
 Bug fixes concerning small and empty files
 
