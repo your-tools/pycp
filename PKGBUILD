@@ -1,7 +1,7 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
 pkgname=pycp-git
-pkgver=20100626
+pkgver=20100627
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://sd-5791.dedibox.fr/prog/pycp.txt"
@@ -11,12 +11,12 @@ depends=('python-progressbar')
 makedepends=('git' 'python' 'help2man')
 replaces=('pycp')
 
-_gitroot="git://sd-5791.dedibox.fr/prog/pycp"
+_gitroot="git://github.com/yannicklm/pycp.git"
 _gitname="pycp"
 
 build() {
   cd ${srcdir}
-  msg "Connecting to sd-5791.dedibox.fr GIT server...."
+  msg "Connecting to github server...."
 
   if [ -d ${srcdir}/$_gitname ] ; then
     cd $_gitname && git pull origin
