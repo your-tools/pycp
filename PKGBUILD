@@ -1,7 +1,7 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
 pkgname=pycp-git
-pkgver=20100627
+pkgver=20100808
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://sd-5791.dedibox.fr/prog/pycp.txt"
@@ -31,6 +31,7 @@ build() {
   git clone $_gitname $_gitname-build
   cd ${srcdir}/$_gitname-build
   python setup.py install --root=$pkgdir || return 1
-  install COPYING $pkgdir/share/licenses/pycp/COPYING
+  mkdir -p $pkgdir/usr/share/licenses/pycp
+  install COPYING $pkgdir/usr/share/licenses/pycp/COPYING
 }
 
