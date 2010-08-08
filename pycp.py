@@ -82,7 +82,8 @@ def samefile(src, dest):
         equivalents
 
         """
-        os.path.normcase(os.path.normpath(os.path.abspath(path)))
+        res = os.path.normcase(os.path.normpath(os.path.abspath(path)))
+        return res
 
     return normalise(src) == normalise(dest)
 
