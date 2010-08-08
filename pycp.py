@@ -331,7 +331,8 @@ def _transfer_dir(options, source, destination):
     if os.path.isdir(destination):
         destination = os.path.join(destination, os.path.basename(source))
     debug(":: making dir %s" % destination)
-    os.mkdir(destination)
+    if not os.path.exists(destination):
+        os.mkdir(destination)
     file_names = sorted(os.listdir(source))
     if not options.all:
         file_names = [f for f in file_names if not f.startswith(".")]
