@@ -46,8 +46,8 @@ http://aur.archlinux.org/packages.php?ID=29319
 BUGS
 ---
 
-Pycp would take much longer than cp if you're trying to monitor copy
-of many little files
+None known ... yet.
+Please report if you find one
 
 SEE ALSO
 --------
