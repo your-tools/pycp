@@ -6,7 +6,7 @@ pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://sd-5791.dedibox.fr/prog/pycp.txt"
 arch=('any')
-license=('GPL')
+license=('MIT')
 depends=('python-progressbar')
 makedepends=('git' 'python' 'help2man')
 replaces=('pycp')
@@ -30,6 +30,7 @@ build() {
 
   git clone $_gitname $_gitname-build
   cd ${srcdir}/$_gitname-build
-  python setup.py install --root=$startdir/pkg || return 1
+  python setup.py install --root=$pkgdir || return 1
+  install COPYING $pkgdir/share/licenses/pycp/COPYING
 }
 

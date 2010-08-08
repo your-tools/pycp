@@ -1,13 +1,5 @@
 == General ==
 
-* Stop using shutil, which is not well suited for our purpose.
-
-Maybe write a function ala urllib.urlretrive:
-
-   copyfile(source, destination, callback)
-
-With callback() being called regulerarly with (block_count, block_size, total_size)
-
 * Better handling of exceptional conditions:
 
 Right now, it's probably possible to loose files when using pymv ...

@@ -2,4 +2,4 @@
 
 import pycp
 
-pycp.main("copy")
+pycp.main()

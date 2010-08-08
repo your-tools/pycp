@@ -1,10 +1,5 @@
 #!/usr/bin/python
 
-"""
-Just a wrapper to call
-pycp.main with action="move"
-"""
-
 import pycp
 
-pycp.main("move")
+pycp.main()

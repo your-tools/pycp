@@ -3,7 +3,7 @@ PYCP: cp with a progressbar
 DESCRIPTION
 -----------
 
-pycp / pymv are meant to be used from the command line,
+pycp / pymv are meant to be used from the command line.
 
 
 Main idea : forking a file transfer in background,

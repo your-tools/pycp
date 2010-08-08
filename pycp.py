@@ -1,117 +1,253 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-##########
-# PYCP
-#########
+################################################################################
+# Copyright (c) 2010 Dimitri Merejkowsky                                       #
+#                                                                              #
+# Permission is hereby granted, free of charge, to any person obtaining a copy #
+# of this software and associated documentation files (the "Software"), to deal#
+# in the Software without restriction, including without limitation the rights #
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell    #
+# copies of the Software, and to permit persons to whom the Software is        #
+# furnished to do so, subject to the following conditions:                     #
+#                                                                              #
+# The above copyright notice and this permission notice shall be included in   #
+# all copies or substantial portions of the Software.                          #
+#                                                                              #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR   #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,     #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE  #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER       #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,#
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN    #
+# THE SOFTWARE.                                                                #
+################################################################################
 
-##########################################################################
-# Copyright 2009 Dimitri Merejkowsky                                     #
-#                                                                        #
-#  This program is free software: you can redistribute it and/or modify  #
-#  it under the terms of the GNU General Public License as published by  #
-#  the Free Software Foundation, either version 3 of the License, or     #
-#  (at your option) any later version.                                   #
-#                                                                        #
-#  This program is distributed in the hope that it will be useful,       #
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of        #
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
-#  GNU General Public License for more details.                          #
-#                                                                        #
-#  You should have received a copy of the GNU General Public License     #
-#  along with this program.  If not, see <http://www.gnu.org/licenses/>. #
-##########################################################################
 
-
-"""
-Having a progress bar while transferring files
-
-Main idea : forking the file transfer in background, while reading size of
-sources and destinations.
-
-Module is called pycp because only copy was supported at the beginning
+"""Little script to display progress bars
+while transferring files from command line
 """
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "4.3.3"
+__version__ = "5.0"
 
+
+import os
 import sys
-import time
-import shutil
+import stat
 
-from threading import Thread
-from threading import Event
 from optparse import OptionParser
 
-from os import path
-from os import mkdir
-from os import listdir
+from progressbar import ProgressBar
+from progressbar import Percentage
+from progressbar import FileTransferSpeed
+from progressbar import ETA
+from progressbar import Bar
 
-try:
-    from progressbar import ProgressBar
-    from progressbar import Percentage
-    from progressbar import FileTransferSpeed
-    from progressbar import ETA
-    from progressbar import Bar
-except ImportError:
-    print "Error: Unable to find progressbar module"
+####
+# Utilities functions:
+
+def die(message):
+    """An error occured.
+    Write it to stderr and exit with error code 1
+
+    """
+    sys.stderr.write(str(message) + "\n")
     sys.exit(1)
 
-
-_EXIT_CODE = 0
-
-class FileTransferManager:
-    """
-    Class that manages file transfer process
-
-    It is assumed that source and destination are both files.
-    (No directory here)
+def debug(message):
+    """Useful for debug
+    Messages will only be written if DEBUG env var is true
 
     """
-    def __init__(self, source, destination, action, opts):
-        self.file_transfer = None
-        self.source        = source
-        self.destination   = destination
-        self.pbar          = None
-        self.action        = action
-        self.opts          = opts
+    if os.environ.get("DEBUG"):
+        print message
 
+def samefile(src, dest):
+    """Check if two files are the same in a
+    crossplatform way
 
-    def transfer_file(self):
-        """
-        Create a FileTransfer instance to start transfer
-        in a thread, and start monitoring transfer
-
-        """
-        self.file_transfer = FileTransfer(self.source,
-                self.destination,
-                self.action)
-        self.file_transfer.start()
-        to_print = pprint_transfer(self.source, self.destination)
-        print to_print
-        self.monitor_file_transfer()
-
-
-    def monitor_file_transfer(self):
-        """
-        Executed during file transfer to update the progressbar
-
-        """
-        # If we were moving a small file, it's possible source
-        # already has been removed:
+    """
+    # If os.path.samefile exists, use it:
+    if hasattr(os.path,'samefile'):
         try:
-            source_size = float(path.getsize(self.source))
+            return os.path.samefile(src, dest)
         except OSError:
-            self.file_transfer.join()
-            return
+            return False
 
-        if source_size == 0:
-            # Using pycp to copy an empty file:
-            # Wait for the file transfer to finish, and returns
-            self.file_transfer.join()
-            return
+    # All other platforms: check for same pathname.
+    def normalise(path):
+        """trying to be sure two paths are *really*
+        equivalents
 
-        # Use of wonderful constructor from progessbar.
+        """
+        os.path.normcase(os.path.normpath(os.path.abspath(path)))
+
+    return normalise(src) == normalise(dest)
+
+
+def pprint_transfer(src, dest):
+    """
+    Directly borrowed from git's diff.c file.
+
+    pprint_rename("/path/to/foo", "/path/to/bar")
+    >>> /path/to/{foo => bar}
+    """
+    len_src = len(src)
+    len_dest = len(dest)
+
+    # Find common prefix
+    pfx_length = 0
+    i = 0
+    j = 0
+    while (i < len_src and j < len_dest and src[i] == dest[j]):
+        if src[i] == os.path.sep:
+            pfx_length = i + 1
+        i += 1
+        j += 1
+
+    # Find common suffix
+    sfx_length = 0
+    i  = len_src - 1
+    j = len_dest - 1
+    while (i > 0 and j > 0 and src[i] == dest[j]):
+        if src[i] == os.path.sep:
+            sfx_length = len_src - i
+        i -= 1
+        j -= 1
+
+    src_midlen  = len_src  - pfx_length - sfx_length
+    dest_midlen = len_dest - pfx_length - sfx_length
+
+    pfx   = src[:pfx_length]
+    sfx   = dest[len_dest - sfx_length:]
+    src_mid  = src [pfx_length:pfx_length + src_midlen ]
+    dest_mid = dest[pfx_length:pfx_length + dest_midlen]
+
+    if pfx == os.path.sep:
+        # The common prefix is / ,
+        # avoid print /{etc => tmp}/foo, and
+        # print {/etc => /tmp}/foo
+        pfx = ""
+        src_mid  = os.path.sep + src_mid
+        dest_mid = os.path.sep + dest_mid
+
+    if not pfx and not sfx:
+        return "%s => %s" % (src, dest)
+
+    res = "%s{%s => %s}%s" % (pfx, src_mid, dest_mid, sfx)
+    return res
+
+class TransferError(Exception):
+    """Custom exception: wraps IOError
+
+    """
+    def __init__(self, message):
+        Exception.__init__(self)
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
+def transfer_file(options, src, dest, callback):
+    """Transfer src to dest, calling
+    callback(done, total) while doing so.
+
+    src and dest must be two valid file paths.
+
+    If "move" option is True, remove src when done.
+    """
+    if samefile(src, dest):
+        die("%s and %s are the same file!" % (src, dest))
+    try:
+        src_file = open(src, "rb")
+    except IOError:
+        raise TransferError("Could not open %s for reading" % src)
+    try:
+        dest_file = open(dest, "wb")
+    except IOError:
+        raise TransferError("Could not open %s for writing" % dest)
+
+    buff_size = 18 * 1024
+    done = 0
+    total = os.path.getsize(src)
+
+    try:
+        while True:
+            data = src_file.read(buff_size)
+            if not data:
+                break
+            done += len(data)
+            callback(done, total)
+            dest_file.write(data)
+    except IOError, err:
+        mess  = "Problem when transferring %s to %s\n" % (src, dest)
+        mess += "Error was: %s" % err
+        raise TransferError(mess)
+    finally:
+        src_file.close()
+        dest_file.close()
+
+    try:
+        post_transfer(options, src, dest)
+    except OSError, err:
+        print "Warning: failed to finalize tranfer of %s: %s" % (dest, err)
+
+    if options.move:
+        try:
+            debug("removing %s" % src)
+            os.remove(src)
+        except OSError:
+            print "Warning: could not remove %s" % src
+
+
+def post_transfer(options, src, dest):
+    """Handle stat of transferred file
+
+    By default, preserve only permissions.
+    If "preserve" option was given, preserve also
+    utime and flags.
+
+    """
+    src_st = os.stat(src)
+    if hasattr(os, 'chmod'):
+        mode = stat.S_IMODE(src_st.st_mode)
+        os.chmod(dest, mode)
+    if not options.preserve:
+        return
+    if hasattr(os, 'utime'):
+        os.utime(dest, (src_st.st_atime, src_st.st_mtime))
+
+
+class FileTransferManager():
+    """This class contains the progressbar object.
+
+    It also contains an options object, filled by optparse.
+
+    It is initialized with a source and a destination, which
+    should be correct files. (No dirs here!)
+
+    """
+    def __init__(self, options, src, dest):
+        self.options = options
+        self.src = src
+        self.dest = dest
+        self.pbar = None
+
+    def do_transfer(self):
+        """Print src->dest in a nice way, initialize progressbar,
+        close it when done
+
+        """
+        # Handle overwriting of files:
+        if os.path.exists(self.dest):
+            should_skip = self.handle_overwrite()
+            if should_skip:
+                return
+
+        print pprint_transfer(self.src, self.dest)
         self.pbar = ProgressBar(
           widgets = [
             Percentage()                          ,
@@ -120,35 +256,100 @@ class FileTransferManager:
             " - "                                 ,
             FileTransferSpeed()                   ,
             " | "                                 ,
-            ETA() ]                               ,
-         maxval = source_size )
+            ETA() ])
+        try:
+            transfer_file(self.options, self.src, self.dest, self.callback)
+        except TransferError, err:
+            die(err)
+        self.pbar.finish()
 
-        while (not self.file_transfer.is_finished()):
-            try:
-                dest_size = float(path.getsize(self.destination))
-            except OSError:  # Maybe file has not been created yet
-                dest_size = 0
-            time.sleep(1)
-            self.pbar.update(dest_size)
+    def handle_overwrite(self):
+        """Return True if we should skip the file.
+        Ask user for confirmation if we were called
+        with an 'interactive' option.
 
-        # File transfer is finished but may not have succeed:
-        if self.file_transfer.succeed:
-            self.pbar.finish()
+        """
+        # Safe: always skip
+        if self.options.safe:
+            print "Warning: skipping", self.dest
+            return True
+
+        # Not safe and not interactive => overwrite
+        if not self.options.interactive:
+            return False
+
+        # Interactive
+        print "File: '%s' already exists" % self.dest
+        print "Overwrite?"
+        user_input = raw_input()
+        if (user_input == "y"):
+            return False
         else:
-            global _EXIT_CODE
-            _EXIT_CODE = 1
+            return True
 
-def main(action="copy"):
+    def callback(self, done, total):
+        """Called by transfer_file"""
+        self.pbar.maxval = total
+        self.pbar.update(done)
+
+
+def recursive_file_transfer(options, sources, destination):
+    """Go back to the simple case: copy one file to an other.
+
     """
-    Main: manages options and values
+    filenames    = [x for x in sources if os.path.isfile(x)]
+    directories  = [x for x in sources if os.path.isdir (x)]
 
-    The parameter action is the kind of file transfer we wish to do.
-    (move or copy, for the moment)
+    for filename in filenames:
+        _transfer_file(options, filename, destination)
+
+    for directory in directories:
+        _transfer_dir(options, directory, destination)
+
+
+def _transfer_file(options, source, destination):
+    """Copy a file to a destination.
+
+    a_file, b_dir  => a_file, b_dir/a_file
+    a_file, b_file => a_file, b_file
+    """
+    debug(":: file %s -> %s" % (source, destination))
+    if os.path.isdir(destination):
+        destination = os.path.join(destination, os.path.basename(source))
+
+    tfm = FileTransferManager(options, source, destination)
+    debug("=> %s -> %s" % (source, destination))
+    tfm.do_transfer()
+
+
+def _transfer_dir(options, source, destination):
+    """Copy a dir to a destination
 
     """
-    prog_name = "pycp"
-    if action == "move":
+    debug(":: dir %s -> %s" % (source, destination))
+    if os.path.isdir(destination):
+        destination = os.path.join(destination, os.path.basename(source))
+    debug(":: making dir %s" % destination)
+    os.mkdir(destination)
+    file_names = sorted(os.listdir(source))
+    if not options.all:
+        file_names = [f for f in file_names if not f.startswith(".")]
+    file_names = [os.path.join(source, f) for f in file_names]
+    recursive_file_transfer(options, file_names, destination)
+    if options.move:
+        os.rmdir(source)
+
+
+def main():
+    """Parses command line arguments"""
+    if sys.argv[0].endswith("pymv"):
+        move = True
         prog_name = "pymv"
+        action = "move"
+    else:
+        move = False
+        prog_name = "pycp"
+        action = "copy"
 
     usage = """
     %s [options] SOURCE DESTINATION
@@ -177,11 +378,23 @@ def main(action="copy"):
             help    = "silently overwirte existing files " + \
                 "(this is the default)")
 
+    parser.add_option("-a", "--all",
+            action = "store_true",
+            dest   = "all",
+            help  = "transfer all files (including hidden files")
+
+    parser.add_option("-p", "--preserve",
+            action = "store_true",
+            dest   = "preserve",
+            help   = "preserve time stamps while copying")
+
     parser.set_defaults(
-        safe       = False,
-        interactive = False)
+        safe=False,
+        interactive=False,
+        all=False)
 
     (options, args) = parser.parse_args()
+    options.move = move # This "option" is set by sys.argv[0]
 
     if len(args) < 2:
         parser.error("Incorrect number of arguments")
@@ -189,264 +402,21 @@ def main(action="copy"):
     sources = args[:-1]
     destination = args[-1]
 
-    # If there is more than one source, destination must be an
-    # existing directory
     if len(sources) > 1:
-        if not (path.isdir(destination)):
-            print "Error: '" + destination + "' is not an existing directory"
-            sys.exit(1)
+        if not os.path.isdir(destination):
+            die("%s is not an existing directory" % destination)
 
-    ##______
-    # Go!
+    for source in sources:
+        if not os.path.exists(source):
+            die("%s does not exist")
 
     try:
-        for source in sources:
-            recursive_file_transfer(source,
-                    destination,
-                    action,
-                    options)
-    except KeyboardInterrupt:
-        sys.exit(1)
-
-    ##
-    # If we were moving a directory, remove it now:
-    # (FileTransferManager only deals with files)
-    if action == "move":
-        if len(sources) == 1:
-            src = sources[0]
-            if path.isdir(src):
-                shutil.rmtree(src)
-
-    sys.exit(_EXIT_CODE)
+        recursive_file_transfer(options, sources, destination)
+    except TransferError, err:
+        die(err)
+    except KeyboardInterrupt, err:
+        die("Interrputed by user")
 
 
-def _prepare_file_transfer(source, destination, opts):
-    """
-    Do all the work needed to get back to a simple case:
-    copying or move one file to an other file
-
-    Create directories and modify destination when needed, and returns the new
-    destination.
-
-    If we are trying to overwrite a file, and that the corresponding option is
-    not present, return (True, new_destination)
-
-    """
-    new_destination = destination
-    skip            = False
-
-    # First thing first ;)
-    if not (path.exists(source)):
-        print "Error: file '" + source + "' does not exist"
-        sys.exit(1)
-
-    # If source is a file:
-    if path.isfile(source):
-        if path.exists(destination):
-            if path.isdir(destination):
-                # "cp /path/to/foo /bar" where bar is a  dir,
-                # is in fact "cp /path/to/foo /bar/foo"
-                source_file = path.basename(source)
-                destination_file = path.join(destination, source_file)
-                new_destination = destination_file
-
-                # if /bar/foo exists, check if we should overwrite it:
-                if path.exists(destination_file):
-                    skip = _should_skip(destination_file, opts)
-                    new_destination = destination_file
-
-            else:
-                # destination exists and is a file, (not a dir)
-                # checking if we should overwrite it:
-                skip = _should_skip(destination, opts)
-
-        else:
-            # destination does not exist
-            if destination.endswith(path.sep):
-                print "Error, directory destination: %s does not exists" % \
-                    destination
-                sys.exit(1)
-
-    #! source is a file
-
-    # If source is a dir:
-    if path.isdir(source):
-        # if destination exists, create a dir named source in destination
-        if path.exists(destination):
-            new_directory = path.join(destination, path.basename(source))
-
-            # destination/source could already exist
-            if not path.exists(new_directory):
-                mkdir(new_directory)
-                new_destination = new_directory
-
-        # if destination does not exist, create a dir named destination
-        else:
-            mkdir(destination)
-    #! source is is a dir
-
-    # Checks if we are trying to do a `cp foo .`, or something similar:
-    if path.abspath(source) == path.abspath(new_destination):
-        print "Error: '%s' and '%s' are the same file" % \
-            (source, new_destination)
-        sys.exit(2)
-
-    return new_destination, skip
-
-
-def recursive_file_transfer(source, destination, action, opts):
-    """
-    Recursively wakl through directories,
-
-    """
-    # First prepare file transfer (creating directories if needed, and so on)
-    new_destination, skip = _prepare_file_transfer(source,
-            destination,
-            opts)
-
-    if not skip:
-        if path.isdir(source):
-            for file_name in listdir(source):
-                recursive_file_transfer(path.join(source, file_name),
-                               path.join(new_destination, file_name),
-                               action,
-                               opts)
-        else:
-            file_transfer_manager = FileTransferManager(source,
-                    new_destination,
-                    action,
-                    opts)
-            file_transfer_manager.transfer_file()
-
-
-def _should_skip(destination, opts):
-    """
-    Returns True is we should skip the file.
-    Ask for user confirmation if FileTransferManager was
-    called with -i
-
-    """
-    if opts.safe:
-        print "Warning: skipping", destination
-        return True
-
-    if opts.interactive:
-        print "File: '%s' already exists" % destination
-        print "Overwrite?"
-        user_input = raw_input()
-        if (user_input == "y"):
-            return False
-        else:
-            return True
-    else:
-        return False
-
-
-
-class FileTransfer(Thread):
-    """
-    Lauch a shutil command in a thread
-
-    """
-    def __init__(self, source, destination, action):
-        self.source      = source
-        self.destination = destination
-        self.action      = action
-        self._is_finished = Event()
-        self._is_finished.clear()
-        self.succeed = False
-        self.should_abort = False
-        Thread.__init__(self)
-
-
-    def run(self):
-        """
-        Main method of FileTransfer
-
-        Executed when start() is called
-
-
-        """
-        try:
-            if self.action == "copy":
-                shutil.copy(self.source, self.destination)
-                self.succeed = True
-            elif self.action == "move":
-                shutil.move(self.source, self.destination)
-                self.succeed = True
-        except IOError, err:
-            print "Error occured while transferring files"
-            print err
-        except OSError, err:
-            print "Error occured while transferring files"
-            # OSError are likely to occur *after* the tranfer,
-            # for instance when calling shutil.copymode or
-            # shutil.copystat:
-            self.succeed = True
-
-        self._is_finished.set()
-
-    def is_finished(self):
-        """
-        Getter for _is_finished Event
-
-        """
-        return self._is_finished.isSet()
-
-
-
-def pprint_transfer(src, dest):
-    """
-    Directly borrowed from git's diff.c file.
-
-    pprint_rename(const char *a, const char *b)
-    """
-    len_src = len(src)
-    len_dest = len(dest)
-
-    # Find common prefix
-    pfx_length = 0
-    i = 0
-    j = 0
-    while (i < len_src and j < len_dest and src[i] == dest[j]):
-        if src[i] == path.sep:
-            pfx_length = i + 1
-        i += 1
-        j += 1
-
-    # Find common suffix
-    sfx_length = 0
-    i  = len_src - 1
-    j = len_dest - 1
-    while (i > 0 and j > 0 and src[i] == dest[j]):
-        if src[i] == path.sep:
-            sfx_length = len_src - i
-        i -= 1
-        j -= 1
-
-    src_midlen  = len_src  - pfx_length - sfx_length
-    dest_midlen = len_dest - pfx_length - sfx_length
-
-    pfx   = src[:pfx_length]
-    sfx   = dest[len_dest - sfx_length:]
-    src_mid  = src [pfx_length:pfx_length + src_midlen ]
-    dest_mid = dest[pfx_length:pfx_length + dest_midlen]
-
-    if pfx == path.sep:
-        # The common prefix is / ,
-        # avoid print /{etc => tmp}/foo, and
-        # print {/etc => /tmp}/foo
-        pfx = ""
-        src_mid  = path.sep + src_mid
-        dest_mid = path.sep + dest_mid
-
-    if not pfx and not sfx:
-        return "%s => %s" % (src, dest)
-
-    res = "%s{%s => %s}%s" % (pfx, src_mid, dest_mid, sfx)
-    return res
-
-
-if __name__ == "__main__" :
+if __name__ == "__main__":
     main()
-
