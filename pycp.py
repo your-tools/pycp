@@ -32,6 +32,7 @@ __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
 __version__ = "5.0"
 
+ERRORS = []
 
 import os
 import sys
@@ -261,7 +262,14 @@ class FileTransferManager():
         try:
             transfer_file(self.options, self.src, self.dest, self.callback)
         except TransferError, err:
-            die(err)
+            if self.options.ignore_errors:
+                # remove dest file
+                global ERRORS
+                ERRORS.append(self.src)
+                if not self.options.move:
+                    os.remove(self.dest)
+            else:
+                die(err)
         self.pbar.finish()
 
     def handle_overwrite(self):
@@ -390,10 +398,17 @@ def main():
             dest   = "preserve",
             help   = "preserve time stamps while copying")
 
+    parser.add_option("--ignore-errors",
+            action = "store_true",
+            dest   = "ignore_errors",
+            help   = "ignore errors, remove destination if cp\n" +
+                     "Print problematic files at the end")
+
     parser.set_defaults(
         safe=False,
         interactive=False,
-        all=False)
+        all=False,
+        ignore_errors=False)
 
     (options, args) = parser.parse_args()
     options.move = move # This "option" is set by sys.argv[0]
@@ -418,6 +433,11 @@ def main():
         die(err)
     except KeyboardInterrupt, err:
         die("Interrputed by user")
+
+    global ERRORS
+    if ERRORS:
+        print "Error occurred when tranferring the following files:"
+        print "\n".join(ERRORS)
 
 
 if __name__ == "__main__":

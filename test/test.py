@@ -162,7 +162,6 @@ class CpTestCase(unittest.TestCase):
         self.assertRaises(SystemExit, pycp.main)
         shutil.rmtree(ro_dir)
 
-
     def tearDown(self):
         """Remove the temporary directory
 
