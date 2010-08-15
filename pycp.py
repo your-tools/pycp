@@ -259,6 +259,7 @@ class FileTransferManager():
             FileTransferSpeed()                   ,
             " | "                                 ,
             ETA() ])
+        self.pbar.start()
         try:
             transfer_file(self.options, self.src, self.dest, self.callback)
         except TransferError, err:
