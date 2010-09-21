@@ -11,6 +11,8 @@ but it's hard to test
 
 * Fix high CPU usage, maybe with adaptive / higher buffer size
 
+* Add --ask-once option
+
 
 == Packaging ==
 
