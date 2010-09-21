@@ -3,6 +3,14 @@
 * Better handling of exceptional conditions:
 
 Right now, it's probably possible to loose files when using pymv ...
+but it's hard to test
+
+* Fix failing test on windows
+
+* Display several lines of progress bars?
+
+* Fix high CPU usage, maybe with adaptive / higher buffer size
+
 
 == Packaging ==
 
