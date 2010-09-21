@@ -66,6 +66,21 @@ def debug(message):
     if os.environ.get("DEBUG"):
         print message
 
+def human_readable(size):
+    """Build a nice human readable string from a size given in
+    bytes
+
+    """
+    if size < 1024**2:
+        hreadable = float(size)/1024.0
+        return "%.0fK" % hreadable
+    elif size < (1024**3):
+        hreadable = float(size)/(1024**2)
+        return "%.1fM" % round(hreadable,1)
+    else:
+        hreadable = float(size)/(1024.0**3)
+        return "%.2fG" % round(hreadable,2)
+
 def samefile(src, dest):
     """Check if two files are the same in a
     crossplatform way
@@ -242,7 +257,7 @@ def recurse_rmdir(directory):
             break
 
 
-def transfer_file(options, src, dest, callback):
+def transfer_file(parent, src, dest, callback):
     """Transfer src to dest, calling
     callback(done, total) while doing so.
 
@@ -282,11 +297,11 @@ def transfer_file(options, src, dest, callback):
         dest_file.close()
 
     try:
-        post_transfer(options, src, dest)
+        post_transfer(parent, src, dest)
     except OSError, err:
         print "Warning: failed to finalize transfer of %s: %s" % (dest, err)
 
-    if options.move:
+    if parent.options.move:
         try:
             debug("removing %s" % src)
             os.remove(src)
@@ -294,7 +309,7 @@ def transfer_file(options, src, dest, callback):
             print "Warning: could not remove %s" % src
 
 
-def post_transfer(options, src, dest):
+def post_transfer(parent, src, dest):
     """Handle stat of transferred file
 
     By default, preserve only permissions.
@@ -306,7 +321,7 @@ def post_transfer(options, src, dest):
     if hasattr(os, 'chmod'):
         mode = stat.S_IMODE(src_st.st_mode)
         os.chmod(dest, mode)
-    if not options.preserve:
+    if not parent.options.preserve:
         return
     if hasattr(os, 'utime'):
         os.utime(dest, (src_st.st_atime, src_st.st_mtime))
@@ -321,8 +336,9 @@ class FileTransferManager():
     should be correct files. (No dirs here!)
 
     """
-    def __init__(self, options, src, dest):
-        self.options = options
+    def __init__(self, parent, src, dest):
+        self.parent = parent
+        self.options = parent.options
         self.src = src
         self.dest = dest
         self.pbar = None
@@ -351,7 +367,7 @@ class FileTransferManager():
                 ETA() ])
             self.pbar.start()
         try:
-            transfer_file(self.options, self.src, self.dest, self.callback)
+            transfer_file(self, self.src, self.dest, self.callback)
         except TransferError, err:
             if self.options.ignore_errors:
                 # remove dest file
@@ -391,9 +407,10 @@ class FileTransferManager():
     def callback(self, done, total):
         """Called by transfer_file"""
         if self.options.global_pbar:
-            return
-        self.pbar.maxval = total
-        self.pbar.update(done)
+            self.parent.update(done)
+        else:
+            self.pbar.maxval = total
+            self.pbar.update(done)
 
 
 class TransferManager():
@@ -411,11 +428,13 @@ class TransferManager():
         self.sources = sources
         self.destination = destination
         self.transfer_info = TransferInfo(options, sources, destination)
+        self.current_total = 0
+        self.global_pbar = None
 
     def do_transfer(self):
         """Performs the real transfer"""
         if self.options.global_pbar:
-            global_pbar = ProgressBar(
+            self.global_pbar = ProgressBar(
               widgets = [
                 Percentage()                          ,
                 " "                                   ,
@@ -426,27 +445,35 @@ class TransferManager():
                 ETA() ,
                 " - ",
                 NumFilesWidget()])
-            global_pbar.maxval = self.transfer_info.size
-            global_pbar.num_done = 0
-            global_pbar.num_total = len(self.transfer_info.to_transfer)
-            global_pbar.start()
-        done = 0
+            total_size = self.transfer_info.size
+            self.global_pbar.maxval = total_size
+            to_print = ", ".join(self.sources)
+            to_print += " => "
+            to_print += self.destination
+            to_print += " ( " + human_readable(total_size) + " ) "
+            print to_print
+            self.global_pbar.num_done = 0
+            self.global_pbar.num_total = len(self.transfer_info.to_transfer)
+            self.global_pbar.start()
         for (src, dest) in self.transfer_info.to_transfer:
-            ftm = FileTransferManager(self.options, src, dest)
-            # We have to call getsize now, because src
-            # won't exist afer move :)
-            done += os.path.getsize(src)
+            size = os.path.getsize(src)
+            ftm = FileTransferManager(self, src, dest)
             ftm.do_transfer()
             if self.options.global_pbar:
-                global_pbar.num_done += 1
-                global_pbar.update(done)
+                self.global_pbar.num_done += 1
+                self.current_total += size
 
         if self.options.global_pbar:
-            global_pbar.finish()
+            self.global_pbar.finish()
 
         if self.options.move and not self.options.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
                 os.rmdir(to_remove)
+
+    def update(self, done):
+        """Called during transfer of one file"""
+        self.global_pbar.update(self.current_total + done)
+
 
 
 
@@ -532,10 +559,7 @@ def main():
         if not os.path.exists(source):
             die("%s does not exist")
 
-    if options.global_pbar:
-        print ", ".join(sources), "=>", destination
     transfer_manager = TransferManager(options, sources, destination)
-    sys.stdout.write("\r")
     try:
         transfer_manager.do_transfer()
     except TransferError, err:
