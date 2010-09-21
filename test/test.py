@@ -17,6 +17,7 @@ import time
 
 import pycp
 
+
 class CpTestCase(unittest.TestCase):
     def setUp(self):
         """Put some empty files and directories in a temporary
@@ -96,6 +97,18 @@ class CpTestCase(unittest.TestCase):
         d_file = os.path.join(b_dir, "a_dir", "c_file")
         self.assertTrue(os.path.exists(c_file))
         self.assertTrue(os.path.exists(d_file))
+
+    def test_cp_dir_dir2_global(self):
+        a_dir = os.path.join(self.test_dir, "a_dir")
+        b_dir = os.path.join(self.test_dir, "b_dir")
+        os.mkdir(b_dir)
+        sys.argv = ["pycp", "-g", a_dir, b_dir]
+        pycp.main()
+        c_file = os.path.join(b_dir, "a_dir", "c_file")
+        d_file = os.path.join(b_dir, "a_dir", "c_file")
+        self.assertTrue(os.path.exists(c_file))
+        self.assertTrue(os.path.exists(d_file))
+
 
     def test_no_source(self):
         "d_file -> d_file.back but d_file does not exists"
@@ -227,6 +240,18 @@ class MvTestCase(unittest.TestCase):
 
     def test_mv_dir_dir_1(self):
         "a_dir -> b_dir (b_dir does not exist)"
+        a_dir = os.path.join(self.test_dir, "a_dir")
+        b_dir = os.path.join(self.test_dir, "b_dir")
+        sys.argv = ["pymv", a_dir, b_dir]
+        pycp.main()
+        c_file = os.path.join(b_dir, "c_file")
+        d_file = os.path.join(b_dir, "c_file")
+        self.assertTrue (os.path.exists(c_file))
+        self.assertTrue (os.path.exists(d_file))
+        self.assertFalse(os.path.exists(a_dir))
+
+    def test_mv_dir_dir2_global(self):
+        "a_dir -> b_dir (b_dir does not exist), with --global"
         a_dir = os.path.join(self.test_dir, "a_dir")
         b_dir = os.path.join(self.test_dir, "b_dir")
         sys.argv = ["pymv", a_dir, b_dir]

@@ -41,6 +41,7 @@ import stat
 from optparse import OptionParser
 
 from progressbar import ProgressBar
+from progressbar import ProgressBarWidget
 from progressbar import Percentage
 from progressbar import FileTransferSpeed
 from progressbar import ETA
@@ -153,6 +154,94 @@ class TransferError(Exception):
         return self.message
 
 
+class TransferInfo():
+    """This class contains:
+    * a list of tuples: to_transfer (src, dest) where:
+       - src and dest are both files
+       - basename(dest) is guaranteed to exist)
+    * an add(src, dest) method
+    * a get_size() which is the total size of the files to be
+    transferred
+
+    """
+    def __init__(self, options, sources, destination):
+        self.size = 0
+        self.options = options
+        # List of tuples (src, dest) of files to transfer
+        self.to_transfer = list()
+        # List of directories to remove
+        self.to_remove = list()
+        self._recursive_parse(sources, destination)
+
+    def _recursive_parse(self, sources, destination):
+
+        filenames    = [x for x in sources if os.path.isfile(x)]
+        directories  = [x for x in sources if os.path.isdir (x)]
+
+        for filename in filenames:
+            self._parse_file(filename, destination)
+
+        for directory in directories:
+            self._parse_dir(directory, destination)
+
+    def _parse_file(self, source, destination):
+        """Add a tuple to self.transfer_info
+
+        a_file, b_dir  => a_file, b_dir/a_file
+        a_file, b_file => a_file, b_file
+        """
+        debug(":: file %s -> %s" % (source, destination))
+        if os.path.isdir(destination):
+            destination = os.path.join(destination, os.path.basename(source))
+        self.add(source, destination)
+
+    def _parse_dir(self, source, destination):
+        """Parse a directory
+
+        """
+        debug(":: dir %s -> %s" % (source, destination))
+        if os.path.isdir(destination):
+            destination = os.path.join(destination, os.path.basename(source))
+        debug(":: making dir %s" % destination)
+        if not os.path.exists(destination):
+            os.mkdir(destination)
+        file_names = sorted(os.listdir(source))
+        if not self.options.all:
+            file_names = [f for f in file_names if not f.startswith(".")]
+        file_names = [os.path.join(source, f) for f in file_names]
+        self._recursive_parse(file_names, destination)
+        self.to_remove.append(source)
+
+    def add(self, src, dest):
+        """Add a new tuple to the transfer list. """
+        self.to_transfer.append((src, dest))
+        self.size += os.path.getsize(src)
+
+
+class NumFilesWidget(ProgressBarWidget):
+    def update(self, pbar):
+        return "(%i files / %i)" % \
+            (pbar.num_done, pbar.num_total)
+
+
+def recurse_rmdir(directory):
+    """recurse_rmdir("aaa/bbb/ccc") will remove
+    ccc if ccc is empty, then bbb, in bbb is
+    empty, then aaa, if aaa is empty
+
+    """
+    old_head = os.path.split(directory)[0]
+    while True:
+        (head, tail) = os.path.split(directory)
+        directory = head
+        try:
+            os.rmdir(head)
+        except OSError:
+            break
+        if head == old_head:
+            break
+
+
 def transfer_file(options, src, dest, callback):
     """Transfer src to dest, calling
     callback(done, total) while doing so.
@@ -195,7 +284,7 @@ def transfer_file(options, src, dest, callback):
     try:
         post_transfer(options, src, dest)
     except OSError, err:
-        print "Warning: failed to finalize tranfer of %s: %s" % (dest, err)
+        print "Warning: failed to finalize transfer of %s: %s" % (dest, err)
 
     if options.move:
         try:
@@ -249,17 +338,18 @@ class FileTransferManager():
             if should_skip:
                 return
 
-        print pprint_transfer(self.src, self.dest)
-        self.pbar = ProgressBar(
-          widgets = [
-            Percentage()                          ,
-            " "                                   ,
-            Bar(marker='#', left='[', right=']' ) ,
-            " - "                                 ,
-            FileTransferSpeed()                   ,
-            " | "                                 ,
-            ETA() ])
-        self.pbar.start()
+        if not self.options.global_pbar:
+            print pprint_transfer(self.src, self.dest)
+            self.pbar = ProgressBar(
+              widgets = [
+                Percentage()                          ,
+                " "                                   ,
+                Bar(marker='#', left='[', right=']' ) ,
+                " - "                                 ,
+                FileTransferSpeed()                   ,
+                " | "                                 ,
+                ETA() ])
+            self.pbar.start()
         try:
             transfer_file(self.options, self.src, self.dest, self.callback)
         except TransferError, err:
@@ -271,7 +361,8 @@ class FileTransferManager():
                     os.remove(self.dest)
             else:
                 die(err)
-        self.pbar.finish()
+        if not self.options.global_pbar:
+            self.pbar.finish()
 
     def handle_overwrite(self):
         """Return True if we should skip the file.
@@ -299,56 +390,64 @@ class FileTransferManager():
 
     def callback(self, done, total):
         """Called by transfer_file"""
+        if self.options.global_pbar:
+            return
         self.pbar.maxval = total
         self.pbar.update(done)
 
 
-def recursive_file_transfer(options, sources, destination):
-    """Go back to the simple case: copy one file to an other.
+class TransferManager():
+    """Handles transfer of a one or several sources to a destination
+
+    if options.global_pbar is true, only
+    one pbar will be created for the whole transfer.
+
+    One FileTransferManager object will be created for each file
+    to transfer.
 
     """
-    filenames    = [x for x in sources if os.path.isfile(x)]
-    directories  = [x for x in sources if os.path.isdir (x)]
+    def __init__(self, options, sources, destination):
+        self.options = options
+        self.sources = sources
+        self.destination = destination
+        self.transfer_info = TransferInfo(options, sources, destination)
 
-    for filename in filenames:
-        _transfer_file(options, filename, destination)
+    def do_transfer(self):
+        """Performs the real transfer"""
+        if self.options.global_pbar:
+            global_pbar = ProgressBar(
+              widgets = [
+                Percentage()                          ,
+                " "                                   ,
+                Bar(marker='#', left='[', right=']' ) ,
+                " - "                                 ,
+                FileTransferSpeed()                   ,
+                " - "                                 ,
+                ETA() ,
+                " - ",
+                NumFilesWidget()])
+            global_pbar.maxval = self.transfer_info.size
+            global_pbar.num_done = 0
+            global_pbar.num_total = len(self.transfer_info.to_transfer)
+            global_pbar.start()
+        done = 0
+        for (src, dest) in self.transfer_info.to_transfer:
+            ftm = FileTransferManager(self.options, src, dest)
+            # We have to call getsize now, because src
+            # won't exist afer move :)
+            done += os.path.getsize(src)
+            ftm.do_transfer()
+            if self.options.global_pbar:
+                global_pbar.num_done += 1
+                global_pbar.update(done)
 
-    for directory in directories:
-        _transfer_dir(options, directory, destination)
+        if self.options.global_pbar:
+            global_pbar.finish()
 
+        if self.options.move and not self.options.ignore_errors:
+            for to_remove in self.transfer_info.to_remove:
+                os.rmdir(to_remove)
 
-def _transfer_file(options, source, destination):
-    """Copy a file to a destination.
-
-    a_file, b_dir  => a_file, b_dir/a_file
-    a_file, b_file => a_file, b_file
-    """
-    debug(":: file %s -> %s" % (source, destination))
-    if os.path.isdir(destination):
-        destination = os.path.join(destination, os.path.basename(source))
-
-    tfm = FileTransferManager(options, source, destination)
-    debug("=> %s -> %s" % (source, destination))
-    tfm.do_transfer()
-
-
-def _transfer_dir(options, source, destination):
-    """Copy a dir to a destination
-
-    """
-    debug(":: dir %s -> %s" % (source, destination))
-    if os.path.isdir(destination):
-        destination = os.path.join(destination, os.path.basename(source))
-    debug(":: making dir %s" % destination)
-    if not os.path.exists(destination):
-        os.mkdir(destination)
-    file_names = sorted(os.listdir(source))
-    if not options.all:
-        file_names = [f for f in file_names if not f.startswith(".")]
-    file_names = [os.path.join(source, f) for f in file_names]
-    recursive_file_transfer(options, file_names, destination)
-    if options.move:
-        os.rmdir(source)
 
 
 def main():
@@ -405,6 +504,11 @@ def main():
             help   = "ignore errors, remove destination if cp\n" +
                      "Print problematic files at the end")
 
+    parser.add_option("-g", "--global-pbar",
+        action = "store_true",
+        dest   = "global_pbar",
+        help   = "display only one progress bar during transfer")
+
     parser.set_defaults(
         safe=False,
         interactive=False,
@@ -428,8 +532,12 @@ def main():
         if not os.path.exists(source):
             die("%s does not exist")
 
+    if options.global_pbar:
+        print ", ".join(sources), "=>", destination
+    transfer_manager = TransferManager(options, sources, destination)
+    sys.stdout.write("\r")
     try:
-        recursive_file_transfer(options, sources, destination)
+        transfer_manager.do_transfer()
     except TransferError, err:
         die(err)
     except KeyboardInterrupt, err:
