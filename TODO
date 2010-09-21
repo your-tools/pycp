@@ -9,6 +9,13 @@ but it's hard to test
 
 * Display several lines of progress bars?
 
+Example:
+
+Copying from old/ to new/                         ( 431 M total)
+ 33% - [#############                          ] - (1 files / 3)
+ 50% - [#######       ] - File #2  -  24.97 B/s | ETA:  00:00:02
+
+
 * Fix high CPU usage, maybe with adaptive / higher buffer size
 
 * Add --ask-once option
