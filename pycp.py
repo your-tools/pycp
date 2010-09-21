@@ -545,7 +545,7 @@ def main():
 
     global ERRORS
     if ERRORS:
-        print "Error occurred when tranferring the following files:"
+        print "Error occurred when transferring the following files:"
         print "\n".join(ERRORS)
 
 
