@@ -239,24 +239,6 @@ class NumFilesWidget(ProgressBarWidget):
             (pbar.num_done, pbar.num_total)
 
 
-def recurse_rmdir(directory):
-    """recurse_rmdir("aaa/bbb/ccc") will remove
-    ccc if ccc is empty, then bbb, in bbb is
-    empty, then aaa, if aaa is empty
-
-    """
-    old_head = os.path.split(directory)[0]
-    while True:
-        (head, tail) = os.path.split(directory)
-        directory = head
-        try:
-            os.rmdir(head)
-        except OSError:
-            break
-        if head == old_head:
-            break
-
-
 def transfer_file(parent, src, dest, callback):
     """Transfer src to dest, calling
     callback(done, total) while doing so.
