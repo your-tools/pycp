@@ -109,7 +109,7 @@ def pprint_transfer(src, dest):
     """
     Directly borrowed from git's diff.c file.
 
-    pprint_rename("/path/to/foo", "/path/to/bar")
+    pprint_transfer("/path/to/foo", "/path/to/bar")
     >>> /path/to/{foo => bar}
     """
     len_src = len(src)
