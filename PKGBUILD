@@ -1,14 +1,14 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
 pkgname=pycp-git
-pkgver=20100808
+pkgver=20101019
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://github.com/yannicklm/pycp"
 arch=('any')
 license=('MIT')
 depends=('python-progressbar')
-makedepends=('git' 'python' 'help2man')
+makedepends=('git' 'python2' 'help2man')
 replaces=('pycp')
 
 _gitroot="git://github.com/yannicklm/pycp.git"
