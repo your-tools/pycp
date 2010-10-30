@@ -1,3 +1,9 @@
+6.0
+* massive refactoring
+* pycp no longer depends on progressbar
+* add pycp -g option to display a global pbar on
+  sevral line
+
 5.0
 * massive refactoring
 * pycp no longer uses threading code.
