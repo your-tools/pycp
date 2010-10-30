@@ -1,7 +1,7 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
 pkgname=pycp-git
-pkgver=20101023
+pkgver=20101030
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://github.com/yannicklm/pycp"
@@ -36,6 +36,7 @@ build() {
 }
 
 package() {
+  cd ${srcdir}/$_gitname-build
   python2 setup.py install --root=$pkgdir/ --optimize=1
   mkdir -p $pkgdir/usr/share/licenses/pycp
   install COPYING $pkgdir/usr/share/licenses/pycp/COPYING
