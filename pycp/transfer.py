@@ -1,3 +1,10 @@
+"""This module contains the TransferManager class.
+
+This will do the work of transfering the files,
+while using the FilePbar or the GlobalPbar from
+pycp.progress
+
+"""
 import os
 import stat
 
@@ -127,10 +134,14 @@ class TransferInfo():
         self.to_transfer = list()
         # List of directories to remove
         self.to_remove = list()
-        self._recursive_parse(sources, destination)
+        self.parse(sources, destination)
 
-    def _recursive_parse(self, sources, destination):
+    def parse(self, sources, destination):
+        """Recursively go through the sources, creating missing
+        directories, computing total size to be transferred, and
+        so on.
 
+        """
         filenames    = [x for x in sources if os.path.isfile(x)]
         directories  = [x for x in sources if os.path.isdir (x)]
 
@@ -141,10 +152,8 @@ class TransferInfo():
             self._parse_dir(directory, destination)
 
     def _parse_file(self, source, destination):
-        """Add a tuple to self.transfer_info
+        """Parse a new source file
 
-        a_file, b_dir  => a_file, b_dir/a_file
-        a_file, b_file => a_file, b_file
         """
         debug(":: file %s -> %s" % (source, destination))
         if os.path.isdir(destination):
@@ -152,7 +161,7 @@ class TransferInfo():
         self.add(source, destination)
 
     def _parse_dir(self, source, destination):
-        """Parse a directory
+        """Parse a new source directory
 
         """
         debug(":: dir %s -> %s" % (source, destination))
@@ -300,8 +309,6 @@ class TransferManager():
         update the file_pbar
 
         """
-        class Params:
-            pass
         if pycp.options.global_pbar:
             self.global_pbar.update(xferd)
         else:

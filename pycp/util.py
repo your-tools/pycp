@@ -1,6 +1,9 @@
+"""Various useful functions"""
+
 import os
 
 def debug(message):
+    """Print debug mesages when env. var PYCP_DEBUG is set."""
     if os.environ.get("PYCP_DEBUG"):
         print message
 
@@ -14,10 +17,10 @@ def human_readable(size):
         return "%.0fK" % hreadable
     elif size < (1024**3):
         hreadable = float(size)/(1024**2)
-        return "%.1fM" % round(hreadable,1)
+        return "%.1fM" % round(hreadable, 1)
     else:
         hreadable = float(size)/(1024.0**3)
-        return "%.2fG" % round(hreadable,2)
+        return "%.2fG" % round(hreadable, 2)
 
 
 
