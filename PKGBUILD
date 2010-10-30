@@ -7,7 +7,7 @@ pkgdesc="cp and mv with a progressbar"
 url="http://github.com/yannicklm/pycp"
 arch=('any')
 license=('MIT')
-depends=('python-progressbar')
+depends=('python2')
 makedepends=('git' 'python2' 'help2man')
 replaces=('pycp')
 
