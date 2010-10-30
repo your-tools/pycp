@@ -1,5 +1,5 @@
 #!/usr/bin/python2
 
-import pycp
+from pycp.main import main
 
 pycp.main()
