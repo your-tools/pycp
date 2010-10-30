@@ -5,11 +5,7 @@ DESCRIPTION
 
 pycp / pymv are meant to be used from the command line.
 
-
-Main idea : forking a file transfer in background,
-while reading the size of the destination.
-
-Make use of the wonderful libraries progressbar by Nilton Volpato.
+pycp.pbar was heavily based on the wonderful library progressbar by Nilton Volpato.
 
 Comes with two scripts: pycp and pymv, calling FileTransferManager with
 proper action (copy or move)
@@ -52,10 +48,7 @@ Please report if you find one
 SEE ALSO
 --------
 
-* There is no way (yet) to have a "global progressbar" when transfering multiple
-files.
-
-If this feature is needed, vcp maybe the right choice for you (UNIX only)
+* If you are looking for a ncurses-based solution, vcp maybe the right choice for you
 http://www.freebsdsoftware.org/sysutils/vcp.html
 
 
