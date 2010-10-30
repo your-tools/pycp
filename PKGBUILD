@@ -1,7 +1,7 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
 pkgname=pycp-git
-pkgver=20101019
+pkgver=20101023
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://github.com/yannicklm/pycp"
@@ -22,16 +22,23 @@ build() {
     cd $_gitname && git pull origin
     msg "The local files are updated."
   else
-    git clone $_gitroot
+    git clone $_gitroot $_gitname
   fi
 
   msg "GIT checkout done or server timeout"
   msg "Starting make..."
 
+  rm -rf "$srcdir/$_gitname-build"
   git clone $_gitname $_gitname-build
   cd ${srcdir}/$_gitname-build
-  python setup.py install --root=$pkgdir || return 1
+  python2 setup.py build
+
+}
+
+package() {
+  python2 setup.py install --root=$pkgdir/ --optimize=1
   mkdir -p $pkgdir/usr/share/licenses/pycp
   install COPYING $pkgdir/usr/share/licenses/pycp/COPYING
 }
 
+# vim:set ts=2 sw=2 et:
