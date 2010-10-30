@@ -16,6 +16,8 @@ import time
 
 
 import pycp
+from pycp.main import main as pycp_main
+from pycp.util import pprint_transfer
 
 
 class CpTestCase(unittest.TestCase):
@@ -33,19 +35,19 @@ class CpTestCase(unittest.TestCase):
 
     def test_zero(self):
         sys.argv=["pycp"]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
     def test_cp_self_1(self):
         "a_file -> a_file"
         a_file      = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pycp", a_file, a_file]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
     def test_cp_self_2(self):
         "a_file -> ."
         a_file      = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pycp", a_file, self.test_dir]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
     def test_cp_file_file(self):
         "a_file -> a_file.back"
@@ -54,7 +56,7 @@ class CpTestCase(unittest.TestCase):
         a_file_back = os.path.join(self.test_dir, "a_file.back")
 
         sys.argv = ["pycp", a_file, a_file_back]
-        pycp.main()
+        pycp_main()
         self.assertTrue(os.path.exists(a_file_back))
 
     def test_cp_exe_file(self):
@@ -62,7 +64,7 @@ class CpTestCase(unittest.TestCase):
         exe_file   = os.path.join(self.test_dir, "file.exe")
         exe_file_2 = os.path.join(self.test_dir, "file2.exe")
         sys.argv = ["pycp", exe_file, exe_file_2]
-        pycp.main()
+        pycp_main()
         self.assertTrue(os.access(exe_file_2, os.X_OK))
 
     def test_cp_file_dir(self):
@@ -71,7 +73,7 @@ class CpTestCase(unittest.TestCase):
         b_dir  = os.path.join(self.test_dir, "b_dir")
         os.mkdir(b_dir)
         sys.argv = ["pycp", a_file, b_dir]
-        pycp.main()
+        pycp_main()
         dest = os.path.join(b_dir, "a_file")
         self.assertTrue(os.path.exists(dest))
 
@@ -80,7 +82,7 @@ class CpTestCase(unittest.TestCase):
         a_dir = os.path.join(self.test_dir, "a_dir")
         b_dir = os.path.join(self.test_dir, "b_dir")
         sys.argv = ["pycp", a_dir, b_dir]
-        pycp.main()
+        pycp_main()
         c_file = os.path.join(b_dir, "c_file")
         d_file = os.path.join(b_dir, "c_file")
         self.assertTrue(os.path.exists(c_file))
@@ -92,7 +94,7 @@ class CpTestCase(unittest.TestCase):
         b_dir = os.path.join(self.test_dir, "b_dir")
         os.mkdir(b_dir)
         sys.argv = ["pycp", a_dir, b_dir]
-        pycp.main()
+        pycp_main()
         c_file = os.path.join(b_dir, "a_dir", "c_file")
         d_file = os.path.join(b_dir, "a_dir", "c_file")
         self.assertTrue(os.path.exists(c_file))
@@ -103,7 +105,7 @@ class CpTestCase(unittest.TestCase):
         b_dir = os.path.join(self.test_dir, "b_dir")
         os.mkdir(b_dir)
         sys.argv = ["pycp", "-g", a_dir, b_dir]
-        pycp.main()
+        pycp_main()
         c_file = os.path.join(b_dir, "a_dir", "c_file")
         d_file = os.path.join(b_dir, "a_dir", "c_file")
         self.assertTrue(os.path.exists(c_file))
@@ -114,7 +116,7 @@ class CpTestCase(unittest.TestCase):
         "d_file -> d_file.back but d_file does not exists"
         d_file = os.path.join(self.test_dir, "d_file")
         sys.argv = ["pycp", d_file, "d_file.back"]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_no_dest(self):
@@ -122,7 +124,7 @@ class CpTestCase(unittest.TestCase):
         a_file = os.path.join(self.test_dir, "a_file")
         d_dir  = os.path.join(self.test_dir, "d_dir" + os.path.sep)
         sys.argv = ["pycp", a_file, d_dir]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_several_sources_1(self):
@@ -131,7 +133,7 @@ class CpTestCase(unittest.TestCase):
         b_file = os.path.join(self.test_dir, "b_file")
         c_file = os.path.join(self.test_dir, "c_file")
         sys.argv = ["pycp", a_file, b_file, c_file]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_several_sources_2(self):
@@ -140,7 +142,7 @@ class CpTestCase(unittest.TestCase):
         b_file = os.path.join(self.test_dir, "b_file")
         c_dir  = os.path.join(self.test_dir, "c_dir" )
         sys.argv = ["pycp", a_file, b_file, c_dir]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_overwrite_1(self):
@@ -148,7 +150,7 @@ class CpTestCase(unittest.TestCase):
         a_file = os.path.join(self.test_dir, "a_file")
         b_file = os.path.join(self.test_dir, "b_file")
         sys.argv = ["pycp", a_file, b_file]
-        pycp.main()
+        pycp_main()
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
@@ -160,7 +162,7 @@ class CpTestCase(unittest.TestCase):
         a_file = os.path.join(self.test_dir, "a_file")
         b_file = os.path.join(self.test_dir, "b_file")
         sys.argv = ["pycp", "--safe",  a_file, b_file]
-        pycp.main()
+        pycp_main()
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
@@ -172,7 +174,7 @@ class CpTestCase(unittest.TestCase):
         ro_dir = tempfile.mkdtemp("pycp-test-ro")
         os.chmod(ro_dir, stat.S_IRUSR | stat.S_IXUSR)
         sys.argv = ["pycp", a_file, ro_dir]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
         shutil.rmtree(ro_dir)
 
     def tearDown(self):
@@ -200,20 +202,20 @@ class MvTestCase(unittest.TestCase):
 
     def test_zero(self):
         sys.argv=["pymv"]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_mv_self_1(self):
         "a_file -> a_file"
         a_file      = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pymv", a_file, a_file]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
     def test_mv_self_2(self):
         "a_file -> ."
         a_file      = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pymv", a_file, self.test_dir]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
     def test_mv_file_file(self):
         "a_file -> a_file.back"
@@ -221,7 +223,7 @@ class MvTestCase(unittest.TestCase):
         a_file_back = os.path.join(self.test_dir, "a_file.back")
 
         sys.argv = ["pymv", a_file, a_file_back]
-        pycp.main()
+        pycp_main()
         self.assertTrue (os.path.exists(a_file_back))
         self.assertFalse(os.path.exists(a_file))
 
@@ -232,7 +234,7 @@ class MvTestCase(unittest.TestCase):
         b_dir  = os.path.join(self.test_dir, "b_dir")
         os.mkdir(b_dir)
         sys.argv = ["pymv", a_file, b_dir]
-        pycp.main()
+        pycp_main()
         dest = os.path.join(b_dir, "a_file")
         self.assertTrue (os.path.exists(dest))
         self.assertFalse(os.path.exists(a_file))
@@ -243,7 +245,7 @@ class MvTestCase(unittest.TestCase):
         a_dir = os.path.join(self.test_dir, "a_dir")
         b_dir = os.path.join(self.test_dir, "b_dir")
         sys.argv = ["pymv", a_dir, b_dir]
-        pycp.main()
+        pycp_main()
         c_file = os.path.join(b_dir, "c_file")
         d_file = os.path.join(b_dir, "c_file")
         self.assertTrue (os.path.exists(c_file))
@@ -255,7 +257,7 @@ class MvTestCase(unittest.TestCase):
         a_dir = os.path.join(self.test_dir, "a_dir")
         b_dir = os.path.join(self.test_dir, "b_dir")
         sys.argv = ["pymv", a_dir, b_dir]
-        pycp.main()
+        pycp_main()
         c_file = os.path.join(b_dir, "c_file")
         d_file = os.path.join(b_dir, "c_file")
         self.assertTrue (os.path.exists(c_file))
@@ -268,7 +270,7 @@ class MvTestCase(unittest.TestCase):
         b_dir = os.path.join(self.test_dir, "b_dir")
         os.mkdir(b_dir)
         sys.argv = ["pymv", a_dir, b_dir]
-        pycp.main()
+        pycp_main()
         c_file = os.path.join(b_dir, "a_dir", "c_file")
         d_file = os.path.join(b_dir, "a_dir", "c_file")
         self.assertTrue (os.path.exists(c_file))
@@ -279,7 +281,7 @@ class MvTestCase(unittest.TestCase):
         "d_file -> d_file.back but d_file does not exists"
         d_file = os.path.join(self.test_dir, "d_file")
         sys.argv = ["pymv", d_file, "d_file.back"]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_no_dest(self):
@@ -287,7 +289,7 @@ class MvTestCase(unittest.TestCase):
         a_file = os.path.join(self.test_dir, "a_file")
         d_dir  = os.path.join(self.test_dir, "d_dir" + os.path.sep)
         sys.argv = ["pymv", a_file, d_dir]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_several_sources_1(self):
@@ -296,7 +298,7 @@ class MvTestCase(unittest.TestCase):
         b_file = os.path.join(self.test_dir, "b_file")
         c_file = os.path.join(self.test_dir, "c_file")
         sys.argv = ["pymv", a_file, b_file, c_file]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_several_sources_2(self):
@@ -305,7 +307,7 @@ class MvTestCase(unittest.TestCase):
         b_file = os.path.join(self.test_dir, "b_file")
         c_dir  = os.path.join(self.test_dir, "c_dir" )
         sys.argv = ["pymv", a_file, b_file, c_dir]
-        self.assertRaises(SystemExit, pycp.main)
+        self.assertRaises(SystemExit, pycp_main)
 
 
     def test_overwrite_1(self):
@@ -313,7 +315,7 @@ class MvTestCase(unittest.TestCase):
         a_file = os.path.join(self.test_dir, "a_file")
         b_file = os.path.join(self.test_dir, "b_file")
         sys.argv = ["pymv", a_file, b_file]
-        pycp.main()
+        pycp_main()
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
@@ -326,7 +328,7 @@ class MvTestCase(unittest.TestCase):
         a_file = os.path.join(self.test_dir, "a_file")
         b_file = os.path.join(self.test_dir, "b_file")
         sys.argv = ["pymv", "--safe",  a_file, b_file]
-        pycp.main()
+        pycp_main()
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
@@ -339,7 +341,7 @@ class MvTestCase(unittest.TestCase):
         empty = os.path.join(self.test_dir, "a_dir", "empty")
         b_dir = os.path.join(self.test_dir, "b_dir")
         sys.argv = ["pymv", a_dir, b_dir]
-        pycp.main()
+        pycp_main()
 
 
 
@@ -361,37 +363,37 @@ if os.name == "posix":
         def test_01(self):
             src  = "/path/to/foo"
             dest = "/path/to/bar"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, "/path/to/{foo => bar}")
 
         def test_02(self):
             src  = "/path/to/foo/a/b"
             dest = "/path/to/spam/a/b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, "/path/to/{foo => spam}/a/b")
 
         def test_03(self):
             src  = "/path/to/foo/a/b"
             dest = "/path/to/foo/bar/a/b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, "/path/to/foo/{ => bar}/a/b")
 
         def test_no_pfx(self):
             src  = "/path/to/foo/a/b"
             dest = "/other/a/b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, "{/path/to/foo => /other}/a/b")
 
         def test_no_sfx(self):
             src  = "/path/to/foo/a"
             dest = "/path/to/foo/b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, "/path/to/foo/{a => b}")
 
         def test_no_dir(self):
             src  = "a"
             dest = "b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, "a => b")
 
 
@@ -400,37 +402,37 @@ if os.name == "nt":
         def test_01(self):
             src  = r"c:\path\to\foo"
             dest = r"c:\path\to\bar"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, r"c:\path\to\{foo => bar}")
 
         def test_02(self):
             src  = r"c:\path\to\foo\a\b"
             dest = r"c:\path\to\spam\a\b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, r"c:\path\to\{foo => spam}\a\b")
 
         def test_03(self):
             src  = r"c:\path\to\foo\a\b"
             dest = r"c:\path\to\foo\bar\a\b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, r"c:\path\to\foo\{ => bar}\a\b")
 
         def test_other_drive(self):
             src  = r"c:\path\to\foo\a\b"
             dest = r"d:\other\a\b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, r"{c:\path\to\foo => d:\other}\a\b")
 
         def test_no_sfx(self):
             src  = r"c:\path\to\foo\a"
             dest = r"c:\path\to\foo\b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, r"c:\path\to\foo\{a => b}")
 
         def test_no_dir(self):
             src  = "a"
             dest = "b"
-            res  = pycp.pprint_transfer(src, dest)
+            res  = pprint_transfer(src, dest)
             self.assertEquals(res, "a => b")
 
 if __name__ == "__main__" :
