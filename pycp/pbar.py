@@ -94,6 +94,27 @@ class BarWidget(FillWidget):
         res = ("[" + (marker*marked_width).ljust(cwidth) + "]")
         return res
 
+class FileTransferSpeed(Widget):
+    "Widget for showing the transfer speed (useful for file transfers)."
+    def __init__(self, line):
+        self.fmt = '%6.2f %s'
+        self.units = ['B','K','M','G','T','P']
+        Widget.__init__(self, line)
+
+    def update(self):
+        """Implement Widget.update """
+        elapsed = self.line.elapsed()
+        curval = self.line.curval()
+        if elapsed < 2e-6:#== 0:
+            bps = 0.0
+        else:
+            bps = float(curval) / elapsed
+        spd = bps
+        for u in self.units:
+            if spd < 1000:
+                break
+            spd /= 1000
+        return self.fmt % (spd, u+'/s')
 
 class PercentWidget(Widget):
     """A widget for percentages """
@@ -112,7 +133,7 @@ class ETAWidget(Widget):
 
     def update(self):
         """Implement Widget.update """
-        elapsed = self._elapsed()
+        elapsed = self.elapsed()
         fraction = self.fraction()
         if fraction == 0:
             return "ETA  : --:--:--"

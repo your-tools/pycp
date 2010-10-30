@@ -8,7 +8,7 @@ GlobalPbar : one progressbar for the whole transfer
 import sys
 import time
 from pycp.pbar import Line, ProgressBar
-from pycp.pbar import Widget, BarWidget, ETAWidget, PercentWidget
+from pycp.pbar import Widget, BarWidget, ETAWidget, PercentWidget, FileTransferSpeed
 
 from pycp.util import pprint_transfer
 
@@ -19,10 +19,13 @@ class OneFileProgressLine(Line):
         percent = PercentWidget(self)
         file_bar = BarWidget(self)
         file_eta = ETAWidget(self)
+        file_speed = FileTransferSpeed(self)
         self.set_widgets([percent,
                          " " ,
                          file_bar,
-                         " ",
+                         " - ",
+                         file_speed,
+                         " | ",
                          file_eta])
     def curval(self):
         """Implements Line.curval"""
@@ -123,11 +126,14 @@ class TotalLine(Line):
         total_percent = PercentWidget(self)
         total_bar = BarWidget(self)
         total_eta = ETAWidget(self)
+        speed = FileTransferSpeed(self)
         self.set_widgets([total_percent,
-                         " " ,
-                         done_number,
-                         " ",
+                         " - " ,
+                         speed,
+                         " - ",
                          total_bar,
+                         " - ",
+                         done_number,
                          " ",
                          total_eta])
 

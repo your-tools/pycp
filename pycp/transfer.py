@@ -174,7 +174,7 @@ class TransferInfo():
         if not pycp.options.all:
             file_names = [f for f in file_names if not f.startswith(".")]
         file_names = [os.path.join(source, f) for f in file_names]
-        self._recursive_parse(file_names, destination)
+        self.parse(file_names, destination)
         self.to_remove.append(source)
 
     def add(self, src, dest):
