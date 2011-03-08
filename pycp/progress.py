@@ -8,9 +8,9 @@ GlobalPbar : one progressbar for the whole transfer
 import sys
 import time
 from pycp.pbar import Line, ProgressBar
-from pycp.pbar import Widget, BarWidget, ETAWidget, PercentWidget, FileTransferSpeed
+from pycp.pbar import Widget, FillWidget, BarWidget, ETAWidget, PercentWidget, FileTransferSpeed
 
-from pycp.util import pprint_transfer
+from pycp.util import pprint_transfer, shorten_path
 
 class OneFileProgressLine(Line):
     """A progress line for just one file"""
@@ -81,14 +81,14 @@ class DoneNumber(Widget):
         total  = self.parent.num_files
         return "%d on %d" % (done, total)
 
-class FileName(Widget):
+class FileName(FillWidget):
     """Print the name of the file being transferred. """
     def __init__(self, line):
-        Widget.__init__(self, line)
+        FillWidget.__init__(self, line)
 
-    def update(self):
+    def update(self, width):
         """Overwrite Widget.update """
-        return self.parent.file_name
+        return shorten_path(self.parent.file_name, width)
 
 class FileProgressLine(Line):
     """A progress line for one file"""
