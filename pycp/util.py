@@ -28,8 +28,8 @@ def pprint_transfer(src, dest):
     """
     Directly borrowed from git's diff.c file.
 
-    pprint_transfer("/path/to/foo", "/path/to/bar")
-    >>> /path/to/{foo => bar}
+    >>> pprint_transfer("/path/to/foo", "/path/to/bar")
+    '/path/to/{foo => bar}'
     """
     len_src = len(src)
     len_dest = len(dest)
