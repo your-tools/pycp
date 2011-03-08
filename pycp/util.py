@@ -75,3 +75,74 @@ def pprint_transfer(src, dest):
 
     res = "%s{%s => %s}%s" % (pfx, src_mid, dest_mid, sfx)
     return res
+
+
+def shorten_path(path, length):
+    """Shorten a path so that it is never longer
+    that the given length
+
+    >>> shorten_path("bazinga", 6)
+    'baz...'
+    >>> shorten_path("foo/bar/baz", 12)
+    'foo/bar/baz'
+    >>> shorten_path("foo/bar/baz", 10)
+    'f/b/baz'
+    >>> shorten_path("/foo/bar/baz", 11)
+    '/f/b/baz'
+    >>> shorten_path("foo/bar/bazinga", 10)
+    'f/b/baz...'
+    >>> shorten_path("foo/bar/baz/spam/eggs", 6)
+    'eggs'
+    >>> shorten_path("foo/bar/baz/spam/elephant", 4)
+    'e...'
+    """
+    if len(path) < length:
+        return path
+    if os.path.sep not in path:
+        return shorten_string(path, length)
+
+    short_base = ""
+    if path.startswith(os.path.sep):
+        short_base = os.path.sep
+        path = path[1:]
+    parts = path.split(os.path.sep)
+    short_base += os.path.sep.join([p[0] for p in parts[:-1]])
+    if len(short_base) > length:
+        short_base = ""
+
+    # Shorten the last part:
+    short_name = parts[-1]
+    last_length = length - len(short_base)
+    if short_base:
+        last_length = last_length - 1
+    short_name = shorten_string(short_name, last_length)
+    return os.path.join(short_base, short_name)
+
+
+def shorten_string(s, length):
+    """Shorten a string in a nice way:
+
+    >>> shorten_string("foobar", 5)
+    'fo...'
+    >>> shorten_string("foobar", 3)
+    'f..'
+    >>> shorten_string("foobar", 2)
+    'f.'
+    >>> shorten_string("foobar", 1)
+    'f'
+    """
+    if len(s) < length:
+        return s
+    if length > 3:
+        return s[:length-3] + "..."
+    if length == 3:
+        return s[0] + ".."
+    if length == 2:
+        return s[0] + "."
+    if length == 1:
+        return s[0]
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
