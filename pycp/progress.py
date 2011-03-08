@@ -88,7 +88,10 @@ class FileName(FillWidget):
 
     def update(self, width):
         """Overwrite Widget.update """
-        return shorten_path(self.parent.file_name, width)
+        short_path = shorten_path(self.parent.file_name, width)
+        to_fill = width - len(short_path)
+        res = short_path + ' ' * to_fill
+        return res
 
 class FileProgressLine(Line):
     """A progress line for one file"""
