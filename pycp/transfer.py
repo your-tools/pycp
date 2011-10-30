@@ -187,7 +187,8 @@ class TransferInfo():
     def add(self, src, dest):
         """Add a new tuple to the transfer list. """
         self.to_transfer.append((src, dest))
-        self.size += os.path.getsize(src)
+        if not os.path.islink(src):
+            self.size += os.path.getsize(src)
 
 
 class FileTransferManager():
