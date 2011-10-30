@@ -1,3 +1,7 @@
+6.1
+
+* improve symlink support
+
 6.0
 * massive refactoring
 * pycp no longer depends on progressbar
@@ -7,7 +11,7 @@
 5.0
 * massive refactoring
 * pycp no longer uses threading code.
- opying small files should now be painless
+ copying small files should now be painless
  (no more time.sleep)
 * pycp learned --all and --preserve options
 * change license from GPL to BSD
