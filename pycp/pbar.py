@@ -52,6 +52,8 @@ class Widget():
         """
         curval = self.curval()
         maxval = self.maxval()
+        if maxval == 0 and curval == 0:
+            return 1
         if maxval == 0:
             return 0
         if curval == 0:
