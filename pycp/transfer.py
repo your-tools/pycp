@@ -59,6 +59,13 @@ def transfer_file(src, dest, callback):
     """
     if samefile(src, dest):
         raise TransferError("%s and %s are the same file!" % (src, dest))
+    if os.path.islink(src):
+        target = os.readlink(src)
+        #remove existing stuff
+        if os.path.lexists(dest):
+            os.remove(dest)
+        os.symlink(target, dest)
+        return
     try:
         src_file = open(src, "rb")
     except IOError:

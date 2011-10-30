@@ -59,6 +59,37 @@ class CpTestCase(unittest.TestCase):
         pycp_main()
         self.assertTrue(os.path.exists(a_file_back))
 
+    def test_cp_symlink(self):
+        # note: since shutil.copytree does not handle
+        # symlinks the way we would like to, create
+        # link now
+        a_link = os.path.join(self.test_dir, "a_link")
+        a_target = os.path.join(self.test_dir, "a_target")
+        with open(a_target, "w") as fp:
+            fp.write("a_target\n")
+        os.symlink("a_target", a_link)
+        b_link = os.path.join(self.test_dir, "b_link")
+        sys.argv = ["pycp", a_link, b_link]
+        pycp_main()
+        self.assertTrue(os.path.islink(b_link))
+        b_target = os.readlink(b_link)
+        self.assertEquals(b_target, "a_target")
+
+    def test_cp_keep_rel_symlink(self):
+        a_link = os.path.join(self.test_dir, "a_link")
+        a_target = os.path.join(self.test_dir, "a_target")
+        with open(a_target, "w") as fp:
+            fp.write("a_target\n")
+        os.symlink("a_target", a_link)
+        b_dir = os.path.join(self.test_dir, "b_dir")
+        os.mkdir(b_dir)
+        b_link = os.path.join(b_dir, "b_link")
+        sys.argv = ["pycp", a_link, b_link]
+        pycp_main()
+        self.assertTrue(os.path.islink(b_link))
+        b_target = os.readlink(b_link)
+        self.assertEquals(b_target, "a_target")
+
     def test_cp_exe_file(self):
         "copied file should still be executable"
         exe_file   = os.path.join(self.test_dir, "file.exe")
