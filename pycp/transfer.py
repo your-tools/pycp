@@ -65,6 +65,7 @@ def transfer_file(src, dest, callback):
         if os.path.lexists(dest):
             os.remove(dest)
         os.symlink(target, dest)
+        callback(0)
         return
     try:
         src_file = open(src, "rb")
@@ -82,6 +83,7 @@ def transfer_file(src, dest, callback):
         while True:
             data = src_file.read(buff_size)
             if not data:
+                callback(0)
                 break
             xferd = len(data)
             callback(xferd)

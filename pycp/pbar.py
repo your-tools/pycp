@@ -258,6 +258,7 @@ class ProgressBar():
         """
         self.fd.write("\n" * self.nb_lines)
         self.started = True
+        self.update(0)
 
     def handle_resize(self, _signum, _frame):
         """When the term is resized, a siganl is send.
@@ -284,9 +285,6 @@ class ProgressBar():
         if not self.started:
             self.start()
         self._update(params)
-        for line in self.lines:
-            line.update()
-
         self.display()
 
     def _update(self, params):
