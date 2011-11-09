@@ -10,7 +10,7 @@ to parse command line
 import os
 import sys
 
-from optparse import OptionParser
+from optparse import OptionParser, SUPPRESS_HELP
 
 import pycp
 from pycp.transfer import TransferManager, TransferError
@@ -83,6 +83,11 @@ def main():
         action = "store_true",
         dest   = "global_pbar",
         help   = "display only one progress bar during transfer")
+
+    parser.add_option("--i-love-candy",
+        action = "store_true",
+        dest   = "chomp",
+        help   = SUPPRESS_HELP)
 
     parser.set_defaults(
         safe=False,
