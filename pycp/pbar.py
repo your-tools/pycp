@@ -11,6 +11,7 @@ from array import array
 import signal
 import termios
 from fcntl import ioctl
+import pycp
 
 def cursor_up(file_desc, nb_lines):
     """Move the cursor up by nb_lines"""
@@ -88,13 +89,29 @@ class BarWidget(FillWidget):
         """Create a progress bar of size width, looking like
         [#####   ]
 
+        or if I like candy
+        [--Co  o ]
         """
         fraction = self.fraction()
         cwidth = width - 2
         marked_width = int(fraction * cwidth)
-        marker = "#"
-        res = ("[" + (marker*marked_width).ljust(cwidth) + "]")
-        return res
+
+        if pycp.options.chomp:
+            marker = "-"
+            if marked_width == cwidth:
+                res = marker * marked_width
+            else:
+                if marked_width % 2:
+                    pacman = "\033[1;33mc\033[m"
+                else:
+                    pacman = "\033[1;33mC\033[m"
+                pac_dots = (" o " * (1 + cwidth // 3))[marked_width + 1:cwidth]
+                markers = marker * marked_width
+                res = markers + pacman + "\033[0;37m" + pac_dots + "\033[m"
+        else:
+            marker = "#"
+            res = (marker * marked_width).ljust(cwidth)
+        return "[%s]" % res
 
 class FileTransferSpeed(Widget):
     "Widget for showing the transfer speed (useful for file transfers)."
