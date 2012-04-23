@@ -1,45 +1,29 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
-pkgname=pycp-git
-pkgver=20101030
+pkgname=pycp
+pkgver="6.1.2"
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://github.com/yannicklm/pycp"
 arch=('any')
 license=('MIT')
 depends=('python2')
-makedepends=('git' 'python2' 'help2man')
-replaces=('pycp')
+makedepends=('python2' 'help2man')
+source=("http://pypi.python.org/packages/source/p/pycp/pycp-${pkgver}.tar.gz")
+md5sums=('6f370ea0d19fbc495c00a9c8d0973e7a')
 
-_gitroot="git://github.com/yannicklm/pycp.git"
-_gitname="pycp"
+conflicts=('pycp-git')
 
 build() {
-  cd ${srcdir}
-  msg "Connecting to github server...."
-
-  if [ -d ${srcdir}/$_gitname ] ; then
-    cd $_gitname && git pull origin
-    msg "The local files are updated."
-  else
-    git clone $_gitroot $_gitname
-  fi
-
-  msg "GIT checkout done or server timeout"
-  msg "Starting make..."
-
-  rm -rf "$srcdir/$_gitname-build"
-  git clone $_gitname $_gitname-build
-  cd ${srcdir}/$_gitname-build
+  cd ${srcdir}/pycp-${pkgver}
   python2 setup.py build
-
 }
 
 package() {
-  cd ${srcdir}/$_gitname-build
+  cd ${srcdir}/pycp-${pkgver}
   python2 setup.py install --root=$pkgdir/ --optimize=1
   mkdir -p $pkgdir/usr/share/licenses/pycp
-  install COPYING $pkgdir/usr/share/licenses/pycp/COPYING
+  install COPYING.txt $pkgdir/usr/share/licenses/pycp/COPYING
 }
 
 # vim:set ts=2 sw=2 et:
