@@ -23,19 +23,18 @@ Screenshot:
 INSTALLATION
 ------------
 
+Simples way is with just
+
+::
+
   easy_install pycp
 
-is probably the easiest way.
 
+Pycp is also packaged for the following distributions:
 
-There are also other ways to install pycp:
-* Linux:
+Ubuntu: http://launchpad.net/~yannick-lm/+archive/ppa
 
-Ubuntu: there are also pycp packages on this PPA:
-http://launchpad.net/~yannick-lm/+archive/ppa
-
-ArchLinux : a PKGBUILD is available on AUR:
-http://aur.archlinux.org/packages.php?ID=29319
+ArchLinux : a PKGBUILD is available on AUR
 
 
 BUGS
