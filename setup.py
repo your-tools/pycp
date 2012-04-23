@@ -64,11 +64,10 @@ setup(name='pycp',
       scripts          = scripts,
       data_files       = data_files,
       classifiers      = [
-        "Development Status :: 4 - Beta"
         "Environment :: Console",
-        "License :: OSI Approved :: GNU General Public License (GPL)",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: Unix",
+        "Programming Language :: Python :: 2 :: Only",
         "Topic :: System :: Shells",
       ],
 
