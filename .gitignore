@@ -5,6 +5,7 @@
 dist/
 build/
 doc/
+MANIFEST
 
 # created by PKGBUILD:
 src/
