@@ -12,8 +12,6 @@ See man page for detail usage
 
 Screenshot:
 
-::
-
   $ pycp -g ~/test/tbbt/ /tmp
    29% -  45.11 M/s - [#########                        ] - 2 on 4 ETA  : 00:00:11
    19% /home/yannick/test/tbbt/t2.avi [#####                     ] ETA  : 00:00:01
@@ -23,9 +21,8 @@ Screenshot:
 INSTALLATION
 ------------
 
-Simples way is with just
+Simplest way is with just
 
-::
 
   easy_install pycp
 
