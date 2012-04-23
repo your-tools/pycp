@@ -9,7 +9,7 @@ transfer : handling transfer of files
 
 __author__ = "Yannick LM"
 __author_email__  = "yannicklm1337 AT gmail DOT com"
-__version__ = "6.1"
+__version__ = "6.1.1"
 
 class Options:
     pass
