@@ -63,7 +63,7 @@ def main():
     parser.add_option("-a", "--all",
             action = "store_true",
             dest   = "all",
-            help  = "transfer all files (including hidden files")
+            help  = "transfer all files (including hidden files)")
 
     parser.add_option("-p", "--preserve",
             action = "store_true",
