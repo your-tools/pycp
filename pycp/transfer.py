@@ -277,16 +277,19 @@ class TransferManager():
         self.transfer_info = TransferInfo(sources, destination)
         self.global_pbar = None
         self.file_pbar = None
+        self.num_files = 0
+        self.file_index = 0
 
     def do_transfer(self):
         """Performs the real transfer"""
         errors = dict()
+        self.num_files = len(self.transfer_info.to_transfer)
         if pycp.options.global_pbar:
-            num_files = len(self.transfer_info.to_transfer)
             total_size = self.transfer_info.size
-            self.global_pbar = GlobalPbar(num_files, total_size)
+            self.global_pbar = GlobalPbar(self.num_files, total_size)
             self.global_pbar.start()
         for (src, dest) in self.transfer_info.to_transfer:
+            self.file_index += 1
             file_size = os.path.getsize(src)
             ftm = FileTransferManager(self, src, dest)
             self.on_new_transfer(src, dest, file_size)
@@ -312,7 +315,9 @@ class TransferManager():
         if pycp.options.global_pbar:
             self.global_pbar.new_file(src, size)
         else:
-            self.file_pbar = FilePbar(src, dest, size)
+            self.file_pbar = FilePbar(src, dest, size,
+                                      self.file_index,
+                                      self.num_files)
             self.file_pbar.start()
 
     def on_file_transfer(self, xferd):

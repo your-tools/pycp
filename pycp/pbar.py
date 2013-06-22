@@ -142,6 +142,20 @@ class PercentWidget(Widget):
         fraction = self.fraction()
         return "%3d%%" % int(fraction * 100)
 
+class FileCountWidget(Widget):
+    """ Return something like [ 4/ 10] """
+    def __init__(self, line, file_index, num_files):
+        Widget.__init__(self, line)
+        self.file_index = file_index
+        self.num_files = num_files
+
+    def update(self):
+        num_digits = len(str(self.num_files))
+        counter_format = "[%{}d/%d]".format(num_digits)
+        counter_str = counter_format % (self.file_index, self.num_files)
+        return counter_str
+
+
 class ETAWidget(Widget):
     """A widget to display Estimated Time of Arrival at first,
     and then total time spent when finish.
