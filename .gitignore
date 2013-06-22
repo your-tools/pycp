@@ -13,3 +13,6 @@ pkg/
 *.tar.xz
 *.tar.gz
 
+
+# Created by pip
+*.egg-info
