@@ -166,7 +166,8 @@ class TransferInfo():
         """
         debug(":: file %s -> %s" % (source, destination))
         if os.path.isdir(destination):
-            destination = os.path.join(destination, os.path.basename(source))
+            destination = os.path.join(destination,
+                                       os.path.basename(os.path.normpath(source)))
         self.add(source, destination)
 
     def _parse_dir(self, source, destination):
@@ -175,7 +176,7 @@ class TransferInfo():
         """
         debug(":: dir %s -> %s" % (source, destination))
         if os.path.isdir(destination):
-            destination = os.path.join(destination, os.path.basename(source))
+            destination = os.path.join(destination, os.path.basename(os.path.normpath(source)))
         debug(":: making dir %s" % destination)
         if not os.path.exists(destination):
             os.mkdir(destination)
