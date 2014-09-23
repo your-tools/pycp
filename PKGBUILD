@@ -1,7 +1,7 @@
 #Maintainer: "Yannick LM <yannicklm1337 AT gmail DOT com>"
 
 pkgname=pycp
-pkgver="6.1.2"
+pkgver="6.1.3"
 pkgrel=1
 pkgdesc="cp and mv with a progressbar"
 url="http://github.com/yannicklm/pycp"
@@ -10,7 +10,8 @@ license=('MIT')
 depends=('python2')
 makedepends=('python2' 'help2man')
 source=("http://pypi.python.org/packages/source/p/pycp/pycp-${pkgver}.tar.gz")
-md5sums=('6f370ea0d19fbc495c00a9c8d0973e7a')
+md5sums=('df23252879d23ad22b9ab3e51af6e538')
+
 
 conflicts=('pycp-git')
 
@@ -22,6 +23,15 @@ build() {
 package() {
   cd ${srcdir}/pycp-${pkgver}
   python2 setup.py install --root=$pkgdir/ --optimize=1
+
+  # man pages
+  PYTHONPATH=. help2man --no-info --output pycp.1 bin/pycp
+  PYTHONPATH=. help2man --no-info --output pymv.1 bin/pymv
+  mkdir -p $pkgdir/usr/share/man/man1
+  install pycp.1 $pkgdir/usr/share/man/man1/pycp.1
+  install pymv.1 $pkgdir/usr/share/man/man1/pymv.1
+
+  # license
   mkdir -p $pkgdir/usr/share/licenses/pycp
   install COPYING.txt $pkgdir/usr/share/licenses/pycp/COPYING
 }
