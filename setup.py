@@ -17,8 +17,7 @@ else:
 
 setup(name='pycp',
       version          = pycp.__version__,
-      description      = 'cp with a progressbar',
-      long_description = pycp.__doc__,
+      description      = 'cp and mv with a progressbar',
       author           = pycp.__author__,
       author_email     = pycp.__author_email__,
       url              = 'http://github.com/yannicklm/pycp',
