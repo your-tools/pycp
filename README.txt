@@ -21,17 +21,15 @@ Screenshot:
 INSTALLATION
 ------------
 
-Simplest way is with just
+First, make sure you have Python3 installed.
 
+Then run:
 
-  easy_install pycp
+  pip install pycp
 
+(On your machine, pip may be called ``pip3``)
 
-Pycp is also packaged for the following distributions:
-
-Ubuntu: http://launchpad.net/~yannick-lm/+archive/ppa
-
-ArchLinux : a PKGBUILD is available on AUR
+For Archlinux, a PKGBUILD is also available on AUR
 
 
 BUGS
