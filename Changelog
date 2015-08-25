@@ -1,3 +1,7 @@
+7.0
+
+* port to Python3
+* switch to setuptools for the packaging
 6.1
 
 * improve symlink support
