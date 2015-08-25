@@ -1,19 +1,8 @@
-from distutils.core import setup
+from setuptools import setup
 import os
 import sys
 import pycp
-import subprocess
 
-
-ON_WINDOWS = False
-
-if sys.platform.startswith("win"):
-    ON_WINDOWS = True
-
-if not ON_WINDOWS:
-    scripts    = ["bin/pycp", "bin/pymv"]
-else:
-    scripts    = [r"bin\pycp.bat", r"bin\pymv.bat"]
 
 setup(name='pycp',
       version          = pycp.__version__,
@@ -23,7 +12,12 @@ setup(name='pycp',
       url              = 'http://github.com/yannicklm/pycp',
       packages         = ['pycp'],
       license          ='COPYING',
-      scripts          = scripts,
+      entry_points     = {
+          "console_scripts" : [
+              "pycp  = pycp.main:main",
+              "pymv  = pycp.main:main",
+            ]
+      },
       classifiers      = [
         "Environment :: Console",
         "License :: OSI Approved :: BSD License",
