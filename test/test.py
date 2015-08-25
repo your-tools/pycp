@@ -73,7 +73,7 @@ class CpTestCase(unittest.TestCase):
         pycp_main()
         self.assertTrue(os.path.islink(b_link))
         b_target = os.readlink(b_link)
-        self.assertEquals(b_target, "a_target")
+        self.assertEqual(b_target, "a_target")
 
     def test_cp_keep_rel_symlink(self):
         a_link = os.path.join(self.test_dir, "a_link")
@@ -88,7 +88,7 @@ class CpTestCase(unittest.TestCase):
         pycp_main()
         self.assertTrue(os.path.islink(b_link))
         b_target = os.readlink(b_link)
-        self.assertEquals(b_target, "a_target")
+        self.assertEqual(b_target, "a_target")
 
     def test_cp_exe_file(self):
         "copied file should still be executable"
@@ -185,7 +185,7 @@ class CpTestCase(unittest.TestCase):
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
-        self.assertEquals(b_contents, "a\n")
+        self.assertEqual(b_contents, "a\n")
 
 
     def test_overwrite_2(self):
@@ -197,7 +197,7 @@ class CpTestCase(unittest.TestCase):
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
-        self.assertEquals(b_contents, "b\n")
+        self.assertEqual(b_contents, "b\n")
 
     def test_copy_readonly(self):
         "a_file -> ro_dir but ro_dir is read only"
@@ -213,7 +213,7 @@ class CpTestCase(unittest.TestCase):
 
         """
         if os.environ.get("DEBUG"):
-            print "not removing", self.test_dir
+            print("not removing", self.test_dir)
         else:
             shutil.rmtree(self.test_dir)
 
@@ -350,7 +350,7 @@ class MvTestCase(unittest.TestCase):
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
-        self.assertEquals(b_contents, "a\n")
+        self.assertEqual(b_contents, "a\n")
         self.assertFalse(os.path.exists(a_file))
 
 
@@ -363,7 +363,7 @@ class MvTestCase(unittest.TestCase):
         b_file_desc = open(b_file, "r")
         b_contents  = b_file_desc.read()
         b_file_desc.close()
-        self.assertEquals(b_contents, "b\n")
+        self.assertEqual(b_contents, "b\n")
         self.assertTrue(os.path.exists(a_file))
 
     def test_empty(self):
@@ -381,7 +381,7 @@ class MvTestCase(unittest.TestCase):
 
         """
         if os.environ.get("DEBUG"):
-            print "not removing", self.test_dir
+            print("not removing", self.test_dir)
         else:
             shutil.rmtree(self.test_dir)
 
@@ -395,37 +395,37 @@ if os.name == "posix":
             src  = "/path/to/foo"
             dest = "/path/to/bar"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, "/path/to/{foo => bar}")
+            self.assertEqual(res, "/path/to/{foo => bar}")
 
         def test_02(self):
             src  = "/path/to/foo/a/b"
             dest = "/path/to/spam/a/b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, "/path/to/{foo => spam}/a/b")
+            self.assertEqual(res, "/path/to/{foo => spam}/a/b")
 
         def test_03(self):
             src  = "/path/to/foo/a/b"
             dest = "/path/to/foo/bar/a/b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, "/path/to/foo/{ => bar}/a/b")
+            self.assertEqual(res, "/path/to/foo/{ => bar}/a/b")
 
         def test_no_pfx(self):
             src  = "/path/to/foo/a/b"
             dest = "/other/a/b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, "{/path/to/foo => /other}/a/b")
+            self.assertEqual(res, "{/path/to/foo => /other}/a/b")
 
         def test_no_sfx(self):
             src  = "/path/to/foo/a"
             dest = "/path/to/foo/b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, "/path/to/foo/{a => b}")
+            self.assertEqual(res, "/path/to/foo/{a => b}")
 
         def test_no_dir(self):
             src  = "a"
             dest = "b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, "a => b")
+            self.assertEqual(res, "a => b")
 
 
 if os.name == "nt":
@@ -434,37 +434,37 @@ if os.name == "nt":
             src  = r"c:\path\to\foo"
             dest = r"c:\path\to\bar"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, r"c:\path\to\{foo => bar}")
+            self.assertEqual(res, r"c:\path\to\{foo => bar}")
 
         def test_02(self):
             src  = r"c:\path\to\foo\a\b"
             dest = r"c:\path\to\spam\a\b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, r"c:\path\to\{foo => spam}\a\b")
+            self.assertEqual(res, r"c:\path\to\{foo => spam}\a\b")
 
         def test_03(self):
             src  = r"c:\path\to\foo\a\b"
             dest = r"c:\path\to\foo\bar\a\b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, r"c:\path\to\foo\{ => bar}\a\b")
+            self.assertEqual(res, r"c:\path\to\foo\{ => bar}\a\b")
 
         def test_other_drive(self):
             src  = r"c:\path\to\foo\a\b"
             dest = r"d:\other\a\b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, r"{c:\path\to\foo => d:\other}\a\b")
+            self.assertEqual(res, r"{c:\path\to\foo => d:\other}\a\b")
 
         def test_no_sfx(self):
             src  = r"c:\path\to\foo\a"
             dest = r"c:\path\to\foo\b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, r"c:\path\to\foo\{a => b}")
+            self.assertEqual(res, r"c:\path\to\foo\{a => b}")
 
         def test_no_dir(self):
             src  = "a"
             dest = "b"
             res  = pprint_transfer(src, dest)
-            self.assertEquals(res, "a => b")
+            self.assertEqual(res, "a => b")
 
 if __name__ == "__main__" :
     unittest.main()

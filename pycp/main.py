@@ -115,15 +115,15 @@ def main():
     transfer_manager = TransferManager(sources, destination)
     try:
         errors = transfer_manager.do_transfer()
-    except TransferError, err:
+    except TransferError as err:
         die(err)
-    except KeyboardInterrupt, err:
+    except KeyboardInterrupt as err:
         die("Interrputed by user")
 
     if errors:
-        print "Error occurred when transferring the following files:"
-        for (file_name, error) in errors.iteritems():
-            print file_name, error
+        print("Error occurred when transferring the following files:")
+        for (file_name, error) in errors.items():
+            print(file_name, error)
 
 if __name__ == "__main__":
     main()

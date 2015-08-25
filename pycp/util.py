@@ -5,7 +5,7 @@ import os
 def debug(message):
     """Print debug mesages when env. var PYCP_DEBUG is set."""
     if os.environ.get("PYCP_DEBUG"):
-        print message
+        print(message)
 
 def human_readable(size):
     """Build a nice human readable string from a size given in

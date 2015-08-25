@@ -88,7 +88,7 @@ def transfer_file(src, dest, callback):
             xferd = len(data)
             callback(xferd)
             dest_file.write(data)
-    except IOError, err:
+    except IOError as err:
         mess  = "Problem when transferring %s to %s\n" % (src, dest)
         mess += "Error was: %s" % err
         raise TransferError(mess)
@@ -98,15 +98,15 @@ def transfer_file(src, dest, callback):
 
     try:
         post_transfer(src, dest)
-    except OSError, err:
-        print "Warning: failed to finalize transfer of %s: %s" % (dest, err)
+    except OSError as err:
+        print("Warning: failed to finalize transfer of %s: %s" % (dest, err))
 
     if pycp.options.move:
         try:
             debug("removing %s" % src)
             os.remove(src)
         except OSError:
-            print "Warning: could not remove %s" % src
+            print("Warning: could not remove %s" % src)
 
 
 def post_transfer(src, dest):
@@ -224,7 +224,7 @@ class FileTransferManager():
                 return
         try:
             transfer_file(self.src, self.dest, self.callback)
-        except TransferError, err:
+        except TransferError as err:
             if pycp.options.ignore_errors:
                 error = err
                 # remove dest file
@@ -243,7 +243,7 @@ class FileTransferManager():
         """
         # Safe: always skip
         if pycp.options.safe:
-            print "Warning: skipping", self.dest
+            print("Warning: skipping", self.dest)
             return True
 
         # Not safe and not interactive => overwrite
@@ -251,9 +251,9 @@ class FileTransferManager():
             return False
 
         # Interactive
-        print "File: '%s' already exists" % self.dest
-        print "Overwrite?"
-        user_input = raw_input()
+        print("File: '%s' already exists" % self.dest)
+        print("Overwrite?")
+        user_input = input()
         if (user_input == "y"):
             return False
         else:
