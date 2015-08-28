@@ -22,7 +22,7 @@ setup(name='pycp',
         "Environment :: Console",
         "License :: OSI Approved :: BSD License",
         "Operating System :: Unix",
-        "Programming Language :: Python :: 2 :: Only",
+        "Programming Language :: Python :: 3 :: Only",
         "Topic :: System :: Shells",
       ],
 
