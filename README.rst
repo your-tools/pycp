@@ -1,16 +1,18 @@
 PYCP: cp and mv with a progressbar
 ==================================
 
+.. image:: https://travis-ci.org/yannicklm/pycp.svg?branch=master
+
 DESCRIPTION
 -----------
 
-pycp / pymv are meant to be used from the command line.
+``pycp`` / ``pymv`` are meant to be used from the command line.
 
-pycp.pbar was heavily based on the wonderful library progressbar by Nilton Volpato.
+``pycp.pbar`` was heavily based on the wonderful library ``progressbar`` by Nilton Volpato.
 
 See man page for detail usage
 
-Screenshot:
+Screenshot::
 
   $ pycp -g ~/test/tbbt/ /tmp
    29% -  45.11 M/s - [#########                        ] - 2 on 4 ETA  : 00:00:11
@@ -23,13 +25,13 @@ INSTALLATION
 
 First, make sure you have Python3 installed.
 
-Then run:
+Then run::
 
   pip install pycp
 
 (On your machine, pip may be called ``pip3``)
 
-For Archlinux, a PKGBUILD is also available on AUR
+For ``Archlinux,`` a ``PKGBUILD`` is also available on ``AUR``
 
 
 BUGS
