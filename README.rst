@@ -2,6 +2,7 @@ PYCP: cp and mv with a progressbar
 ==================================
 
 .. image:: https://travis-ci.org/yannicklm/pycp.svg?branch=master
+  :target: https://travis-ci.org/yannicklm/pycp
 .. image:: http://img.shields.io/pypi/v/pycp.png
   :target: https://pypi.python.org/pypi/pycp
 
