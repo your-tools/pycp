@@ -2,6 +2,8 @@ PYCP: cp and mv with a progressbar
 ==================================
 
 .. image:: https://travis-ci.org/yannicklm/pycp.svg?branch=master
+.. image:: http://img.shields.io/pypi/v/pycp.png
+  :target: https://pypi.python.org/pypi/pycp
 
 DESCRIPTION
 -----------
@@ -49,5 +51,3 @@ SEE ALSO
 
 * If you are looking for a more general solution to display progressbars when
   performing command-line operations, see clpbar: http://clpbar.sourceforge.net/
-
-
