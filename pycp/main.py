@@ -7,20 +7,10 @@ to parse command line
 import os
 import sys
 
-from optparse import OptionParser, SUPPRESS_HELP
+import argparse
 
 import pycp
 from pycp.transfer import TransferManager, TransferError
-
-
-def die(message):
-    """An error occured.
-    Write it to stderr and exit with error code 1
-
-    """
-    sys.stderr.write(str(message) + "\n")
-    sys.exit(1)
-
 
 def main():
     """Parses command line arguments"""
@@ -33,58 +23,53 @@ def main():
         prog_name = "pycp"
         action = "copy"
 
-    usage = """
-    %s [options] SOURCE DESTINATION
-    %s [options] SOURCE... DIRECTORY
-
-    %s SOURCE to DESTINATION or mutliple SOURCE(s) to DIRECTORY
-    """ % (prog_name, prog_name, action)
-
     version = "%s version %s" % (prog_name, pycp.__version__)
 
-    parser = OptionParser(usage, version=version, prog=prog_name)
+    parser = argparse.ArgumentParser(prog=prog_name)
 
-    parser.add_option("-i", "--interactive",
+    parser.add_argument("-v", "--version", action="version",
+            version=version)
+    parser.add_argument("-i", "--interactive",
             action  = "store_true",
             dest    = "interactive",
             help    = "ask before overwriting existing files")
 
-    parser.add_option("-s", "--safe",
+    parser.add_argument("-s", "--safe",
             action  = "store_true",
             dest    = "safe",
             help    = "never overwirte existing files")
 
-    parser.add_option("-f", "--force",
+    parser.add_argument("-f", "--force",
             action  = "store_false",
             dest    = "safe",
             help    = "silently overwirte existing files " + \
                 "(this is the default)")
 
-    parser.add_option("-a", "--all",
+    parser.add_argument("-a", "--all",
             action = "store_true",
             dest   = "all",
             help  = "transfer all files (including hidden files)")
 
-    parser.add_option("-p", "--preserve",
+    parser.add_argument("-p", "--preserve",
             action = "store_true",
             dest   = "preserve",
             help   = "preserve time stamps while copying")
 
-    parser.add_option("--ignore-errors",
+    parser.add_argument("--ignore-errors",
             action = "store_true",
             dest   = "ignore_errors",
             help   = "ignore errors, remove destination if cp\n" +
                      "Print problematic files at the end")
 
-    parser.add_option("-g", "--global-pbar",
+    parser.add_argument("-g", "--global-pbar",
         action = "store_true",
         dest   = "global_pbar",
         help   = "display only one progress bar during transfer")
 
-    parser.add_option("--i-love-candy",
+    parser.add_argument("--i-love-candy",
         action = "store_true",
         dest   = "chomp",
-        help   = SUPPRESS_HELP)
+        help   = argparse.SUPPRESS)
 
     parser.set_defaults(
         safe=False,
@@ -92,33 +77,34 @@ def main():
         all=False,
         ignore_errors=False,
         preserve=False)
+    parser.add_argument("files", nargs="+")
 
-    (options, args) = parser.parse_args()
-    options.move = move # This "option" is set by sys.argv[0]
+    args = parser.parse_args()
+    args.move = move # This "option" is set by sys.argv[0]
 
-    pycp.options = options
+    pycp.options = args
 
-    if len(args) < 2:
+    if len(args.files) < 2:
         parser.error("Incorrect number of arguments")
 
-    sources = args[:-1]
-    destination = args[-1]
+    sources = args.files[:-1]
+    destination = args.files[-1]
 
     if len(sources) > 1:
         if not os.path.isdir(destination):
-            die("%s is not an existing directory" % destination)
+            sys.exit("%s is not an existing directory" % destination)
 
     for source in sources:
         if not os.path.exists(source):
-            die("%s does not exist" % source)
+            sys.exit("%s does not exist" % source)
 
     transfer_manager = TransferManager(sources, destination)
     try:
         errors = transfer_manager.do_transfer()
     except TransferError as err:
-        die(err)
+        sys.exit(err)
     except KeyboardInterrupt as err:
-        die("Interrputed by user")
+        sys.exit("Interrputed by user")
 
     if errors:
         print("Error occurred when transferring the following files:")
