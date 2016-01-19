@@ -23,9 +23,16 @@ def main():
         prog_name = "pycp"
         action = "copy"
 
+    usage = """
+    %s [options] SOURCE DESTINATION
+    %s [options] SOURCE... DIRECTORY
+
+    %s SOURCE to DESTINATION or mutliple SOURCE(s) to DIRECTORY
+    """ % (prog_name, prog_name, action)
+
     version = "%s version %s" % (prog_name, pycp.__version__)
 
-    parser = argparse.ArgumentParser(prog=prog_name)
+    parser = argparse.ArgumentParser(usage=usage, prog=prog_name)
 
     parser.add_argument("-v", "--version", action="version",
             version=version)
