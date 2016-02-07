@@ -44,12 +44,12 @@ def main():
     parser.add_argument("-s", "--safe",
             action  = "store_true",
             dest    = "safe",
-            help    = "never overwirte existing files")
+            help    = "never overwrite existing files")
 
     parser.add_argument("-f", "--force",
             action  = "store_false",
             dest    = "safe",
-            help    = "silently overwirte existing files " + \
+            help    = "silently overwrite existing files " + \
                 "(this is the default)")
 
     parser.add_argument("-a", "--all",
