@@ -26,13 +26,9 @@ Screenshot::
 INSTALLATION
 ------------
 
-First, make sure you have Python3 installed.
+``pycp`` works both for Python2.7 and Python3, and is installable with
+``pip``.
 
-Then run::
-
-  pip install pycp
-
-(On your machine, pip may be called ``pip3``)
 
 For ``Archlinux,`` a ``PKGBUILD`` is also available on ``AUR``
 
