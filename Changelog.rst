@@ -1,3 +1,8 @@
+7.2.1
+-----
+* Fix README. (version bump required for updating
+  pypi page)
+
 7.2
 ---
 * Bring back Python2.7 compatibily. Why not ?
