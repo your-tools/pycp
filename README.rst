@@ -36,12 +36,12 @@ For ``Archlinux,`` a ``PKGBUILD`` is also available on ``AUR``
 BUGS
 ----
 
-See `github bug tracker: <https://github.com/yannicklm/pycp/issues>`_
+See `github bug tracker <https://github.com/yannicklm/pycp/issues>`_
 
 CHANGELOG
 ----------
 
-See `here: <https://github.com/yannicklm/pycp/blob/master/Changelog.rst>`_
+See `here <https://raw.githubusercontent.com/yannicklm/pycp/master/Changelog.rst>`_
 
 
 SEE ALSO
@@ -51,5 +51,5 @@ SEE ALSO
   for you http://www.freebsdsoftware.org/sysutils/vcp.html
 
 
-* If you are looking for a more general solution to display progressbars when
+* If you are looking for a more general solution to display progress bars when
   performing command-line operations, see clpbar: http://clpbar.sourceforge.net/
