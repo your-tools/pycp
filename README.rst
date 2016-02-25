@@ -36,8 +36,13 @@ For ``Archlinux,`` a ``PKGBUILD`` is also available on ``AUR``
 BUGS
 ----
 
-None known ... yet.
-Please report if you find one
+See `github bug tracker: <https://github.com/yannicklm/pycp/issues>`_
+
+CHANGELOG
+----------
+
+See `here: <https://github.com/yannicklm/pycp/blob/master/Changelog.rst>`_
+
 
 SEE ALSO
 --------
