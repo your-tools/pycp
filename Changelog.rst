@@ -1,6 +1,7 @@
 7.2
 ---
 * Bring back Python2.7 compatibily. Why not ?
+* Display a file count even when not using ``-g``
 
 7.1
 ---
