@@ -6,6 +6,8 @@ to not remove temporary directories created during test.
 (Useful for diagnostic)
 """
 
+from __future__ import print_function
+
 import unittest
 import tempfile  # for mkdtemp
 import shutil
@@ -468,4 +470,3 @@ if os.name == "nt":
 
 if __name__ == "__main__" :
     unittest.main()
-

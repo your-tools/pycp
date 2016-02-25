@@ -5,6 +5,9 @@ while using the FilePbar or the GlobalPbar from
 pycp.progress
 
 """
+
+from __future__ import print_function
+
 import os
 import stat
 
@@ -253,8 +256,11 @@ class FileTransferManager():
         # Interactive
         print("File: '%s' already exists" % self.dest)
         print("Overwrite?")
-        user_input = input()
-        if (user_input == "y"):
+        if sys.version_info[0] < 3:
+            user_input = raw_input()
+        else:
+            user_input = input()
+        if user_input == "y":
             return False
         else:
             return True
