@@ -1,3 +1,8 @@
+7.7.2
+-----
+* Include test/test_dir/ in source package. This
+  makes it possible for pycp packages to run the tests
+
 7.2.1
 -----
 * Fix README. (version bump required for updating
