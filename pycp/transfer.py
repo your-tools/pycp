@@ -128,7 +128,14 @@ def post_transfer(src, dest):
         return
     if hasattr(os, 'utime'):
         os.utime(dest, (src_st.st_atime, src_st.st_mtime))
-
+    uid = src_st.st_uid
+    gid = src_st.st_gid
+    try:
+        os.chown(dest, uid, gid)
+    except OSError:
+        # we likely don't have enough permissions to do this
+        # just ignore
+        pass
 
 class TransferInfo():
     """This class contains:

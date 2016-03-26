@@ -1,4 +1,8 @@
-7.7.2
+7.3
+---
+* Try to preserve user and group when used with ``-p,--preserve``
+
+7.2.2
 -----
 * Include test/test_dir/ in source package. This
   makes it possible for pycp packages to run the tests
