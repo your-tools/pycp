@@ -1,6 +1,7 @@
 7.3
 ---
 * Try to preserve user and group when used with ``-p,--preserve``
+* Optimization : read source file size only once
 
 7.2.2
 -----

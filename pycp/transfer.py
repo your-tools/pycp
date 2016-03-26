@@ -199,9 +199,10 @@ class TransferInfo():
 
     def add(self, src, dest):
         """Add a new tuple to the transfer list. """
-        self.to_transfer.append((src, dest))
+        file_size = os.path.getsize(src)
         if not os.path.islink(src):
-            self.size += os.path.getsize(src)
+            self.size += file_size
+        self.to_transfer.append((src, dest, file_size))
 
 
 class FileTransferManager():
@@ -301,9 +302,8 @@ class TransferManager():
             total_size = self.transfer_info.size
             self.global_pbar = GlobalPbar(self.num_files, total_size)
             self.global_pbar.start()
-        for (src, dest) in self.transfer_info.to_transfer:
+        for (src, dest, file_size) in self.transfer_info.to_transfer:
             self.file_index += 1
-            file_size = os.path.getsize(src)
             ftm = FileTransferManager(self, src, dest)
             self.on_new_transfer(src, dest, file_size)
             error = ftm.do_transfer()
