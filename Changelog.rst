@@ -2,6 +2,7 @@
 ---
 * Try to preserve user and group when used with ``-p,--preserve``
 * Optimization : read source file size only once
+* Fix crash when file size increases while it's being copied
 
 7.2.2
 -----

@@ -63,8 +63,12 @@ class Widget():
             return 1
         res = float(curval) / maxval
         assert res > 0
-        assert res < 1
-        return res
+        # It's possible that the transferred
+        # size is bigger than the maximum value
+        # (since we read the size before copying)
+        # so force the fraction to be 1
+        if res >= 1:
+            res = 1
 
 class FillWidget(Widget):
     """A FillWidget MUST fill the width given
