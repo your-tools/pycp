@@ -143,6 +143,7 @@ def shorten_string(s, length):
         return s[0] + "."
     if length == 1:
         return s[0]
+    return ""
 
 
 if __name__ == "__main__":
