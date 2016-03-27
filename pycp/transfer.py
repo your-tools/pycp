@@ -235,12 +235,17 @@ class FileTransferManager():
                 return
         try:
             transfer_file(self.src, self.dest, self.callback)
-        except TransferError as err:
+        except TransferError as exception:
             if pycp.options.ignore_errors:
-                error = err
+                error = exception
                 # remove dest file
                 if not pycp.options.move:
-                    os.remove(self.dest)
+                    try:
+                        os.remove(self.dest)
+                    except:
+                        # We don't want to raise here
+                        pass
+
             else:
                 # Re-raise
                 raise
