@@ -297,8 +297,13 @@ class ProgressBar():
         Catch it and update self.term_width
 
         """
-        height_, width =array('h', ioctl(self.fd, termios.TIOCGWINSZ, '\0'*8))[:2]
-        self.term_width = width
+        try:
+            height_, width = array('h',
+                    ioctl(self.fd, termios.TIOCGWINSZ, '\0'*8))[:2]
+            self.term_width = width
+        # self.fd may not be a terminal
+        except OSError:
+            self.term_width = 80
 
     def set_lines(self, lines):
         """Set the lines of the ProgressBar """
