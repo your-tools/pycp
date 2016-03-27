@@ -63,7 +63,8 @@ class Widget():
             return 1
         res = float(curval) / maxval
         assert res > 0
-        assert res <= 1
+        if res >= 1:
+            res = 1
         return res
 
 class FillWidget(Widget):
