@@ -7,8 +7,7 @@ transfer : handling transfer of files
 
 """
 
-__author__ = "Yannick LM"
-__author_email__  = "yannicklm1337 AT gmail DOT com"
+__author__ = "Dimitri Merejkowsky"
 __version__ = "7.2.2"
 
 class Options:

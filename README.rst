@@ -1,8 +1,8 @@
 PYCP: cp and mv with a progressbar
 ==================================
 
-.. image:: https://travis-ci.org/yannicklm/pycp.svg?branch=master
-  :target: https://travis-ci.org/yannicklm/pycp
+.. image:: https://travis-ci.org/dmerejkowsky/pycp.svg?branch=master
+  :target: https://travis-ci.org/dmerejkowsky/pycp
 .. image:: http://img.shields.io/pypi/v/pycp.png
   :target: https://pypi.python.org/pypi/pycp
 
@@ -36,12 +36,12 @@ For ``Archlinux,`` a ``PKGBUILD`` is also available on ``AUR``
 BUGS
 ----
 
-See `github bug tracker <https://github.com/yannicklm/pycp/issues>`_
+See `github bug tracker <https://github.com/dmerejkowsky/pycp/issues>`_
 
 CHANGELOG
 ----------
 
-See `here <https://raw.githubusercontent.com/yannicklm/pycp/master/Changelog.rst>`_
+See `here <https://raw.githubusercontent.com/dmerejkowsky/pycp/master/Changelog.rst>`_
 
 
 SEE ALSO
