@@ -44,6 +44,7 @@ class CpTestCase(unittest.TestCase):
         a_file      = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pycp", a_file, a_file]
         self.assertRaises(SystemExit, pycp_main)
+        raise Exception("Kaboom")
 
     def test_cp_self_2(self):
         "a_file -> ."
