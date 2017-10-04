@@ -3,8 +3,6 @@ to parse command line
 
 """
 
-from __future__ import print_function
-
 import argparse
 import os
 import pkg_resources
