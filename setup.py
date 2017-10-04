@@ -11,6 +11,9 @@ setup(name='pycp',
       url='http://github.com/dmerejkowsky/pycp',
       packages=['pycp'],
       license='COPYING',
+      install_requires=[
+          "python-cli-ui",
+      ],
       entry_points={
           "console_scripts": [
               "pycp = pycp.main:main",
