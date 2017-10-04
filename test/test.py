@@ -410,22 +410,5 @@ class PrintTransferTestCase(unittest.TestCase):
         self.assertEqual(res, "a => b")
 
 
-def test_shorten_path_long_prefix():
-    long_path = """\
-/home/yannick/.cargo/git/checkouts/curl-rust-fad39707c1101a04/bundle
-/curl-sys/build/curl-7.37.1/projects/Windows/
-VC10/src/curlsrc.sln"""
-    long_path = long_path.replace("\n", "")
-
-    res = pycp.util.shorten_path(long_path, 29)
-    assert len(res) == 29
-    assert res == "/h/y/./g/c/c/b.../curlsrc.sln"
-
-
-def test_shorten_long_basename():
-    path = "/a/b/c/d/e/f/g/" + "c" * 12
-    assert pycp.util.shorten_path(path, 14) == "/a/b.../ccc..."
-
-
 if __name__ == "__main__":
     unittest.main()
