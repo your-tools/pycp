@@ -5,6 +5,8 @@ It has a single update(*args, **kwargs)
 function.
 
 """
+
+import abc
 import sys
 import time
 from array import array
@@ -19,7 +21,7 @@ def cursor_up(file_desc, nb_lines):
     file_desc.write("\033[%dA" % nb_lines)
 
 
-class Widget():
+class Widget(metaclass=abc.ABCMeta):
     """A Widget has a single update()
     method that returns a string
 
@@ -29,9 +31,9 @@ class Widget():
         self.parent = line.parent
         self.fill = False
 
+    @abc.abstractmethod
     def update(self):
         """Called by line.update"""
-        raise NotImplementedError()
 
     def curval(self):
         """Returns the current value.
@@ -69,7 +71,7 @@ class Widget():
         return res
 
 
-class FillWidget(Widget):
+class FillWidget(Widget, metaclass=abc.ABCMeta):
     """A FillWidget MUST fill the width given
     has parameter of the update() method
     """
@@ -77,11 +79,11 @@ class FillWidget(Widget):
         Widget.__init__(self, line)
         self.fill = True
 
+    @abc.abstractmethod
     def update(self, width):
         """Return a string of size width using self.parent
 
         """
-        raise NotImplementedError()
 
 
 class BarWidget(FillWidget):
@@ -194,7 +196,7 @@ class ETAWidget(Widget):
         return self.line.elapsed()
 
 
-class Line():
+class Line(metaclass=abc.ABCMeta):
     """A Line is a list of Widgets
 
     """
@@ -212,26 +214,26 @@ class Line():
             if widget.fill:
                 self.fill_indexes.append(i)
 
+    @abc.abstractmethod
     def curval(self):
         """The current value of the line.
 
         To be implemented using self.parent.
         """
-        raise NotImplementedError()
 
+    @abc.abstractmethod
     def maxval(self):
         """The maximum value of the line.
 
         To be implemented using self.parent.
         """
-        raise NotImplementedError()
 
+    @abc.abstractmethod
     def elapsed(self):
         """The elapsed time of the line.
 
         To be implemented using self.parent.
         """
-        raise NotImplementedError()
 
     def update(self):
         """Call widget.update() for each widget in self.widget,
@@ -267,7 +269,7 @@ class Line():
         return "".join(res)
 
 
-class ProgressBar():
+class ProgressBar(metaclass=abc.ABCMeta):
     """A ProgressBar is simply a list of Lines
 
     """
@@ -331,11 +333,11 @@ class ProgressBar():
         self._update(params)
         self.display()
 
+    @abc.abstractmethod
     def _update(self, params):
         """Set the attributes used by line.update()
 
         """
-        raise NotImplementedError()
 
     def display(self):
         """Display the lines, taking care of always moving
