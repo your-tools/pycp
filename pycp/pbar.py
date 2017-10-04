@@ -13,6 +13,7 @@ import termios
 from fcntl import ioctl
 import pycp
 
+
 def cursor_up(file_desc, nb_lines):
     """Move the cursor up by nb_lines"""
     file_desc.write("\033[%dA" % nb_lines)
@@ -67,6 +68,7 @@ class Widget():
             res = 1
         return res
 
+
 class FillWidget(Widget):
     """A FillWidget MUST fill the width given
     has parameter of the update() method
@@ -80,6 +82,7 @@ class FillWidget(Widget):
 
         """
         raise NotImplementedError()
+
 
 class BarWidget(FillWidget):
     """A Bar widget fills the line"""
@@ -114,18 +117,19 @@ class BarWidget(FillWidget):
             res = (marker * marked_width).ljust(cwidth)
         return "[%s]" % res
 
+
 class FileTransferSpeed(Widget):
     "Widget for showing the transfer speed (useful for file transfers)."
     def __init__(self, line):
         self.fmt = '%6.2f %s'
-        self.units = ['B','K','M','G','T','P']
+        self.units = ['B', 'K', 'M', 'G', 'T', 'P']
         Widget.__init__(self, line)
 
     def update(self):
         """Implement Widget.update """
         elapsed = self.line.elapsed()
         curval = self.line.curval()
-        if elapsed < 2e-6:#== 0:
+        if elapsed < 2e-6:
             bps = 0.0
         else:
             bps = float(curval) / elapsed
@@ -136,12 +140,14 @@ class FileTransferSpeed(Widget):
             spd /= 1000
         return self.fmt % (spd, u+'/s')
 
+
 class PercentWidget(Widget):
     """A widget for percentages """
     def update(self):
         """By default, simply use self.fraction """
         fraction = self.fraction()
         return "%3d%%" % int(fraction * 100)
+
 
 class FileCountWidget(Widget):
     """ Return something like [ 4/ 10] """
@@ -186,6 +192,7 @@ class ETAWidget(Widget):
         By default, call self.line.elapsed.
         """
         return self.line.elapsed()
+
 
 class Line():
     """A Line is a list of Widgets
@@ -298,8 +305,8 @@ class ProgressBar():
 
         """
         try:
-            height_, width = array('h',
-                    ioctl(self.fd, termios.TIOCGWINSZ, '\0'*8))[:2]
+            ioctl_out = ioctl(self.fd, termios.TIOCGWINSZ, '\0'*8)
+            height_, width = array('h', ioctl_out)[:2]
             self.term_width = width
         # self.fd may not be a terminal
         except OSError:

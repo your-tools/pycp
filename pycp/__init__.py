@@ -7,10 +7,9 @@ transfer : handling transfer of files
 
 """
 
-__author__ = "Dimitri Merejkowsky"
-__version__ = "7.3.0"
 
 class Options:
     pass
+
 
 options = Options()

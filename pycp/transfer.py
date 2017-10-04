@@ -15,6 +15,7 @@ import pycp
 from pycp.util import debug
 from pycp.progress import FilePbar, GlobalPbar
 
+
 class TransferError(Exception):
     """Custom exception: wraps IOError
 
@@ -33,7 +34,7 @@ def samefile(src, dest):
 
     """
     # If os.path.samefile exists, use it:
-    if hasattr(os.path,'samefile'):
+    if hasattr(os.path, 'samefile'):
         try:
             return os.path.samefile(src, dest)
         except OSError:
@@ -64,7 +65,7 @@ def transfer_file(src, dest, callback):
         raise TransferError("%s and %s are the same file!" % (src, dest))
     if os.path.islink(src):
         target = os.readlink(src)
-        #remove existing stuff
+        # remove existing stuff
         if os.path.lexists(dest):
             os.remove(dest)
         os.symlink(target, dest)
@@ -92,7 +93,7 @@ def transfer_file(src, dest, callback):
             callback(xferd)
             dest_file.write(data)
     except IOError as err:
-        mess  = "Problem when transferring %s to %s\n" % (src, dest)
+        mess = "Problem when transferring %s to %s\n" % (src, dest)
         mess += "Error was: %s" % err
         raise TransferError(mess)
     finally:
@@ -137,6 +138,7 @@ def post_transfer(src, dest):
         # just ignore
         pass
 
+
 class TransferInfo():
     """This class contains:
     * a list of tuples: to_transfer (src, dest) where:
@@ -161,8 +163,8 @@ class TransferInfo():
         so on.
 
         """
-        filenames    = [x for x in sources if os.path.isfile(x)]
-        directories  = [x for x in sources if os.path.isdir (x)]
+        filenames = [x for x in sources if os.path.isfile(x)]
+        directories = [x for x in sources if os.path.isdir(x)]
 
         for filename in filenames:
             self._parse_file(filename, destination)
@@ -176,8 +178,8 @@ class TransferInfo():
         """
         debug(":: file %s -> %s" % (source, destination))
         if os.path.isdir(destination):
-            destination = os.path.join(destination,
-                                       os.path.basename(os.path.normpath(source)))
+            basename = os.path.basename(os.path.normpath(source))
+            destination = os.path.join(destination, basename)
         self.add(source, destination)
 
     def _parse_dir(self, source, destination):
@@ -186,7 +188,8 @@ class TransferInfo():
         """
         debug(":: dir %s -> %s" % (source, destination))
         if os.path.isdir(destination):
-            destination = os.path.join(destination, os.path.basename(os.path.normpath(source)))
+            basename = os.path.basename(os.path.normpath(source))
+            destination = os.path.join(destination, basename)
         debug(":: making dir %s" % destination)
         if not os.path.exists(destination):
             os.mkdir(destination)
@@ -242,7 +245,7 @@ class FileTransferManager():
                 if not pycp.options.move:
                     try:
                         os.remove(self.dest)
-                    except:
+                    except OSError:
                         # We don't want to raise here
                         pass
 

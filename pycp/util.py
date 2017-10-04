@@ -4,10 +4,12 @@ from __future__ import print_function
 
 import os
 
+
 def debug(message):
     """Print debug mesages when env. var PYCP_DEBUG is set."""
     if os.environ.get("PYCP_DEBUG"):
         print(message)
+
 
 def human_readable(size):
     """Build a nice human readable string from a size given in
@@ -23,7 +25,6 @@ def human_readable(size):
     else:
         hreadable = float(size)/(1024.0**3)
         return "%.2fG" % round(hreadable, 2)
-
 
 
 def pprint_transfer(src, dest):
@@ -48,7 +49,7 @@ def pprint_transfer(src, dest):
 
     # Find common suffix
     sfx_length = 0
-    i  = len_src - 1
+    i = len_src - 1
     j = len_dest - 1
     while (i > 0 and j > 0 and src[i] == dest[j]):
         if src[i] == os.path.sep:
@@ -56,12 +57,12 @@ def pprint_transfer(src, dest):
         i -= 1
         j -= 1
 
-    src_midlen  = len_src  - pfx_length - sfx_length
+    src_midlen = len_src - pfx_length - sfx_length
     dest_midlen = len_dest - pfx_length - sfx_length
 
-    pfx   = src[:pfx_length]
-    sfx   = dest[len_dest - sfx_length:]
-    src_mid  = src [pfx_length:pfx_length + src_midlen ]
+    pfx = src[:pfx_length]
+    sfx = dest[len_dest - sfx_length:]
+    src_mid = src[pfx_length:pfx_length + src_midlen]
     dest_mid = dest[pfx_length:pfx_length + dest_midlen]
 
     if pfx == os.path.sep:
@@ -69,7 +70,7 @@ def pprint_transfer(src, dest):
         # avoid print /{etc => tmp}/foo, and
         # print {/etc => /tmp}/foo
         pfx = ""
-        src_mid  = os.path.sep + src_mid
+        src_mid = os.path.sep + src_mid
         dest_mid = os.path.sep + dest_mid
 
     if not pfx and not sfx:

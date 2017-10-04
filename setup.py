@@ -5,19 +5,19 @@ import pycp
 
 
 setup(name='pycp',
-      version          = pycp.__version__,
-      description      = 'cp and mv with a progressbar',
-      author           = pycp.__author__,
-      url              = 'http://github.com/dmerejkowsky/pycp',
-      packages         = ['pycp'],
-      license          ='COPYING',
-      entry_points     = {
-          "console_scripts" : [
+      version="7.3",
+      description='cp and mv with a progressbar',
+      author=" Dimitr Merejkowsky",
+      url='http://github.com/dmerejkowsky/pycp',
+      packages=['pycp'],
+      license='COPYING',
+      entry_points={
+          "console_scripts": [
               "pycp  = pycp.main:main",
               "pymv  = pycp.main:main",
             ]
       },
-      classifiers      = [
+      classifiers=[
         "Environment :: Console",
         "License :: OSI Approved :: BSD License",
         "Operating System :: Unix",
@@ -25,5 +25,4 @@ setup(name='pycp',
         "Programming Language :: Python :: 3",
         "Topic :: System :: Shells",
       ],
-
-     )
+      )

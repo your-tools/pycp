@@ -5,6 +5,7 @@ GlobalPbar : one progressbar for the whole transfer
 
 """
 
+
 import sys
 import time
 from pycp.pbar import Line, ProgressBar
@@ -13,6 +14,7 @@ from pycp.pbar import PercentWidget, FileCountWidget
 from pycp.pbar import FileTransferSpeed
 
 from pycp.util import pprint_transfer, shorten_path
+
 
 class OneFileProgressLine(Line):
     """A progress line for just one file"""
@@ -26,14 +28,15 @@ class OneFileProgressLine(Line):
         file_eta = ETAWidget(self)
         file_speed = FileTransferSpeed(self)
         self.set_widgets([file_count,
-                        " ",
-                         percent,
-                         " " ,
-                         file_bar,
-                         " - ",
-                         file_speed,
-                         " | ",
-                         file_eta])
+                         " ",
+                          percent,
+                          " ",
+                          file_bar,
+                          " - ",
+                          file_speed,
+                          " | ",
+                          file_eta])
+
     def curval(self):
         """Implements Line.curval"""
         return self.parent.file_done
@@ -45,6 +48,7 @@ class OneFileProgressLine(Line):
     def elapsed(self):
         """Implements Line.elapsed"""
         return self.parent.file_elapsed
+
 
 class FilePbar(ProgressBar):
     """A file progress bar is initialized with
@@ -83,6 +87,7 @@ class FilePbar(ProgressBar):
             self.file_done = self.file_size
         self.file_elapsed = time.time() - self.start_time
 
+
 class DoneNumber(Widget):
     """Print '3 on 42' """
     def __init__(self, line):
@@ -91,8 +96,9 @@ class DoneNumber(Widget):
     def update(self):
         """Overwrite Widget.update """
         done = self.parent.num_files_done
-        total  = self.parent.num_files
+        total = self.parent.num_files
         return "%d on %d" % (done, total)
+
 
 class FileName(FillWidget):
     """Print the name of the file being transferred. """
@@ -106,6 +112,7 @@ class FileName(FillWidget):
         res = short_path + ' ' * to_fill
         return res
 
+
 class FileProgressLine(Line):
     """A progress line for one file"""
     def __init__(self, parent):
@@ -115,12 +122,12 @@ class FileProgressLine(Line):
         file_name = FileName(self)
         file_eta = ETAWidget(self)
         self.set_widgets([percent,
-                         " ",
-                         file_name,
-                         " " ,
-                         file_bar,
-                         " ",
-                         file_eta])
+                          " ",
+                          file_name,
+                          " ",
+                          file_bar,
+                          " ",
+                          file_eta])
 
     def curval(self):
         """Implement Line.curval"""
@@ -134,6 +141,7 @@ class FileProgressLine(Line):
         """Implement Line.elapsed"""
         return self.parent.file_elapsed
 
+
 class TotalLine(Line):
     """A progress line for the whole transfer """
     def __init__(self, parent):
@@ -144,14 +152,14 @@ class TotalLine(Line):
         total_eta = ETAWidget(self)
         speed = FileTransferSpeed(self)
         self.set_widgets([total_percent,
-                         " - " ,
-                         speed,
-                         " - ",
-                         total_bar,
-                         " - ",
-                         done_number,
-                         " ",
-                         total_eta])
+                          " - ",
+                          speed,
+                          " - ",
+                          total_bar,
+                          " - ",
+                          done_number,
+                          " ",
+                          total_eta])
 
     def curval(self):
         """Implement Line.curval"""
@@ -195,9 +203,9 @@ class GlobalPbar(ProgressBar):
 
     def _update(self, xferd):
         """Implement ProgressBar._update """
-        self.file_done  += xferd
+        self.file_done += xferd
         self.total_done += xferd
-        self.file_elapsed  = time.time() - self.file_start_time
+        self.file_elapsed = time.time() - self.file_start_time
         self.total_elapsed = time.time() - self.start_time
 
     def new_file(self, src, size):

@@ -36,25 +36,25 @@ class CpTestCase(unittest.TestCase):
         self.previous_dir = os.getcwd()
 
     def test_zero(self):
-        sys.argv=["pycp"]
+        sys.argv = ["pycp"]
         self.assertRaises(SystemExit, pycp_main)
 
     def test_cp_self_1(self):
         "a_file -> a_file"
-        a_file      = os.path.join(self.test_dir, "a_file")
+        a_file = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pycp", a_file, a_file]
         self.assertRaises(SystemExit, pycp_main)
 
     def test_cp_self_2(self):
         "a_file -> ."
-        a_file      = os.path.join(self.test_dir, "a_file")
+        a_file = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pycp", a_file, self.test_dir]
         self.assertRaises(SystemExit, pycp_main)
 
     def test_cp_file_file(self):
         "a_file -> a_file.back"
         # cp a_file a_file.back
-        a_file      = os.path.join(self.test_dir, "a_file")
+        a_file = os.path.join(self.test_dir, "a_file")
         a_file_back = os.path.join(self.test_dir, "a_file.back")
 
         sys.argv = ["pycp", a_file, a_file_back]
@@ -94,7 +94,7 @@ class CpTestCase(unittest.TestCase):
 
     def test_cp_exe_file(self):
         "copied file should still be executable"
-        exe_file   = os.path.join(self.test_dir, "file.exe")
+        exe_file = os.path.join(self.test_dir, "file.exe")
         exe_file_2 = os.path.join(self.test_dir, "file2.exe")
         sys.argv = ["pycp", exe_file, exe_file_2]
         pycp_main()
@@ -103,7 +103,7 @@ class CpTestCase(unittest.TestCase):
     def test_cp_file_dir(self):
         "a_file -> b_dir"
         a_file = os.path.join(self.test_dir, "a_file")
-        b_dir  = os.path.join(self.test_dir, "b_dir")
+        b_dir = os.path.join(self.test_dir, "b_dir")
         os.mkdir(b_dir)
         sys.argv = ["pycp", a_file, b_dir]
         pycp_main()
@@ -144,21 +144,18 @@ class CpTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(c_file))
         self.assertTrue(os.path.exists(d_file))
 
-
     def test_no_source(self):
         "d_file -> d_file.back but d_file does not exists"
         d_file = os.path.join(self.test_dir, "d_file")
         sys.argv = ["pycp", d_file, "d_file.back"]
         self.assertRaises(SystemExit, pycp_main)
 
-
     def test_no_dest(self):
         "a_file -> d_dir but d_dir does not exists"
         a_file = os.path.join(self.test_dir, "a_file")
-        d_dir  = os.path.join(self.test_dir, "d_dir" + os.path.sep)
+        d_dir = os.path.join(self.test_dir, "d_dir" + os.path.sep)
         sys.argv = ["pycp", a_file, d_dir]
         self.assertRaises(SystemExit, pycp_main)
-
 
     def test_several_sources_1(self):
         "a_file b_file c_file"
@@ -168,15 +165,13 @@ class CpTestCase(unittest.TestCase):
         sys.argv = ["pycp", a_file, b_file, c_file]
         self.assertRaises(SystemExit, pycp_main)
 
-
     def test_several_sources_2(self):
         "a_file b_file c_dir but c_dir does not exists"
         a_file = os.path.join(self.test_dir, "a_file")
         b_file = os.path.join(self.test_dir, "b_file")
-        c_dir  = os.path.join(self.test_dir, "c_dir" )
+        c_dir = os.path.join(self.test_dir, "c_dir")
         sys.argv = ["pycp", a_file, b_file, c_dir]
         self.assertRaises(SystemExit, pycp_main)
-
 
     def test_overwrite_1(self):
         "a_file -> b_file and b_file already exists (unsafe)"
@@ -185,10 +180,9 @@ class CpTestCase(unittest.TestCase):
         sys.argv = ["pycp", a_file, b_file]
         pycp_main()
         b_file_desc = open(b_file, "r")
-        b_contents  = b_file_desc.read()
+        b_contents = b_file_desc.read()
         b_file_desc.close()
         self.assertEqual(b_contents, "a\n")
-
 
     def test_overwrite_2(self):
         "a_file -> b_file and b_file already exists (safe)"
@@ -197,7 +191,7 @@ class CpTestCase(unittest.TestCase):
         sys.argv = ["pycp", "--safe",  a_file, b_file]
         pycp_main()
         b_file_desc = open(b_file, "r")
-        b_contents  = b_file_desc.read()
+        b_contents = b_file_desc.read()
         b_file_desc.close()
         self.assertEqual(b_contents, "b\n")
 
@@ -234,44 +228,41 @@ class MvTestCase(unittest.TestCase):
         self.previous_dir = os.getcwd()
 
     def test_zero(self):
-        sys.argv=["pymv"]
+        sys.argv = ["pymv"]
         self.assertRaises(SystemExit, pycp_main)
-
 
     def test_mv_self_1(self):
         "a_file -> a_file"
-        a_file      = os.path.join(self.test_dir, "a_file")
+        a_file = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pymv", a_file, a_file]
         self.assertRaises(SystemExit, pycp_main)
 
     def test_mv_self_2(self):
         "a_file -> ."
-        a_file      = os.path.join(self.test_dir, "a_file")
+        a_file = os.path.join(self.test_dir, "a_file")
         sys.argv = ["pymv", a_file, self.test_dir]
         self.assertRaises(SystemExit, pycp_main)
 
     def test_mv_file_file(self):
         "a_file -> a_file.back"
-        a_file      = os.path.join(self.test_dir, "a_file")
+        a_file = os.path.join(self.test_dir, "a_file")
         a_file_back = os.path.join(self.test_dir, "a_file.back")
 
         sys.argv = ["pymv", a_file, a_file_back]
         pycp_main()
-        self.assertTrue (os.path.exists(a_file_back))
+        self.assertTrue(os.path.exists(a_file_back))
         self.assertFalse(os.path.exists(a_file))
-
 
     def test_mv_file_dir(self):
         "a_file -> b_dir"
         a_file = os.path.join(self.test_dir, "a_file")
-        b_dir  = os.path.join(self.test_dir, "b_dir")
+        b_dir = os.path.join(self.test_dir, "b_dir")
         os.mkdir(b_dir)
         sys.argv = ["pymv", a_file, b_dir]
         pycp_main()
         dest = os.path.join(b_dir, "a_file")
-        self.assertTrue (os.path.exists(dest))
+        self.assertTrue(os.path.exists(dest))
         self.assertFalse(os.path.exists(a_file))
-
 
     def test_mv_dir_dir_1(self):
         "a_dir -> b_dir (b_dir does not exist)"
@@ -281,8 +272,8 @@ class MvTestCase(unittest.TestCase):
         pycp_main()
         c_file = os.path.join(b_dir, "c_file")
         d_file = os.path.join(b_dir, "c_file")
-        self.assertTrue (os.path.exists(c_file))
-        self.assertTrue (os.path.exists(d_file))
+        self.assertTrue(os.path.exists(c_file))
+        self.assertTrue(os.path.exists(d_file))
         self.assertFalse(os.path.exists(a_dir))
 
     def test_mv_dir_dir2_global(self):
@@ -293,8 +284,8 @@ class MvTestCase(unittest.TestCase):
         pycp_main()
         c_file = os.path.join(b_dir, "c_file")
         d_file = os.path.join(b_dir, "c_file")
-        self.assertTrue (os.path.exists(c_file))
-        self.assertTrue (os.path.exists(d_file))
+        self.assertTrue(os.path.exists(c_file))
+        self.assertTrue(os.path.exists(d_file))
         self.assertFalse(os.path.exists(a_dir))
 
     def test_mv_dir_dir_2(self):
@@ -306,8 +297,8 @@ class MvTestCase(unittest.TestCase):
         pycp_main()
         c_file = os.path.join(b_dir, "a_dir", "c_file")
         d_file = os.path.join(b_dir, "a_dir", "c_file")
-        self.assertTrue (os.path.exists(c_file))
-        self.assertTrue (os.path.exists(d_file))
+        self.assertTrue(os.path.exists(c_file))
+        self.assertTrue(os.path.exists(d_file))
         self.assertFalse(os.path.exists(a_dir))
 
     def test_no_source(self):
@@ -316,14 +307,12 @@ class MvTestCase(unittest.TestCase):
         sys.argv = ["pymv", d_file, "d_file.back"]
         self.assertRaises(SystemExit, pycp_main)
 
-
     def test_no_dest(self):
         "a_file -> d_dir but d_dir does not exists"
         a_file = os.path.join(self.test_dir, "a_file")
-        d_dir  = os.path.join(self.test_dir, "d_dir" + os.path.sep)
+        d_dir = os.path.join(self.test_dir, "d_dir" + os.path.sep)
         sys.argv = ["pymv", a_file, d_dir]
         self.assertRaises(SystemExit, pycp_main)
-
 
     def test_several_sources_1(self):
         "a_file b_file c_file"
@@ -333,15 +322,13 @@ class MvTestCase(unittest.TestCase):
         sys.argv = ["pymv", a_file, b_file, c_file]
         self.assertRaises(SystemExit, pycp_main)
 
-
     def test_several_sources_2(self):
         "a_file b_file c_dir but c_dir does not exists"
         a_file = os.path.join(self.test_dir, "a_file")
         b_file = os.path.join(self.test_dir, "b_file")
-        c_dir  = os.path.join(self.test_dir, "c_dir" )
+        c_dir = os.path.join(self.test_dir, "c_dir")
         sys.argv = ["pymv", a_file, b_file, c_dir]
         self.assertRaises(SystemExit, pycp_main)
-
 
     def test_overwrite_1(self):
         "a_file -> b_file and b_file already exists (unsafe)"
@@ -350,11 +337,10 @@ class MvTestCase(unittest.TestCase):
         sys.argv = ["pymv", a_file, b_file]
         pycp_main()
         b_file_desc = open(b_file, "r")
-        b_contents  = b_file_desc.read()
+        b_contents = b_file_desc.read()
         b_file_desc.close()
         self.assertEqual(b_contents, "a\n")
         self.assertFalse(os.path.exists(a_file))
-
 
     def test_overwrite_2(self):
         "a_file -> b_file and b_file already exists (safe)"
@@ -363,7 +349,7 @@ class MvTestCase(unittest.TestCase):
         sys.argv = ["pymv", "--safe",  a_file, b_file]
         pycp_main()
         b_file_desc = open(b_file, "r")
-        b_contents  = b_file_desc.read()
+        b_contents = b_file_desc.read()
         b_file_desc.close()
         self.assertEqual(b_contents, "b\n")
         self.assertTrue(os.path.exists(a_file))
@@ -375,8 +361,6 @@ class MvTestCase(unittest.TestCase):
         b_dir = os.path.join(self.test_dir, "b_dir")
         sys.argv = ["pymv", a_dir, b_dir]
         pycp_main()
-
-
 
     def tearDown(self):
         """Remove the temporary directory
@@ -391,79 +375,80 @@ class MvTestCase(unittest.TestCase):
 if os.name == "posix":
     class UnixPrintTransferTestCase(unittest.TestCase):
         def test_01(self):
-            src  = "/path/to/foo"
+            src = "/path/to/foo"
             dest = "/path/to/bar"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, "/path/to/{foo => bar}")
 
         def test_02(self):
-            src  = "/path/to/foo/a/b"
+            src = "/path/to/foo/a/b"
             dest = "/path/to/spam/a/b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, "/path/to/{foo => spam}/a/b")
 
         def test_03(self):
-            src  = "/path/to/foo/a/b"
+            src = "/path/to/foo/a/b"
             dest = "/path/to/foo/bar/a/b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, "/path/to/foo/{ => bar}/a/b")
 
         def test_no_pfx(self):
-            src  = "/path/to/foo/a/b"
+            src = "/path/to/foo/a/b"
             dest = "/other/a/b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, "{/path/to/foo => /other}/a/b")
 
         def test_no_sfx(self):
-            src  = "/path/to/foo/a"
+            src = "/path/to/foo/a"
             dest = "/path/to/foo/b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, "/path/to/foo/{a => b}")
 
         def test_no_dir(self):
-            src  = "a"
+            src = "a"
             dest = "b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, "a => b")
 
 
 if os.name == "nt":
     class DosPrintTransferTestCase(unittest.TestCase):
         def test_01(self):
-            src  = r"c:\path\to\foo"
+            src = r"c:\path\to\foo"
             dest = r"c:\path\to\bar"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, r"c:\path\to\{foo => bar}")
 
         def test_02(self):
-            src  = r"c:\path\to\foo\a\b"
+            src = r"c:\path\to\foo\a\b"
             dest = r"c:\path\to\spam\a\b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, r"c:\path\to\{foo => spam}\a\b")
 
         def test_03(self):
-            src  = r"c:\path\to\foo\a\b"
+            src = r"c:\path\to\foo\a\b"
             dest = r"c:\path\to\foo\bar\a\b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, r"c:\path\to\foo\{ => bar}\a\b")
 
         def test_other_drive(self):
-            src  = r"c:\path\to\foo\a\b"
+            src = r"c:\path\to\foo\a\b"
             dest = r"d:\other\a\b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, r"{c:\path\to\foo => d:\other}\a\b")
 
         def test_no_sfx(self):
-            src  = r"c:\path\to\foo\a"
+            src = r"c:\path\to\foo\a"
             dest = r"c:\path\to\foo\b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, r"c:\path\to\foo\{a => b}")
 
         def test_no_dir(self):
-            src  = "a"
+            src = "a"
             dest = "b"
-            res  = pprint_transfer(src, dest)
+            res = pprint_transfer(src, dest)
             self.assertEqual(res, "a => b")
+
 
 def test_shorten_path_long_prefix():
     long_path = """\
@@ -476,9 +461,11 @@ VC10/src/curlsrc.sln"""
     assert len(res) == 29
     assert res == "/h/y/./g/c/c/b.../curlsrc.sln"
 
+
 def test_shorten_long_basename():
     path = "/a/b/c/d/e/f/g/" + "c" * 12
     assert pycp.util.shorten_path(path, 14) == "/a/b.../ccc..."
 
-if __name__ == "__main__" :
+
+if __name__ == "__main__":
     unittest.main()
