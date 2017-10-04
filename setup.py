@@ -13,8 +13,8 @@ setup(name='pycp',
       license='COPYING',
       entry_points={
           "console_scripts": [
-              "pycp  = pycp.main:main",
-              "pymv  = pycp.main:main",
+              "pycp = pycp.main:main",
+              "pymv = pycp.main:main",
             ]
       },
       classifiers=[
