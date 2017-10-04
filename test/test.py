@@ -372,82 +372,42 @@ class MvTestCase(unittest.TestCase):
             shutil.rmtree(self.test_dir)
 
 
-if os.name == "posix":
-    class UnixPrintTransferTestCase(unittest.TestCase):
-        def test_01(self):
-            src = "/path/to/foo"
-            dest = "/path/to/bar"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, "/path/to/{foo => bar}")
+class PrintTransferTestCase(unittest.TestCase):
+    def test_01(self):
+        src = "/path/to/foo"
+        dest = "/path/to/bar"
+        res = pprint_transfer(src, dest)
+        self.assertEqual(res, "/path/to/{foo => bar}")
 
-        def test_02(self):
-            src = "/path/to/foo/a/b"
-            dest = "/path/to/spam/a/b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, "/path/to/{foo => spam}/a/b")
+    def test_02(self):
+        src = "/path/to/foo/a/b"
+        dest = "/path/to/spam/a/b"
+        res = pprint_transfer(src, dest)
+        self.assertEqual(res, "/path/to/{foo => spam}/a/b")
 
-        def test_03(self):
-            src = "/path/to/foo/a/b"
-            dest = "/path/to/foo/bar/a/b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, "/path/to/foo/{ => bar}/a/b")
+    def test_03(self):
+        src = "/path/to/foo/a/b"
+        dest = "/path/to/foo/bar/a/b"
+        res = pprint_transfer(src, dest)
+        self.assertEqual(res, "/path/to/foo/{ => bar}/a/b")
 
-        def test_no_pfx(self):
-            src = "/path/to/foo/a/b"
-            dest = "/other/a/b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, "{/path/to/foo => /other}/a/b")
+    def test_no_pfx(self):
+        src = "/path/to/foo/a/b"
+        dest = "/other/a/b"
+        res = pprint_transfer(src, dest)
+        self.assertEqual(res, "{/path/to/foo => /other}/a/b")
 
-        def test_no_sfx(self):
-            src = "/path/to/foo/a"
-            dest = "/path/to/foo/b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, "/path/to/foo/{a => b}")
+    def test_no_sfx(self):
+        src = "/path/to/foo/a"
+        dest = "/path/to/foo/b"
+        res = pprint_transfer(src, dest)
+        self.assertEqual(res, "/path/to/foo/{a => b}")
 
-        def test_no_dir(self):
-            src = "a"
-            dest = "b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, "a => b")
-
-
-if os.name == "nt":
-    class DosPrintTransferTestCase(unittest.TestCase):
-        def test_01(self):
-            src = r"c:\path\to\foo"
-            dest = r"c:\path\to\bar"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, r"c:\path\to\{foo => bar}")
-
-        def test_02(self):
-            src = r"c:\path\to\foo\a\b"
-            dest = r"c:\path\to\spam\a\b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, r"c:\path\to\{foo => spam}\a\b")
-
-        def test_03(self):
-            src = r"c:\path\to\foo\a\b"
-            dest = r"c:\path\to\foo\bar\a\b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, r"c:\path\to\foo\{ => bar}\a\b")
-
-        def test_other_drive(self):
-            src = r"c:\path\to\foo\a\b"
-            dest = r"d:\other\a\b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, r"{c:\path\to\foo => d:\other}\a\b")
-
-        def test_no_sfx(self):
-            src = r"c:\path\to\foo\a"
-            dest = r"c:\path\to\foo\b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, r"c:\path\to\foo\{a => b}")
-
-        def test_no_dir(self):
-            src = "a"
-            dest = "b"
-            res = pprint_transfer(src, dest)
-            self.assertEqual(res, "a => b")
+    def test_no_dir(self):
+        src = "a"
+        dest = "b"
+        res = pprint_transfer(src, dest)
+        self.assertEqual(res, "a => b")
 
 
 def test_shorten_path_long_prefix():
