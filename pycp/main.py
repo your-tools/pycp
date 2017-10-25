@@ -12,15 +12,16 @@ import pkg_resources
 from pycp.transfer import TransferManager, TransferError
 
 
-# pylint: disable=too-many-locals,too-many-statements
-def main():
+def is_pymv():
+    return sys.argv[0].endswith("pymv")
+
+
+def parse_commandline():
     """Parses command line arguments"""
-    if sys.argv[0].endswith("pymv"):
-        move = True
+    if is_pymv():
         prog_name = "pymv"
         action = "move"
     else:
-        move = False
         prog_name = "pycp"
         action = "copy"
 
@@ -90,19 +91,15 @@ def main():
         global_progress=False)
     parser.add_argument("files", nargs="+")
 
-    args = parser.parse_args()
-    files = args.files
-    ignore_errors = args.ignore_errors
-    all_files = args.all
-    global_progress = args.global_progress
-    safe = args.safe
-    interactive = args.interactive
+    return parser.parse_args()
 
-    if len(files) < 2:
-        parser.error("Incorrect number of arguments")
 
-    sources = files[:-1]
-    destination = files[-1]
+def parse_filelist(filelist):
+    if len(filelist) < 2:
+        sys.exit("Incorrect number of arguments")
+
+    sources = filelist[:-1]
+    destination = filelist[-1]
 
     if len(sources) > 1:
         if not os.path.isdir(destination):
@@ -111,6 +108,21 @@ def main():
     for source in sources:
         if not os.path.exists(source):
             sys.exit("%s does not exist" % source)
+
+    return sources, destination
+
+
+def main():
+    move = is_pymv()
+    args = parse_commandline()
+    files = args.files
+    ignore_errors = args.ignore_errors
+    all_files = args.all
+    global_progress = args.global_progress
+    safe = args.safe
+    interactive = args.interactive
+
+    sources, destination = parse_filelist(files)
 
     # FIXME: this is a hack until we have proper 'style' support
     if args.pacman:
