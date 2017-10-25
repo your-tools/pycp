@@ -72,12 +72,12 @@ def main():
 
     parser.add_argument("-g", "--global-pbar",
                         action="store_true",
-                        dest="global_pbar",
+                        dest="global_progress",
                         help="display only one progress bar during transfer")
 
     parser.add_argument("--i-love-candy",
                         action="store_true",
-                        dest="chomp",
+                        dest="pacman",
                         help=argparse.SUPPRESS)
 
     parser.set_defaults(
@@ -85,19 +85,24 @@ def main():
         interactive=False,
         all=False,
         ignore_errors=False,
-        preserve=False)
+        preserve=False,
+        global_progress=False)
     parser.add_argument("files", nargs="+")
 
     args = parser.parse_args()
-    args.move = move  # This "option" is set by sys.argv[0]
+    files = args.files
+    ignore_errors = args.ignore_errors
+    all_files = args.all
+    global_progress = args.global_progress
+    pacman = args.pacman
+    safe = args.safe
+    interactive = args.interactive
 
-    pycp.options = args
-
-    if len(args.files) < 2:
+    if len(files) < 2:
         parser.error("Incorrect number of arguments")
 
-    sources = args.files[:-1]
-    destination = args.files[-1]
+    sources = files[:-1]
+    destination = files[-1]
 
     if len(sources) > 1:
         if not os.path.isdir(destination):
@@ -107,7 +112,14 @@ def main():
         if not os.path.exists(source):
             sys.exit("%s does not exist" % source)
 
-    transfer_manager = TransferManager(sources, destination)
+    # FIXME: this is a hack until we have proper 'style' support
+    if args.pacman:
+        os.environ["PYCP_PACMAN"] = True
+
+    transfer_manager = TransferManager(sources, destination,
+                                       move=move, ignore_errors=ignore_errors,
+                                       all_files=all_files, global_progress=global_progress,
+                                       safe=safe, interactive=interactive)
     try:
         errors = transfer_manager.do_transfer()
     except TransferError as err:

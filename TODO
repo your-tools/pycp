@@ -1,7 +1,6 @@
 Refactorings
 -------------
 
-* Get rid of pycp.options global var
 * .update() should not cause any side effets, we should have a .get_text() method
   to query the output of widets or progress bars
 * Merge pycp.pbar into pycp.progress (no need for different modules here)

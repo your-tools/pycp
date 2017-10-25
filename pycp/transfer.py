@@ -50,14 +50,14 @@ def samefile(src, dest):
     return normalise(src) == normalise(dest)
 
 
-def transfer_file(src, dest, callback):
+def transfer_file(src, dest, callback, *, move=False, preserve=False):
     """Transfer src to dest, calling
     callback(xferd) while doing so,
     where xferd is the size of the buffer successfully transferred
 
     src and dest must be two valid file paths.
 
-    If pycp.options.move is True, remove src when done.
+    If move is True, remove src when done.
     """
     if samefile(src, dest):
         raise TransferError("%s and %s are the same file!" % (src, dest))
@@ -99,11 +99,11 @@ def transfer_file(src, dest, callback):
         dest_file.close()
 
     try:
-        post_transfer(src, dest)
+        post_transfer(src, dest, preserve=preserve)
     except OSError as err:
         print("Warning: failed to finalize transfer of %s: %s" % (dest, err))
 
-    if pycp.options.move:
+    if move:
         try:
             debug("removing %s" % src)
             os.remove(src)
@@ -111,7 +111,7 @@ def transfer_file(src, dest, callback):
             print("Warning: could not remove %s" % src)
 
 
-def post_transfer(src, dest):
+def post_transfer(src, dest, preserve=False):
     """Handle stat of transferred file
 
     By default, preserve only permissions.
@@ -123,7 +123,7 @@ def post_transfer(src, dest):
     if hasattr(os, 'chmod'):
         mode = stat.S_IMODE(src_st.st_mode)
         os.chmod(dest, mode)
-    if not pycp.options.preserve:
+    if not preserve:
         return
     if hasattr(os, 'utime'):
         os.utime(dest, (src_st.st_atime, src_st.st_mtime))
@@ -147,7 +147,8 @@ class TransferInfo():
     transferred
 
     """
-    def __init__(self, sources, destination):
+    def __init__(self, sources, destination, *, all_files=False):
+        self.all_files = all_files
         self.size = 0
         # List of tuples (src, dest) of files to transfer
         self.to_transfer = list()
@@ -192,7 +193,7 @@ class TransferInfo():
         if not os.path.exists(destination):
             os.mkdir(destination)
         file_names = sorted(os.listdir(source))
-        if not pycp.options.all:
+        if not self.all_files:
             file_names = [f for f in file_names if not f.startswith(".")]
         file_names = [os.path.join(source, f) for f in file_names]
         self.parse(file_names, destination)
@@ -214,7 +215,12 @@ class FileTransferManager():
     The parent will be updated during transfer to monitor progress
 
     """
-    def __init__(self, parent, src, dest):
+    def __init__(self, parent, src, dest, *, ignore_errors=False,
+                 move=False, safe=False, interactive=False):
+        self.safe = safe
+        self.interactive = interactive
+        self.ignore_errors = ignore_errors
+        self.move = move
         self.parent = parent
         self.src = src
         self.dest = dest
@@ -235,12 +241,13 @@ class FileTransferManager():
             if should_skip:
                 return
         try:
-            transfer_file(self.src, self.dest, self.callback)
+            transfer_file(self.src, self.dest, self.callback,
+                          move=self.move)
         except TransferError as exception:
-            if pycp.options.ignore_errors:
+            if self.ignore_errors:
                 error = exception
                 # remove dest file
-                if not pycp.options.move:
+                if not self.move:
                     try:
                         os.remove(self.dest)
                     except OSError:
@@ -259,12 +266,12 @@ class FileTransferManager():
 
         """
         # Safe: always skip
-        if pycp.options.safe:
+        if self.safe:
             print("Warning: skipping", self.dest)
             return True
 
         # Not safe and not interactive => overwrite
-        if not pycp.options.interactive:
+        if not self.interactive:
             return False
 
         # Interactive
@@ -291,10 +298,17 @@ class TransferManager():
     to transfer.
 
     """
-    def __init__(self, sources, destination):
+    def __init__(self, sources, destination, *, global_progress=False, move=False,
+                 ignore_errors=False, all_files=False, safe=False, interactive=False):
         self.sources = sources
         self.destination = destination
         self.transfer_info = TransferInfo(sources, destination)
+        self.global_progress = global_progress
+        self.ignore_errors = ignore_errors
+        self.move = move
+        self.all_files = all_files
+        self.safe = safe
+        self.interactive = interactive
         self.global_pbar = None
         self.file_pbar = None
         self.num_files = 0
@@ -304,19 +318,21 @@ class TransferManager():
         """Performs the real transfer"""
         errors = dict()
         self.num_files = len(self.transfer_info.to_transfer)
-        if pycp.options.global_pbar:
+        if self.global_progress:
             total_size = self.transfer_info.size
             self.global_pbar = GlobalPbar(self.num_files, total_size)
             self.global_pbar.start()
         for (src, dest, file_size) in self.transfer_info.to_transfer:
             self.file_index += 1
-            ftm = FileTransferManager(self, src, dest)
+            ftm = FileTransferManager(self, src, dest,
+                                      safe=self.safe, interactive=self.interactive,
+                                      ignore_errors=self.ignore_errors, move=self.move)
             self.on_new_transfer(src, dest, file_size)
             error = ftm.do_transfer()
             if error:
                 errors[src] = error
 
-        if pycp.options.move and not pycp.options.ignore_errors:
+        if self.move and not self.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
                 os.rmdir(to_remove)
 
@@ -331,7 +347,7 @@ class TransferManager():
         create a new progress bar for just one file
 
         """
-        if pycp.options.global_pbar:
+        if self.global_progress:
             self.global_pbar.new_file(src, size)
         else:
             self.file_pbar = FilePbar(src, dest, size,
@@ -344,7 +360,7 @@ class TransferManager():
         update the file_pbar
 
         """
-        if pycp.options.global_pbar:
+        if self.global_progress:
             self.global_pbar.update(xferd)
         else:
             self.file_pbar.update(xferd)

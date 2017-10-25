@@ -7,6 +7,7 @@ function.
 """
 
 import abc
+import os
 import sys
 import time
 from array import array
@@ -102,7 +103,7 @@ class BarWidget(FillWidget):
         cwidth = width - 2
         marked_width = int(fraction * cwidth)
 
-        if pycp.options.chomp:
+        if os.environ.get("PYCP_PACMAN"):
             marker = "-"
             if marked_width == cwidth:
                 res = marker * marked_width

@@ -6,10 +6,3 @@ pbar     : different kind of progress bars
 transfer : handling transfer of files
 
 """
-
-
-class Options:
-    pass
-
-
-options = Options()
