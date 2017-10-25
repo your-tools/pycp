@@ -28,7 +28,7 @@ class OneFileProgressLine(Line):
         file_eta = ETAWidget(self)
         file_speed = FileTransferSpeed(self)
         self.set_widgets([file_count,
-                         " ",
+                          " ",
                           percent,
                           " ",
                           file_bar,
@@ -50,11 +50,13 @@ class OneFileProgressLine(Line):
         return self.parent.file_elapsed
 
 
+# pylint: disable=too-many-instance-attributes
 class FilePbar(ProgressBar):
     """A file progress bar is initialized with
     a src, a dest, and a size
 
     """
+    # pylint: disable=too-many-arguments
     def __init__(self, src, dest, size, file_index, num_files):
         self.src = src
         self.dest = dest
@@ -78,6 +80,7 @@ class FilePbar(ProgressBar):
         self.start_time = time.time()
         ProgressBar.start(self)
 
+    # pylint: disable=arguments-differ
     def _update(self, xferd):
         """Implement ProgressBar._update """
         self.file_done += xferd
@@ -93,6 +96,7 @@ class DoneNumber(Widget):
     def __init__(self, line):
         Widget.__init__(self, line)
 
+    # pylint: disable=arguments-differ
     def update(self):
         """Overwrite Widget.update """
         done = self.parent.num_files_done
@@ -174,6 +178,7 @@ class TotalLine(Line):
         return self.parent.total_elapsed
 
 
+# pylint: disable=too-many-instance-attributes
 class GlobalPbar(ProgressBar):
     """The Global progressbar.
     First line is a TotalLine, the second is a FileProgressLine
@@ -201,6 +206,7 @@ class GlobalPbar(ProgressBar):
         self.start_time = time.time()
         ProgressBar.start(self)
 
+    # pylint: disable=arguments-differ
     def _update(self, xferd):
         """Implement ProgressBar._update """
         self.file_done += xferd

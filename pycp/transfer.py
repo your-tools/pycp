@@ -9,7 +9,6 @@ pycp.progress
 import os
 import stat
 
-import pycp
 from pycp.util import debug
 from pycp.progress import FilePbar, GlobalPbar
 
@@ -50,6 +49,7 @@ def samefile(src, dest):
     return normalise(src) == normalise(dest)
 
 
+# pylint: disable=too-many-branches
 def transfer_file(src, dest, callback, *, move=False, preserve=False):
     """Transfer src to dest, calling
     callback(xferd) while doing so,
@@ -78,7 +78,6 @@ def transfer_file(src, dest, callback, *, move=False, preserve=False):
     except IOError:
         raise TransferError("Could not open %s for writing" % dest)
 
-    # FIXME: a buffer size this small consumes a lot of CPU ...
     buff_size = 100 * 1024
     xferd = 0
     try:
@@ -207,6 +206,7 @@ class TransferInfo():
         self.to_transfer.append((src, dest, file_size))
 
 
+# pylint: disable=too-many-instance-attributes
 class FileTransferManager():
     """This class handles transfering one file to an other
     It is initialized with a source and a destination, which
@@ -277,10 +277,7 @@ class FileTransferManager():
         # Interactive
         print("File: '%s' already exists" % self.dest)
         print("Overwrite?")
-        if sys.version_info[0] < 3:
-            user_input = raw_input()
-        else:
-            user_input = input()
+        user_input = input()
         if user_input == "y":
             return False
         else:
@@ -291,6 +288,7 @@ class FileTransferManager():
         self.parent.update(xferd)
 
 
+# pylint: disable=too-many-instance-attributes
 class TransferManager():
     """Handles transfer of a one or several sources to a destination
 

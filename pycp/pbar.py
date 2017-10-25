@@ -14,7 +14,6 @@ from array import array
 import signal
 import termios
 from fcntl import ioctl
-import pycp
 
 
 def cursor_up(file_desc, nb_lines):
@@ -33,7 +32,7 @@ class Widget(metaclass=abc.ABCMeta):
         self.fill = False
 
     @abc.abstractmethod
-    def update(self):
+    def update(self, *args, **kwargs):
         """Called by line.update"""
 
     def curval(self):
@@ -80,6 +79,7 @@ class FillWidget(Widget, metaclass=abc.ABCMeta):
         Widget.__init__(self, line)
         self.fill = True
 
+    # pylint: disable=arguments-differ
     @abc.abstractmethod
     def update(self, width):
         """Return a string of size width using self.parent
@@ -128,6 +128,7 @@ class FileTransferSpeed(Widget):
         self.units = ['B', 'K', 'M', 'G', 'T', 'P']
         Widget.__init__(self, line)
 
+    # pylint: disable=arguments-differ
     def update(self):
         """Implement Widget.update """
         elapsed = self.line.elapsed()
@@ -137,15 +138,17 @@ class FileTransferSpeed(Widget):
         else:
             bps = float(curval) / elapsed
         spd = bps
-        for u in self.units:
+        unit = None
+        for unit in self.units:
             if spd < 1000:
                 break
             spd /= 1000
-        return self.fmt % (spd, u+'/s')
+        return self.fmt % (spd, unit+'/s')
 
 
 class PercentWidget(Widget):
     """A widget for percentages """
+    # pylint: disable=arguments-differ
     def update(self):
         """By default, simply use self.fraction """
         fraction = self.fraction()
@@ -159,6 +162,7 @@ class FileCountWidget(Widget):
         self.file_index = file_index
         self.num_files = num_files
 
+    # pylint: disable=arguments-differ
     def update(self):
         num_digits = len(str(self.num_files))
         counter_format = "[%{}d/%d]".format(num_digits)
@@ -174,6 +178,7 @@ class ETAWidget(Widget):
     def __init__(self, line):
         Widget.__init__(self, line)
 
+    # pylint: disable=arguments-differ
     def update(self):
         """Implement Widget.update """
         elapsed = self.elapsed()
@@ -204,11 +209,11 @@ class Line(metaclass=abc.ABCMeta):
     def __init__(self, parent):
         self.parent = parent
         self.widgets = list()
+        self.fill_indexes = list()
 
     def set_widgets(self, widgets):
         """Set the widgets of the lines"""
         self.widgets = widgets
-        self.fill_indexes = list()
         for i, widget in enumerate(self.widgets):
             if isinstance(widget, str):
                 continue
@@ -243,7 +248,7 @@ class Line(metaclass=abc.ABCMeta):
         """
         res = []
         currwidth = 0
-        for i, widget in enumerate(self.widgets):
+        for widget in self.widgets:
             if isinstance(widget, str):
                 res.append(widget)
                 currwidth += len(widget)
@@ -309,7 +314,7 @@ class ProgressBar(metaclass=abc.ABCMeta):
         """
         try:
             ioctl_out = ioctl(self.fd, termios.TIOCGWINSZ, '\0'*8)
-            height_, width = array('h', ioctl_out)[:2]
+            unused_height, width = array('h', ioctl_out)[:2]
             self.term_width = width
         # self.fd may not be a terminal
         except OSError:
@@ -335,7 +340,7 @@ class ProgressBar(metaclass=abc.ABCMeta):
         self.display()
 
     @abc.abstractmethod
-    def _update(self, params):
+    def _update(self, *args):
         """Set the attributes used by line.update()
 
         """

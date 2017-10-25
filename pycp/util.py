@@ -39,7 +39,7 @@ def pprint_transfer(src, dest):
     pfx_length = 0
     i = 0
     j = 0
-    while (i < len_src and j < len_dest and src[i] == dest[j]):
+    while i < len_src and j < len_dest and src[i] == dest[j]:
         if src[i] == os.path.sep:
             pfx_length = i + 1
         i += 1
@@ -49,7 +49,7 @@ def pprint_transfer(src, dest):
     sfx_length = 0
     i = len_src - 1
     j = len_dest - 1
-    while (i > 0 and j > 0 and src[i] == dest[j]):
+    while i > 0 and j > 0 and src[i] == dest[j]:
         if src[i] == os.path.sep:
             sfx_length = len_src - i
         i -= 1
@@ -120,7 +120,7 @@ def shorten_path(path, length):
     return os.path.join(short_base, short_name)
 
 
-def shorten_string(s, length):
+def shorten_string(input_string, length):
     """Shorten a string in a nice way:
 
     >>> shorten_string("foobar", 5)
@@ -132,16 +132,16 @@ def shorten_string(s, length):
     >>> shorten_string("foobar", 1)
     'f'
     """
-    if len(s) < length:
-        return s
+    if len(input_string) < length:
+        return input_string
     if length > 3:
-        return s[:length-3] + "..."
+        return input_string[:length-3] + "..."
     if length == 3:
-        return s[0] + ".."
+        return input_string[0] + ".."
     if length == 2:
-        return s[0] + "."
+        return input_string[0] + "."
     if length == 1:
-        return s[0]
+        return input_string[0]
     return ""
 
 

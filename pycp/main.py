@@ -5,13 +5,14 @@ to parse command line
 
 import argparse
 import os
-import pkg_resources
 import sys
 
-import pycp
+import pkg_resources
+
 from pycp.transfer import TransferManager, TransferError
 
 
+# pylint: disable=too-many-locals,too-many-statements
 def main():
     """Parses command line arguments"""
     if sys.argv[0].endswith("pymv"):
@@ -52,7 +53,7 @@ def main():
                         action="store_false",
                         dest="safe",
                         help="silently overwrite existing files "
-                              "(this is the default)")
+                             "(this is the default)")
 
     parser.add_argument("-a", "--all",
                         action="store_true",
@@ -94,7 +95,6 @@ def main():
     ignore_errors = args.ignore_errors
     all_files = args.all
     global_progress = args.global_progress
-    pacman = args.pacman
     safe = args.safe
     interactive = args.interactive
 
