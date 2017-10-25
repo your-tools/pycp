@@ -82,7 +82,7 @@ class FilePbar(ProgressBar):
         """Implement ProgressBar._update """
         self.file_done += xferd
         if self.file_done > self.file_size:
-            # can happen if file grow since the time we computed
+            # can happen if file grew since the time we computed
             # its size
             self.file_done = self.file_size
         self.file_elapsed = time.time() - self.start_time
