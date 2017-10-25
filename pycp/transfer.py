@@ -49,7 +49,6 @@ def samefile(src, dest):
     return normalise(src) == normalise(dest)
 
 
-# pylint: disable=too-many-branches
 def transfer_file(src, dest, callback, *, move=False, preserve=False):
     """Transfer src to dest, calling
     callback(xferd) while doing so,
@@ -59,25 +58,13 @@ def transfer_file(src, dest, callback, *, move=False, preserve=False):
 
     If move is True, remove src when done.
     """
-    if samefile(src, dest):
-        raise TransferError("%s and %s are the same file!" % (src, dest))
+    check_same_file(src, dest)
     if os.path.islink(src):
-        target = os.readlink(src)
-        # remove existing stuff
-        if os.path.lexists(dest):
-            os.remove(dest)
-        os.symlink(target, dest)
+        handle_symlink(src, dest)
         callback(0)
         return
-    try:
-        src_file = open(src, "rb")
-    except IOError:
-        raise TransferError("Could not open %s for reading" % src)
-    try:
-        dest_file = open(dest, "wb")
-    except IOError:
-        raise TransferError("Could not open %s for writing" % dest)
 
+    src_file, dest_file = open_files(src, dest)
     buff_size = 100 * 1024
     xferd = 0
     try:
@@ -108,6 +95,31 @@ def transfer_file(src, dest, callback, *, move=False, preserve=False):
             os.remove(src)
         except OSError:
             print("Warning: could not remove %s" % src)
+
+
+def check_same_file(src, dest):
+    if samefile(src, dest):
+        raise TransferError("%s and %s are the same file!" % (src, dest))
+
+
+def handle_symlink(src, dest):
+    target = os.readlink(src)
+    # remove existing stuff
+    if os.path.lexists(dest):
+        os.remove(dest)
+    os.symlink(target, dest)
+
+
+def open_files(src, dest):
+    try:
+        src_file = open(src, "rb")
+    except IOError:
+        raise TransferError("Could not open %s for reading" % src)
+    try:
+        dest_file = open(dest, "wb")
+    except IOError:
+        raise TransferError("Could not open %s for writing" % dest)
+    return src_file, dest_file
 
 
 def post_transfer(src, dest, preserve=False):
