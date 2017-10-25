@@ -10,4 +10,5 @@ python:
 install:
   - pip install .
 
-script: python test/test.py
+script:
+  - ./ci.sh
