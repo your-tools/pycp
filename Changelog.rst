@@ -1,3 +1,12 @@
+8.0
+---
+
+* New feature: colors by default
+* Drop Windows support
+* Drop Python2 support
+* Massive refactoring
+* Stricter CI
+
 7.3
 ---
 * Try to preserve user and group when used with ``-p,--preserve``
