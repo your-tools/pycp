@@ -73,7 +73,7 @@ class Widget(metaclass=abc.ABCMeta):
 
 class FillWidget(Widget, metaclass=abc.ABCMeta):
     """A FillWidget MUST fill the width given
-    has parameter of the update() method
+    as parameter of the update() method
     """
     def __init__(self, line):
         Widget.__init__(self, line)
@@ -325,7 +325,7 @@ class ProgressBar(metaclass=abc.ABCMeta):
 
         Then call update() for each line in self.lines.
         The lines should be able to use self.parent to acess the
-        attibute of the PogressBar set during self._update
+        attibute of the ProgressBar set during self._update
 
         """
         if not self.started:
