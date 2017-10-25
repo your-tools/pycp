@@ -11,7 +11,7 @@ DESCRIPTION
 
 ``pycp`` / ``pymv`` are meant to be used from the command line.
 
-``pycp.pbar`` was heavily based on the wonderful library ``progressbar`` by Nilton Volpato.
+Implementation heavily inspired by the wonderful library ``progressbar`` by Nilton Volpato.
 
 See man page for detail usage
 

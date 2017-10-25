@@ -45,7 +45,7 @@
 ---
 * massive refactoring
 * pycp no longer depends on progressbar
-* add pycp -g option to display a global pbar on
+* add pycp -g option to display a global progress bar on
   several lines
 
 5.0

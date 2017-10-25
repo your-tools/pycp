@@ -1,8 +1,0 @@
-"""pycp package:
-main   : parses command line
-util   : various useful functions
-progress : react to transfer progress
-pbar     : different kind of progress bars
-transfer : handling transfer of files
-
-"""
