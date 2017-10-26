@@ -10,7 +10,7 @@ import os
 import stat
 
 from pycp.util import debug
-from pycp.progress import FilePbar, GlobalPbar
+from pycp.progress import OneFileIndicator, GlobalIndicator
 
 
 class TransferError(Exception):
@@ -330,7 +330,7 @@ class TransferManager():
         self.num_files = len(self.transfer_info.to_transfer)
         if self.global_progress:
             total_size = self.transfer_info.size
-            self.global_pbar = GlobalPbar(self.num_files, total_size)
+            self.global_pbar = GlobalIndicator(self.num_files, total_size)
             self.global_pbar.start()
         for (src, dest, file_size) in self.transfer_info.to_transfer:
             self.file_index += 1
@@ -339,8 +339,15 @@ class TransferManager():
                                       ignore_errors=self.ignore_errors, move=self.move)
             self.on_new_transfer(src, dest, file_size)
             error = ftm.do_transfer()
+            if self.file_pbar:
+                self.file_pbar.on_file_done()
+            if self.global_pbar:
+                self.global_pbar.on_file_done()
             if error:
                 errors[src] = error
+
+        if not self.global_progress:
+            self.file_pbar.stop()
 
         if self.move and not self.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
@@ -358,11 +365,14 @@ class TransferManager():
 
         """
         if self.global_progress:
-            self.global_pbar.new_file(src, size)
+            self.global_pbar.on_new_file(src, size)
         else:
-            self.file_pbar = FilePbar(src, dest, size,
-                                      self.file_index,
-                                      self.num_files)
+            self.file_pbar = OneFileIndicator(
+                src=src,
+                dest=dest,
+                index=self.file_index,
+                count=self.num_files,
+                size=size)
             self.file_pbar.start()
 
     def on_file_transfer(self, xferd):
@@ -371,6 +381,6 @@ class TransferManager():
 
         """
         if self.global_progress:
-            self.global_pbar.update(xferd)
+            self.global_pbar.on_file_transfer(xferd)
         else:
-            self.file_pbar.update(xferd)
+            self.file_pbar.on_file_transfer(xferd)
