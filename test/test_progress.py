@@ -1,7 +1,3 @@
-import shutil
-import time
-
-import attr
 import ui
 
 import pycp.progress

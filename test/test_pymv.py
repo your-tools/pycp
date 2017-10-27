@@ -1,16 +1,8 @@
-import tempfile  # for mkdtemp
-import shutil
 import sys
 import os
-import stat
-import time
 
 
-import pycp
 from pycp.main import main as pycp_main
-from pycp.util import pprint_transfer
-
-import pytest
 
 
 def test_mv_file_file(test_dir):
