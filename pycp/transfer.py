@@ -329,6 +329,7 @@ class TransferManager():
         progress.total_size = self.transfer_info.size
         progress.index = 0
         progress.count = len(self.transfer_info.to_transfer)
+        self.progress_indicator.on_start()
 
         def on_file_transfer(transfered):
             progress.index += 1
@@ -359,6 +360,7 @@ class TransferManager():
             if error:
                 errors[src] = error
 
+        self.progress_indicator.on_finish()
         if self.move and not self.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
                 os.rmdir(to_remove)

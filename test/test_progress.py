@@ -29,6 +29,7 @@ def test_can_build_lines_out_of_widgets():
 
 def test_indicates_progress_file_by_file():
     one_file_indicator = pycp.progress.OneFileIndicator()
+    one_file_indicator.on_start()
 
     progress = pycp.progress.Progress()
     progress.index = 2
@@ -36,10 +37,14 @@ def test_indicates_progress_file_by_file():
     progress.src = "src/foo"
     progress.dest = "dest/foo"
     progress.file_size = 100
-    one_file_indicator.on_new_file(progress)
 
+    one_file_indicator.on_new_file(progress)
     progress.file_done = 25
     one_file_indicator.on_progress(progress)
     progress.file_done = 75
     one_file_indicator.on_progress(progress)
-    one_file_indicator.stop()
+    progress.on_file_done = 100
+    one_file_indicator.on_progress(progress)
+    one_file_indicator.on_file_done()
+
+    one_file_indicator.on_finish()

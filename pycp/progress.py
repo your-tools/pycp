@@ -185,8 +185,29 @@ class Line():
         return list(itertools.chain.from_iterable(accumulator))
 
 
-class OneFileIndicator():
+class ProgressIndicator:
     def __init__(self):
+        pass
+
+    def on_new_file(self, progress):
+        pass
+
+    def on_file_done(self):
+        pass
+
+    def on_progress(self, progress):
+        pass
+
+    def on_start(self):
+        pass
+
+    def on_finish(self):
+        pass
+
+
+class OneFileIndicator(ProgressIndicator):
+    def __init__(self):
+        super().__init__()
         percent = Percent()
         bar = Bar()
         speed = Speed()
@@ -224,17 +245,10 @@ class OneFileIndicator():
             max_value=progress.file_size)
         ui.info(*tokens, end="\r", sep="")
 
-    # pylint: disable=no-self-use
-    def stop(self):
-        ui.info("")
 
-    # pylint: disable=no-self-use
-    def on_file_done(self):
-        ui.info("")
-
-
-class GlobalIndicator:
+class GlobalIndicator(ProgressIndicator):
     def __init__(self):
+        super().__init__()
         self.first_line = self.build_first_line()
         self.second_line = self.build_second_line()
 
@@ -289,15 +303,6 @@ class GlobalIndicator:
         )
         ui.info("\r", *tokens, end="\n", sep="")
 
-    def on_new_file(self, *unused_args):
-        pass
-
     def on_progress(self, progress):
         self._render_first_line(progress)
         self._render_second_line(progress)
-
-    def on_file_done(self):
-        pass
-
-    def stop(self):
-        pass
