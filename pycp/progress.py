@@ -171,13 +171,11 @@ class Line():
 
 # pylint: disable=too-many-instance-attributes
 class OneFileIndicator():
-    def __init__(self, *, src, dest, index, count, size):
-        self.src = src
-        self.dest = dest
-        self.index = index
-        self.count = count
+    def __init__(self, num_files):
+        self.num_files = num_files
+        self.index = 0
         self.done = 0
-        self.size = size
+        self.size = 0
         self.start_time = 0
         percent = Percent()
         bar = Bar()
@@ -191,21 +189,24 @@ class OneFileIndicator():
             ui.brown, eta, ui.reset
         ])
 
-    def start(self):
+    def on_new_file(self, src, dest, size):
+        self.done = 0
+        self.size = size
+        self.index += 1
         self.start_time = time.time()
         tokens = list()
         counter = Counter()
         counter_tokens = counter.render({
             "index": self.index,
-            "count": self.count,
+            "count": self.num_files,
         })
-        colored_transfer = pycp.util.pprint_transfer(self.src, self.dest)
+        colored_transfer = pycp.util.pprint_transfer(src, dest)
         tokens = [ui.blue] + counter_tokens + [" "] + colored_transfer
         ui.info(*tokens, end="\n", sep="")
         tokens = self.line.render(
             current_value=0,
             elapsed=0,
-            max_value=self.size)
+            max_value=size)
         ui.info(*tokens, end="\r", sep="")
 
     # pylint: disable=no-self-use
@@ -217,7 +218,7 @@ class OneFileIndicator():
         self.done += value
         tokens = self.line.render(
             index=self.index,
-            count=self.count,
+            count=self.num_files,
             current_value=self.done,
             elapsed=elapsed,
             max_value=self.size)
@@ -311,7 +312,7 @@ class GlobalIndicator:
         )
         ui.info("\r", *tokens, end="\n", sep="")
 
-    def on_new_file(self, src, size):
+    def on_new_file(self, src, unused_dest, size):
         self.index += 1
         self._render_first_line()
 
@@ -329,4 +330,7 @@ class GlobalIndicator:
         self._render_second_line()
 
     def on_file_done(self):
+        pass
+
+    def stop(self):
         pass

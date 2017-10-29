@@ -307,72 +307,37 @@ class TransferManager():
         self.sources = sources
         self.destination = destination
         self.transfer_info = TransferInfo(sources, destination)
-        self.global_progress = global_progress
         self.ignore_errors = ignore_errors
         self.move = move
         self.all_files = all_files
         self.safe = safe
         self.interactive = interactive
-        self.global_pbar = None
+        self.num_files = len(self.transfer_info.to_transfer)
+        if global_progress:
+            self.progress_indicator = GlobalIndicator(self.num_files, self.transfer_info.size)
+        else:
+            self.progress_indicator = OneFileIndicator(self.num_files)
         self.file_pbar = None
-        self.num_files = 0
         self.file_index = 0
 
     def do_transfer(self):
         """Performs the real transfer"""
         errors = dict()
-        self.num_files = len(self.transfer_info.to_transfer)
-        if self.global_progress:
-            total_size = self.transfer_info.size
-            self.global_pbar = GlobalIndicator(self.num_files, total_size)
-            self.global_pbar.start()
         for (src, dest, file_size) in self.transfer_info.to_transfer:
             self.file_index += 1
             ftm = FileTransferManager(src, dest, safe=self.safe,
                                       interactive=self.interactive,
                                       ignore_errors=self.ignore_errors,
                                       move=self.move)
-            ftm.set_callback(self.on_file_transfer)
-            self.on_new_transfer(src, dest, file_size)
+            ftm.set_callback(self.progress_indicator.on_file_transfer)
+            self.progress_indicator.on_new_file(src, dest, file_size)
             error = ftm.do_transfer()
-            if self.file_pbar:
-                self.file_pbar.on_file_done()
-            if self.global_pbar:
-                self.global_pbar.on_file_done()
+            self.progress_indicator.on_file_done()
             if error:
                 errors[src] = error
-
-        if not self.global_progress:
-            self.file_pbar.stop()
 
         if self.move and not self.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
                 os.rmdir(to_remove)
 
         return errors
-
-    def on_new_transfer(self, src, dest, size):
-        """If global pbar is false:
-        create a new progress bar for just one file
-
-        """
-        if self.global_progress:
-            self.global_pbar.on_new_file(src, size)
-        else:
-            self.file_pbar = OneFileIndicator(
-                src=src,
-                dest=dest,
-                index=self.file_index,
-                count=self.num_files,
-                size=size)
-            self.file_pbar.start()
-
-    def on_file_transfer(self, xferd):
-        """If global pbar is False:
-        update the file_pbar
-
-        """
-        if self.global_progress:
-            self.global_pbar.on_file_transfer(xferd)
-        else:
-            self.file_pbar.on_file_transfer(xferd)
