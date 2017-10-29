@@ -64,7 +64,7 @@ def parse_commandline():
     parser.add_argument("-p", "--preserve",
                         action="store_true",
                         dest="preserve",
-                        help="preserve time stamps while copying")
+                        help="preserve time stamps and ownership")
 
     parser.add_argument("--ignore-errors",
                         action="store_true",
