@@ -74,32 +74,6 @@ def open_files(src, dest):
     return src_file, dest_file
 
 
-def post_transfer(src, dest, preserve=False):
-    """Handle stat of transferred file
-
-    By default, preserve only permissions.
-    If "preserve" option was given, preserve also
-    utime and flags.
-
-    """
-    src_st = os.stat(src)
-    if hasattr(os, 'chmod'):
-        mode = stat.S_IMODE(src_st.st_mode)
-        os.chmod(dest, mode)
-    if not preserve:
-        return
-    if hasattr(os, 'utime'):
-        os.utime(dest, (src_st.st_atime, src_st.st_mtime))
-    uid = src_st.st_uid
-    gid = src_st.st_gid
-    try:
-        os.chown(dest, uid, gid)
-    except OSError:
-        # we likely don't have enough permissions to do this
-        # just ignore
-        pass
-
-
 class TransferInfo():
     """This class contains:
     * a list of tuples: to_transfer (src, dest) where:
@@ -260,7 +234,7 @@ class FileTransferManager():
             dest_file.close()
 
         try:
-            post_transfer(self.src, self.dest, preserve=self.preserve)
+            self.post_transfer()
         except OSError as err:
             print("Warning: failed to finalize transfer of %s: %s" % (self.dest, err))
 
@@ -270,6 +244,31 @@ class FileTransferManager():
                 os.remove(self.src)
             except OSError:
                 print("Warning: could not remove %s" % self.src)
+
+    def post_transfer(self):
+        """Handle stat of transferred file
+
+        By default, preserve only permissions.
+        If "preserve" option was given, preserve also
+        utime and flags.
+
+        """
+        src_st = os.stat(self.src)
+        if hasattr(os, 'chmod'):
+            mode = stat.S_IMODE(src_st.st_mode)
+            os.chmod(self.dest, mode)
+        if not self.preserve:
+            return
+        if hasattr(os, 'utime'):
+            os.utime(self.dest, (src_st.st_atime, src_st.st_mtime))
+        uid = src_st.st_uid
+        gid = src_st.st_gid
+        try:
+            os.chown(self.dest, uid, gid)
+        except OSError:
+            # we likely don't have enough permissions to do this
+            # just ignore
+            pass
 
     def handle_overwrite(self):
         """Return True if we should skip the file.
