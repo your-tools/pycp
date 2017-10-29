@@ -252,6 +252,10 @@ class GlobalIndicator(ProgressIndicator):
         self.first_line = self.build_first_line()
         self.second_line = self.build_second_line()
 
+    # pylint: disable=no-self-use
+    def on_start(self):
+        ui.info()
+
     @staticmethod
     def build_first_line():
         res = Line()

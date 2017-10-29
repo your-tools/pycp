@@ -332,7 +332,6 @@ class TransferManager():
         self.progress_indicator.on_start()
 
         def on_file_transfer(transfered):
-            progress.index += 1
             progress.file_done += transfered
             progress.total_done += transfered
             now = time.time()
