@@ -281,16 +281,6 @@ class GlobalIndicator:
         ])
         return res
 
-    def start(self):
-        self.total_start = time.time()
-        tokens = self.first_line.render(
-            index=self.index,
-            count=self.num_files,
-            current_value=0,
-            elapsed=0,
-            max_value=self.total_size)
-        ui.info(*tokens, end="\n", sep="")
-
     def _render_first_line(self):
         total_elapsed = time.time() - self.total_start
         tokens = self.first_line.render(
