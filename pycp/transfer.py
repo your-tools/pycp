@@ -81,7 +81,7 @@ class TransferInfo():
        - basename(dest) is guaranteed to exist)
     * an add(src, dest) method
     * a get_size() which is the total size of the files to be
-    transferred
+    transfered
 
     """
     def __init__(self, sources, destination, *, all_files=False):
@@ -95,7 +95,7 @@ class TransferInfo():
 
     def parse(self, sources, destination):
         """Recursively go through the sources, creating missing
-        directories, computing total size to be transferred, and
+        directories, computing total size to be transfered, and
         so on.
 
         """
@@ -199,8 +199,8 @@ class FileTransferManager():
 
     def transfer_file(self):
         """Transfer src to dest, calling
-        callback(xferd) while doing so,
-        where xferd is the size of the buffer successfully transferred
+        callback(transfered) while doing so,
+        where transfered is the size of the buffer successfully transfered
 
         src and dest must be two valid file paths.
 
@@ -214,15 +214,15 @@ class FileTransferManager():
 
         src_file, dest_file = open_files(self.src, self.dest)
         buff_size = 100 * 1024
-        xferd = 0
+        transfered = 0
         try:
             while True:
                 data = src_file.read(buff_size)
                 if not data:
                     self.callback(0)
                     break
-                xferd = len(data)
-                self.callback(xferd)
+                transfered = len(data)
+                self.callback(transfered)
                 dest_file.write(data)
         except IOError as err:
             mess = "Problem when transferring %s to %s\n" % (self.src, self.dest)
@@ -245,7 +245,7 @@ class FileTransferManager():
                 print("Warning: could not remove %s" % self.src)
 
     def post_transfer(self):
-        """Handle stat of transferred file
+        """Handle stat of transfered file
 
         By default, preserve only permissions.
         If "preserve" option was given, preserve also
