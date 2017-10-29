@@ -8,9 +8,10 @@ pycp.progress
 
 import os
 import stat
+import time
 
 from pycp.util import debug
-from pycp.progress import OneFileIndicator, GlobalIndicator
+from pycp.progress import OneFileIndicator, GlobalIndicator, Progress
 
 
 class TransferError(Exception):
@@ -312,25 +313,47 @@ class TransferManager():
         self.all_files = all_files
         self.safe = safe
         self.interactive = interactive
-        self.num_files = len(self.transfer_info.to_transfer)
         if global_progress:
-            self.progress_indicator = GlobalIndicator(self.num_files, self.transfer_info.size)
+            self.progress_indicator = GlobalIndicator()
         else:
-            self.progress_indicator = OneFileIndicator(self.num_files)
+            self.progress_indicator = OneFileIndicator()
         self.file_pbar = None
         self.file_index = 0
 
     def do_transfer(self):
         """Performs the real transfer"""
         errors = dict()
+        progress = Progress()
+        total_start = time.time()
+        progress.total_done = 0
+        progress.total_size = self.transfer_info.size
+        progress.index = 0
+        progress.count = len(self.transfer_info.to_transfer)
+
+        def on_file_transfer(transfered):
+            progress.index += 1
+            progress.file_done += transfered
+            progress.total_done += transfered
+            now = time.time()
+            progress.total_elapsed = now - total_start
+            progress.file_elapsed = now - file_start
+            self.progress_indicator.on_progress(progress)
+
         for (src, dest, file_size) in self.transfer_info.to_transfer:
-            self.file_index += 1
+            file_start = time.time()
+            progress.index += 1
+            progress.src = src
+            progress.dest = dest
+            progress.file_size = file_size
+            progress.file_start = time.time()
+            progress.file_done = 0
+
             ftm = FileTransferManager(src, dest, safe=self.safe,
                                       interactive=self.interactive,
                                       ignore_errors=self.ignore_errors,
                                       move=self.move)
-            ftm.set_callback(self.progress_indicator.on_file_transfer)
-            self.progress_indicator.on_new_file(src, dest, file_size)
+            ftm.set_callback(on_file_transfer)
+            self.progress_indicator.on_new_file(progress)
             error = ftm.do_transfer()
             self.progress_indicator.on_file_done()
             if error:

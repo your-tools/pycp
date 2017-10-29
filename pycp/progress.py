@@ -1,13 +1,30 @@
 import abc
 import itertools
 import shutil
-import time
 import sys
+import time
 
 import attr
 import ui
 
 import pycp.util
+
+
+# FIXME: split this into FileProgress and TotalProgress
+# pylint: disable=too-many-instance-attributes
+class Progress:
+    def __init__(self):
+        self.total_done = 0
+        self.total_size = 0
+        self.total_elapsed = 0
+
+        self.index = 0
+        self.count = 0
+        self.src = ""
+        self.dest = ""
+        self.file_done = 0
+        self.file_size = 0
+        self.file_elapsed = 0
 
 
 def cursor_up(nb_lines):
@@ -103,7 +120,6 @@ class ETA(Component):
 
     @staticmethod
     def format_time(seconds):
-        """Simple way of formating time """
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
     def render(self, props):
@@ -169,14 +185,8 @@ class Line():
         return list(itertools.chain.from_iterable(accumulator))
 
 
-# pylint: disable=too-many-instance-attributes
 class OneFileIndicator():
-    def __init__(self, num_files):
-        self.num_files = num_files
-        self.index = 0
-        self.done = 0
-        self.size = 0
-        self.start_time = 0
+    def __init__(self):
         percent = Percent()
         bar = Bar()
         speed = Speed()
@@ -189,63 +199,42 @@ class OneFileIndicator():
             ui.brown, eta, ui.reset
         ])
 
-    def on_new_file(self, src, dest, size):
-        self.done = 0
-        self.size = size
-        self.index += 1
-        self.start_time = time.time()
+    def on_new_file(self, progress):
         tokens = list()
         counter = Counter()
         counter_tokens = counter.render({
-            "index": self.index,
-            "count": self.num_files,
+            "index": progress.index,
+            "count": progress.count,
         })
-        colored_transfer = pycp.util.pprint_transfer(src, dest)
+        colored_transfer = pycp.util.pprint_transfer(progress.src, progress.dest)
         tokens = [ui.blue] + counter_tokens + [" "] + colored_transfer
         ui.info(*tokens, end="\n", sep="")
         tokens = self.line.render(
             current_value=0,
             elapsed=0,
-            max_value=size)
+            max_value=progress.file_size)
+        ui.info(*tokens, end="\r", sep="")
+
+    def on_progress(self, progress):
+        tokens = self.line.render(
+            index=progress.index,
+            count=progress.count,
+            current_value=progress.file_done,
+            elapsed=progress.file_elapsed,
+            max_value=progress.file_size)
         ui.info(*tokens, end="\r", sep="")
 
     # pylint: disable=no-self-use
     def stop(self):
         ui.info("")
 
-    def on_file_transfer(self, value):
-        elapsed = time.time() - self.start_time
-        self.done += value
-        tokens = self.line.render(
-            index=self.index,
-            count=self.num_files,
-            current_value=self.done,
-            elapsed=elapsed,
-            max_value=self.size)
-        ui.info(*tokens, end="\r", sep="")
-
     # pylint: disable=no-self-use
     def on_file_done(self):
         ui.info("")
 
 
-# # pylint: disable=too-many-instance-attributes
 class GlobalIndicator:
-    def __init__(self, num_files, total_size):
-        self.num_files = num_files
-        self.total_size = total_size
-        self.total_done = 0
-        self.total_start = 0
-        self.total_elapsed = 0
-
-        self.index = 0
-        self.count = 0
-        self.file_done = 0
-        self.file_size = 0
-        self.file_start = 0
-        self.file_elapsed = 0
-        self.file_src = None
-
+    def __init__(self):
         self.first_line = self.build_first_line()
         self.second_line = self.build_second_line()
 
@@ -281,43 +270,31 @@ class GlobalIndicator:
         ])
         return res
 
-    def _render_first_line(self):
-        total_elapsed = time.time() - self.total_start
+    def _render_first_line(self, progress):
         tokens = self.first_line.render(
-            index=self.index,
-            count=self.num_files,
-            current_value=self.total_done,
-            elapsed=total_elapsed,
-            max_value=self.total_size)
+            index=progress.index,
+            count=progress.count,
+            current_value=progress.total_done,
+            elapsed=progress.total_elapsed,
+            max_value=progress.total_size)
         cursor_up(2)
         ui.info("\r", *tokens, end="\n", sep="")
 
-    def _render_second_line(self):
-        file_elapsed = time.time() - self.file_start
+    def _render_second_line(self, progress):
         tokens = self.second_line.render(
-            current_value=self.file_done,
-            max_value=self.file_size,
-            elapsed=file_elapsed,
-            filename=self.file_src,
+            current_value=progress.file_done,
+            max_value=progress.file_size,
+            elapsed=progress.file_elapsed,
+            filename=progress.src,
         )
         ui.info("\r", *tokens, end="\n", sep="")
 
-    def on_new_file(self, src, unused_dest, size):
-        self.index += 1
-        self._render_first_line()
+    def on_new_file(self, *unused_args):
+        pass
 
-        self.file_done = 0
-        self.file_size = size
-        self.file_start = time.time()
-        self.file_src = src
-        self._render_second_line()
-
-    def on_file_transfer(self, value):
-        self.total_done += value
-        self._render_first_line()
-
-        self.file_done += value
-        self._render_second_line()
+    def on_progress(self, progress):
+        self._render_first_line(progress)
+        self._render_second_line(progress)
 
     def on_file_done(self):
         pass

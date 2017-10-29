@@ -28,11 +28,18 @@ def test_can_build_lines_out_of_widgets():
 
 
 def test_indicates_progress_file_by_file():
-    src = "src/foo"
-    dest = "dest/foo"
-    one_file_indicator = pycp.progress.OneFileIndicator(3)
-    one_file_indicator.on_new_file(src, dest, 100)
+    one_file_indicator = pycp.progress.OneFileIndicator()
 
-    one_file_indicator.on_file_transfer(25)
-    one_file_indicator.on_file_transfer(75)
+    progress = pycp.progress.Progress()
+    progress.index = 2
+    progress.count = 3
+    progress.src = "src/foo"
+    progress.dest = "dest/foo"
+    progress.file_size = 100
+    one_file_indicator.on_new_file(progress)
+
+    progress.file_done = 25
+    one_file_indicator.on_progress(progress)
+    progress.file_done = 75
+    one_file_indicator.on_progress(progress)
     one_file_indicator.stop()
