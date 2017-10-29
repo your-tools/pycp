@@ -2,6 +2,11 @@ import ui
 
 import pycp.progress
 
+# Note: there are no 'assert' here, so these tests check nothing :P
+# I keep them because:
+#  * They serve as "executable documentation"  for the pycp.progress module
+#  * I might need them for refactor later
+
 
 def test_can_build_lines_out_of_widgets():
     line = pycp.progress.Line()
