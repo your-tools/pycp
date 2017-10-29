@@ -165,6 +165,10 @@ class FileTransferManager():
         self.pbar = None
         # FIXME: add a test for this
         self.preserve = False
+        self.callback = lambda _: None
+
+    def set_callback(self, callback):
+        self.callback = callback
 
     def do_transfer(self):
         """Called transfer_file, catch TransferError depending
@@ -294,10 +298,6 @@ class FileTransferManager():
         else:
             return True
 
-    def callback(self, xferd):
-        """Called by transfer_file"""
-        self.parent.update(xferd)
-
 
 # pylint: disable=too-many-instance-attributes
 class TransferManager():
@@ -336,6 +336,7 @@ class TransferManager():
             ftm = FileTransferManager(self, src, dest,
                                       safe=self.safe, interactive=self.interactive,
                                       ignore_errors=self.ignore_errors, move=self.move)
+            ftm.set_callback(self.on_file_transfer)
             self.on_new_transfer(src, dest, file_size)
             error = ftm.do_transfer()
             if self.file_pbar:
@@ -353,10 +354,6 @@ class TransferManager():
                 os.rmdir(to_remove)
 
         return errors
-
-    def update(self, xferd):
-        """Called during transfer of one file"""
-        self.on_file_transfer(xferd)
 
     def on_new_transfer(self, src, dest, size):
         """If global pbar is false:
