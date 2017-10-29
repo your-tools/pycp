@@ -49,54 +49,6 @@ def samefile(src, dest):
     return normalise(src) == normalise(dest)
 
 
-def transfer_file(src, dest, callback, *, move=False, preserve=False):
-    """Transfer src to dest, calling
-    callback(xferd) while doing so,
-    where xferd is the size of the buffer successfully transferred
-
-    src and dest must be two valid file paths.
-
-    If move is True, remove src when done.
-    """
-    check_same_file(src, dest)
-    if os.path.islink(src):
-        handle_symlink(src, dest)
-        callback(0)
-        return
-
-    src_file, dest_file = open_files(src, dest)
-    buff_size = 100 * 1024
-    xferd = 0
-    try:
-        while True:
-            data = src_file.read(buff_size)
-            if not data:
-                callback(0)
-                break
-            xferd = len(data)
-            callback(xferd)
-            dest_file.write(data)
-    except IOError as err:
-        mess = "Problem when transferring %s to %s\n" % (src, dest)
-        mess += "Error was: %s" % err
-        raise TransferError(mess)
-    finally:
-        src_file.close()
-        dest_file.close()
-
-    try:
-        post_transfer(src, dest, preserve=preserve)
-    except OSError as err:
-        print("Warning: failed to finalize transfer of %s: %s" % (dest, err))
-
-    if move:
-        try:
-            debug("removing %s" % src)
-            os.remove(src)
-        except OSError:
-            print("Warning: could not remove %s" % src)
-
-
 def check_same_file(src, dest):
     if samefile(src, dest):
         raise TransferError("%s and %s are the same file!" % (src, dest))
@@ -237,6 +189,8 @@ class FileTransferManager():
         self.src = src
         self.dest = dest
         self.pbar = None
+        # FIXME: add a test for this
+        self.preserve = False
 
     def do_transfer(self):
         """Called transfer_file, catch TransferError depending
@@ -253,8 +207,7 @@ class FileTransferManager():
             if should_skip:
                 return
         try:
-            transfer_file(self.src, self.dest, self.callback,
-                          move=self.move)
+            self.transfer_file()
         except TransferError as exception:
             if self.ignore_errors:
                 error = exception
@@ -270,6 +223,53 @@ class FileTransferManager():
                 # Re-raise
                 raise
         return error
+
+    def transfer_file(self):
+        """Transfer src to dest, calling
+        callback(xferd) while doing so,
+        where xferd is the size of the buffer successfully transferred
+
+        src and dest must be two valid file paths.
+
+        If move is True, remove src when done.
+        """
+        check_same_file(self.src, self.dest)
+        if os.path.islink(self.src):
+            handle_symlink(self.src, self.dest)
+            self.callback(0)
+            return
+
+        src_file, dest_file = open_files(self.src, self.dest)
+        buff_size = 100 * 1024
+        xferd = 0
+        try:
+            while True:
+                data = src_file.read(buff_size)
+                if not data:
+                    self.callback(0)
+                    break
+                xferd = len(data)
+                self.callback(xferd)
+                dest_file.write(data)
+        except IOError as err:
+            mess = "Problem when transferring %s to %s\n" % (self.src, self.dest)
+            mess += "Error was: %s" % err
+            raise TransferError(mess)
+        finally:
+            src_file.close()
+            dest_file.close()
+
+        try:
+            post_transfer(self.src, self.dest, preserve=self.preserve)
+        except OSError as err:
+            print("Warning: failed to finalize transfer of %s: %s" % (self.dest, err))
+
+        if self.move:
+            try:
+                debug("removing %s" % self.src)
+                os.remove(self.src)
+            except OSError:
+                print("Warning: could not remove %s" % self.src)
 
     def handle_overwrite(self):
         """Return True if we should skip the file.
