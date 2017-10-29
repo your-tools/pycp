@@ -147,19 +147,14 @@ class TransferInfo():
 # pylint: disable=too-many-instance-attributes
 class FileTransferManager():
     """This class handles transfering one file to an other
-    It is initialized with a source and a destination, which
-    should be correct files.
-
-    The parent will be updated during transfer to monitor progress
 
     """
-    def __init__(self, parent, src, dest, *, ignore_errors=False,
+    def __init__(self, src, dest, *, ignore_errors=False,
                  move=False, safe=False, interactive=False):
         self.safe = safe
         self.interactive = interactive
         self.ignore_errors = ignore_errors
         self.move = move
-        self.parent = parent
         self.src = src
         self.dest = dest
         self.pbar = None
@@ -333,9 +328,10 @@ class TransferManager():
             self.global_pbar.start()
         for (src, dest, file_size) in self.transfer_info.to_transfer:
             self.file_index += 1
-            ftm = FileTransferManager(self, src, dest,
-                                      safe=self.safe, interactive=self.interactive,
-                                      ignore_errors=self.ignore_errors, move=self.move)
+            ftm = FileTransferManager(src, dest, safe=self.safe,
+                                      interactive=self.interactive,
+                                      ignore_errors=self.ignore_errors,
+                                      move=self.move)
             ftm.set_callback(self.on_file_transfer)
             self.on_new_transfer(src, dest, file_size)
             error = ftm.do_transfer()
