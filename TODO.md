@@ -1,6 +1,5 @@
 # TODO
 
-* fix pylint: disable stuff
 * reduce cyclomatic complexity
 * restore candy ?
 * factorize code for displaying progress of just one file?

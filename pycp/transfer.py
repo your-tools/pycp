@@ -159,7 +159,6 @@ class TransferInfo():
         self.to_transfer.append((src, dest, file_size))
 
 
-# pylint: disable=too-many-instance-attributes
 class FileTransferManager():
     """This class handles transfering one file to an other
 
@@ -302,7 +301,6 @@ class FileTransferManager():
             return True
 
 
-# pylint: disable=too-many-instance-attributes
 class TransferManager():
     """Handles transfer of a one or several sources to a destination
 

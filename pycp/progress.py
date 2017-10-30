@@ -10,7 +10,6 @@ import ui
 import pycp.util
 
 
-# FIXME: split this into FileProgress and TotalProgress
 # pylint: disable=too-many-instance-attributes
 class Progress:
     def __init__(self):
