@@ -32,14 +32,9 @@ def parse_commandline():
     %s SOURCE to DESTINATION or mutliple SOURCE(s) to DIRECTORY
     """ % (prog_name, prog_name, action)
 
-    pycp_distribution = pkg_resources.get_distribution("pycp")
-    version = pycp_distribution.version
-    version = "%s version %s" % (prog_name, version)
-
     parser = argparse.ArgumentParser(usage=usage, prog=prog_name)
 
-    parser.add_argument("-v", "--version", action="version",
-                        version=version)
+    parser.add_argument("-v", "--version", action="version", version="8.0")
     parser.add_argument("-i", "--interactive",
                         action="store_true",
                         dest="interactive",
