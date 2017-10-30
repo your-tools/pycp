@@ -1,14 +1,12 @@
 import ui
 
+from conftest import mock_term_size
 import pycp.progress
 
-# Note: there are no 'assert' here, so these tests check nothing :P
-# I keep them because:
-#  * They serve as "executable documentation"  for the pycp.progress module
-#  * I might need them for refactor later
 
-
-def test_can_build_lines_out_of_widgets():
+def test_can_build_lines_out_of_widgets(mocker):
+    expected_width = 90
+    mock_term_size(mocker, expected_width)
     line = pycp.progress.Line()
     counter = pycp.progress.Counter()
     percent = pycp.progress.Percent()
@@ -29,9 +27,14 @@ def test_can_build_lines_out_of_widgets():
         max_value=100,
         elapsed=10,
     )
-    ui.info("\n", *tokens, sep="")
+    _, no_color = ui.process_tokens(tokens, sep="", end="")
+    assert len(no_color) == expected_width
 
 
+# Note: there are no 'assert' here, so this test checks nothing :P
+# I keep it because:
+#  * It serves as "executable documentation"  for the pycp.progress module
+#  * I might need it for a refactoring later
 def test_indicates_progress_file_by_file():
     one_file_indicator = pycp.progress.OneFileIndicator()
     one_file_indicator.on_start()

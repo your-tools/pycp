@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import stat
 import sys
@@ -7,6 +8,7 @@ import time
 
 
 from pycp.main import main as pycp_main
+from conftest import mock_term_size
 
 import pytest
 
@@ -229,3 +231,36 @@ def test_preserve(test_dir):
     pycp_main()
     copy_stat = os.stat(a_copy)
     assert copy_stat.st_mtime == long_ago
+
+
+def test_output_does_not_wrap_1(test_dir, capsys, mocker):
+    "Not using --global"
+    a_file = os.path.join(test_dir, "a_file")
+    a_file_back = os.path.join(test_dir, "a_file.back")
+
+    expected_width = 90
+    mock_term_size(mocker, expected_width)
+    sys.argv = ["pycp", a_file, a_file_back]
+    pycp_main()
+    out, err = capsys.readouterr()
+    lines = re.split(r"\r|\n", out)
+    for line in lines:
+        assert len(line) <= expected_width
+
+
+def test_output_does_not_wrap_2(test_dir, capsys, mocker):
+    "Using --global"
+    "a_dir -> b_dir (b_dir does not exist)"
+    expected_width = 90
+    mock_term_size(mocker, expected_width)
+    a_dir = os.path.join(test_dir, "a_dir")
+    b_dir = os.path.join(test_dir, "b_dir")
+
+    sys.argv = ["pycp", "--global", a_dir, b_dir]
+    pycp_main()
+
+    out, err = capsys.readouterr()
+    print(out)
+    lines = re.split(r"\r|\n", out)
+    for line in lines:
+        assert len(line) <= expected_width

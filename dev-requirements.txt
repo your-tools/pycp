@@ -4,3 +4,4 @@ pyflakes
 pylint
 mccabe
 pytest
+pytest-mock

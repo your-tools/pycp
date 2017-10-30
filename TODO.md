@@ -1,6 +1,5 @@
 # TODO
 
-* write tests for the bug fixes in bf6ae48
 * fix pylint: disable stuff
 * reduce cyclomatic complexity
 * restore candy ?
