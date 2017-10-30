@@ -6,50 +6,35 @@ PYCP: cp and mv with a progressbar
 .. image:: http://img.shields.io/pypi/v/pycp.png
   :target: https://pypi.python.org/pypi/pycp
 
-DESCRIPTION
------------
 
-``pycp`` / ``pymv`` are meant to be used from the command line.
+What it looks like:
 
-Implementation heavily inspired by the wonderful library ``progressbar`` by Nilton Volpato.
-
-See man page for detail usage
-
-Screenshot::
-
-  $ pycp -g ~/test/tbbt/ /tmp
-   29% -  45.11 M/s - [#########                        ] - 2 on 4 ETA  : 00:00:11
-   19% /home/yannick/test/tbbt/t2.avi [#####                     ] ETA  : 00:00:01
+.. image:: https://dmerej.info/pub/pycp-colors.png
+  :target: https://github.com/dmerejkowsky/pycp
 
 
+See ``pycp --help`` for detailed usage.
 
-INSTALLATION
+Development happens on `github <https://github.com/dmerejkowsky/pycp>`_
+
+
+Installation
 ------------
 
-``pycp`` works both for Python2.7 and Python3, and is installable with
+``pycp`` works both for any version greater than Python 3.4, and is installable with
 ``pip``.
 
 
 For ``Archlinux,`` a ``PKGBUILD`` is also available on ``AUR``
 
 
-BUGS
-----
+Notes
+-----
 
-See `github bug tracker <https://github.com/dmerejkowsky/pycp/issues>`_
-
-CHANGELOG
-----------
-
-See `here <https://raw.githubusercontent.com/dmerejkowsky/pycp/master/Changelog.rst>`_
-
-
-SEE ALSO
---------
+* Implementation heavily inspired by the wonderful library ``progressbar`` by Nilton Volpato.
 
 * If you are looking for a ncurses-based solution, vcp maybe the right choice
   for you http://www.freebsdsoftware.org/sysutils/vcp.html
-
 
 * If you are looking for a more general solution to display progress bars when
   performing command-line operations, see clpbar: http://clpbar.sourceforge.net/
