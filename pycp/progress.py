@@ -217,7 +217,7 @@ class OneFileIndicator(ProgressIndicator):
             ui.blue, percent, ui.reset, " ",
             ui.lightgray, bar, ui.reset, " - ",
             ui.standout, speed, ui.reset, " | ",
-            ui.brown, eta, ui.reset
+            ui.yellow, eta, ui.reset
         ])
 
     def on_new_file(self, progress):
@@ -270,7 +270,7 @@ class GlobalIndicator(ProgressIndicator):
             ui.green, counter, ui.reset, " ",
             ui.blue, percent, ui.reset, " - ",
             ui.lightgray, bar, ui.reset, " - ",
-            ui.brown, eta, ui.reset,
+            ui.yellow, eta, ui.reset,
         ])
         return res
 
@@ -287,7 +287,7 @@ class GlobalIndicator(ProgressIndicator):
             ui.bold, filename, ui.reset, " ",
             ui.lightgray, bar, ui.reset, " - ",
             ui.standout, speed, ui.reset, " | ",
-            ui.brown, eta, ui.reset,
+            ui.yellow, eta, ui.reset,
         ])
         return res
 
