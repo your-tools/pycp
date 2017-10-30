@@ -1,3 +1,8 @@
+8.0.1
+----
+
+* Fix calling ``--version`` is some corner cases.
+
 8.0
 ---
 

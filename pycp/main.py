@@ -7,8 +7,6 @@ import argparse
 import os
 import sys
 
-import pkg_resources
-
 from pycp.transfer import TransferManager, TransferError, TransferOptions
 
 
@@ -34,7 +32,7 @@ def parse_commandline():
 
     parser = argparse.ArgumentParser(usage=usage, prog=prog_name)
 
-    parser.add_argument("-v", "--version", action="version", version="8.0")
+    parser.add_argument("-v", "--version", action="version", version="8.0.1")
     parser.add_argument("-i", "--interactive",
                         action="store_true",
                         dest="interactive",
