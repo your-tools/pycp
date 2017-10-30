@@ -1,8 +1,9 @@
-import tempfile  # for mkdtemp
-import shutil
-import sys
 import os
+import shutil
 import stat
+import sys
+import tempfile
+import time
 
 
 from pycp.main import main as pycp_main
@@ -217,3 +218,14 @@ def test_copy_readonly(test_dir):
     with pytest.raises(SystemExit):
         pycp_main()
     shutil.rmtree(ro_dir)
+
+
+def test_preserve(test_dir):
+    a_file = os.path.join(test_dir, "a_file")
+    long_ago = time.time() - 10000
+    os.utime(a_file, (long_ago, long_ago))
+    a_copy = os.path.join(test_dir,  "a_copy")
+    sys.argv = ["pycp", "--preserve", a_file, a_copy]
+    pycp_main()
+    copy_stat = os.stat(a_copy)
+    assert copy_stat.st_mtime == long_ago
