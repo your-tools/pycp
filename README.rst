@@ -5,6 +5,8 @@ PYCP: cp and mv with a progressbar
   :target: https://travis-ci.org/dmerejkowsky/pycp
 .. image:: http://img.shields.io/pypi/v/pycp.png
   :target: https://pypi.python.org/pypi/pycp
+.. image:: https://img.shields.io/github/license/dmerejkowsky/pycp.svg
+  :target: https://github.com/dmerejkowsky/pycp/blob/master/LICENSE
 
 
 What it looks like:
