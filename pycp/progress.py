@@ -245,6 +245,9 @@ class OneFileIndicator(ProgressIndicator):
             max_value=progress.file_size)
         ui.info(*tokens, end="\r", sep="")
 
+    def on_file_done(self):
+        ui.info()
+
 
 class GlobalIndicator(ProgressIndicator):
     def __init__(self):
