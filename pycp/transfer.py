@@ -158,7 +158,6 @@ class FileTransferManager():
         self.move = move
         self.src = src
         self.dest = dest
-        self.pbar = None
         # FIXME: add a test for this
         self.preserve = False
         self.callback = lambda _: None
@@ -317,8 +316,6 @@ class TransferManager():
             self.progress_indicator = GlobalIndicator()
         else:
             self.progress_indicator = OneFileIndicator()
-        self.file_pbar = None
-        self.file_index = 0
 
     def do_transfer(self):
         """Performs the real transfer"""
