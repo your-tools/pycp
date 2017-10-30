@@ -2,6 +2,8 @@
 ---
 
 * New feature: colors by default
+* Breaking change: remove ``--all`` see `#19 <https://github.com/dmerejkowsky/pycp/issues/19>`_
+  for details.
 * Drop Windows support
 * Drop Python2 support
 * Massive refactoring
