@@ -1,4 +1,4 @@
-PYCP: cp and mv with a progressbar
+pycp: cp and mv with a progressbar
 ==================================
 
 .. image:: https://travis-ci.org/dmerejkowsky/pycp.svg?branch=master
