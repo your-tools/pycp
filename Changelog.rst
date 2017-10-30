@@ -1,7 +1,11 @@
 8.0
 ---
 
-* New feature: colors by default
+* New feature: colors by default.
+
+  I'd like to thank @schvabodka-man for giving me the opportunity to
+  refactor code that was more than 7 years old :)
+
 * Breaking change: remove ``--all`` see `#19 <https://github.com/dmerejkowsky/pycp/issues/19>`_
   for details.
 * Drop Windows support
