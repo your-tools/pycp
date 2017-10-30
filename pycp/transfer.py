@@ -10,6 +10,8 @@ import os
 import stat
 import time
 
+import ui
+
 from pycp.util import debug
 from pycp.progress import OneFileIndicator, GlobalIndicator, Progress
 
@@ -361,6 +363,10 @@ class TransferManager():
         self.progress_indicator.on_finish()
         if self.options.move and not self.options.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
-                os.rmdir(to_remove)
+                try:
+                    os.rmdir(to_remove)
+                except OSError as error:
+                    ui.warning("Failed to remove ", to_remove, ":\n",
+                               error, end="\n", sep="")
 
         return errors
