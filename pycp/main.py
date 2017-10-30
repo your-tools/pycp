@@ -56,11 +56,6 @@ def parse_commandline():
                         help="silently overwrite existing files "
                              "(this is the default)")
 
-    parser.add_argument("-a", "--all",
-                        action="store_true",
-                        dest="all",
-                        help="transfer all files (including hidden files)")
-
     parser.add_argument("-p", "--preserve",
                         action="store_true",
                         dest="preserve",
@@ -85,7 +80,6 @@ def parse_commandline():
     parser.set_defaults(
         safe=False,
         interactive=False,
-        all=False,
         ignore_errors=False,
         preserve=False,
         global_progress=False)

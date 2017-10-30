@@ -31,7 +31,6 @@ class TransferError(Exception):
 class TransferOptions:
     def __init__(self):
         self.ignore_errors = False
-        self.all_files = False
         self.global_progress = False
         self.interactive = False
         self.preserve = False
@@ -103,8 +102,7 @@ class TransferInfo():
     transfered
 
     """
-    def __init__(self, sources, destination, *, all_files=False):
-        self.all_files = all_files
+    def __init__(self, sources, destination):
         self.size = 0
         # List of tuples (src, dest) of files to transfer
         self.to_transfer = list()
@@ -149,8 +147,6 @@ class TransferInfo():
         if not os.path.exists(destination):
             os.mkdir(destination)
         file_names = sorted(os.listdir(source))
-        if not self.all_files:
-            file_names = [f for f in file_names if not f.startswith(".")]
         file_names = [os.path.join(source, f) for f in file_names]
         self.parse(file_names, destination)
         self.to_remove.append(source)
@@ -319,6 +315,7 @@ class TransferManager():
         self.destination = destination
         self.options = options
         self.transfer_info = TransferInfo(sources, destination)
+
         if self.options.global_progress:
             self.progress_indicator = GlobalIndicator()
         else:
