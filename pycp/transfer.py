@@ -26,6 +26,22 @@ class TransferError(Exception):
         return self.message
 
 
+class TransferOptions:
+    def __init__(self):
+        self.ignore_errors = False
+        self.all_files = False
+        self.global_progress = False
+        self.interactive = False
+        self.preserve = False
+        self.safe = False
+        self.move = False
+
+    def update(self, args):
+        for name, value in vars(args).items():
+            if hasattr(self, name):
+                setattr(self, name, value)
+
+
 def samefile(src, dest):
     """Check if two files are the same in a
     crossplatform way
@@ -150,16 +166,10 @@ class FileTransferManager():
     """This class handles transfering one file to an other
 
     """
-    def __init__(self, src, dest, *, ignore_errors=False,
-                 move=False, safe=False, interactive=False):
-        self.safe = safe
-        self.interactive = interactive
-        self.ignore_errors = ignore_errors
-        self.move = move
+    def __init__(self, src, dest, options):
         self.src = src
         self.dest = dest
-        # FIXME: add a test for this
-        self.preserve = False
+        self.options = options
         self.callback = lambda _: None
 
     def set_callback(self, callback):
@@ -182,10 +192,10 @@ class FileTransferManager():
         try:
             self.transfer_file()
         except TransferError as exception:
-            if self.ignore_errors:
+            if self.options.ignore_errors:
                 error = exception
                 # remove dest file
-                if not self.move:
+                if not self.options.move:
                     try:
                         os.remove(self.dest)
                     except OSError:
@@ -237,7 +247,7 @@ class FileTransferManager():
         except OSError as err:
             print("Warning: failed to finalize transfer of %s: %s" % (self.dest, err))
 
-        if self.move:
+        if self.options.move:
             try:
                 debug("removing %s" % self.src)
                 os.remove(self.src)
@@ -256,7 +266,7 @@ class FileTransferManager():
         if hasattr(os, 'chmod'):
             mode = stat.S_IMODE(src_st.st_mode)
             os.chmod(self.dest, mode)
-        if not self.preserve:
+        if not self.options.preserve:
             return
         if hasattr(os, 'utime'):
             os.utime(self.dest, (src_st.st_atime, src_st.st_mtime))
@@ -276,12 +286,12 @@ class FileTransferManager():
 
         """
         # Safe: always skip
-        if self.safe:
+        if self.options.safe:
             print("Warning: skipping", self.dest)
             return True
 
         # Not safe and not interactive => overwrite
-        if not self.interactive:
+        if not self.options.interactive:
             return False
 
         # Interactive
@@ -302,17 +312,12 @@ class TransferManager():
     to transfer.
 
     """
-    def __init__(self, sources, destination, *, global_progress=False, move=False,
-                 ignore_errors=False, all_files=False, safe=False, interactive=False):
+    def __init__(self, sources, destination, options):
         self.sources = sources
         self.destination = destination
+        self.options = options
         self.transfer_info = TransferInfo(sources, destination)
-        self.ignore_errors = ignore_errors
-        self.move = move
-        self.all_files = all_files
-        self.safe = safe
-        self.interactive = interactive
-        if global_progress:
+        if self.options.global_progress:
             self.progress_indicator = GlobalIndicator()
         else:
             self.progress_indicator = OneFileIndicator()
@@ -345,10 +350,7 @@ class TransferManager():
             progress.file_start = time.time()
             progress.file_done = 0
 
-            ftm = FileTransferManager(src, dest, safe=self.safe,
-                                      interactive=self.interactive,
-                                      ignore_errors=self.ignore_errors,
-                                      move=self.move)
+            ftm = FileTransferManager(src, dest, self.options)
             ftm.set_callback(on_file_transfer)
             self.progress_indicator.on_new_file(progress)
             error = ftm.do_transfer()
@@ -357,7 +359,7 @@ class TransferManager():
                 errors[src] = error
 
         self.progress_indicator.on_finish()
-        if self.move and not self.ignore_errors:
+        if self.options.move and not self.options.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
                 os.rmdir(to_remove)
 

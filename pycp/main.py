@@ -9,7 +9,7 @@ import sys
 
 import pkg_resources
 
-from pycp.transfer import TransferManager, TransferError
+from pycp.transfer import TransferManager, TransferError, TransferOptions
 
 
 def is_pymv():
@@ -113,25 +113,16 @@ def parse_filelist(filelist):
 
 
 def main():
-    move = is_pymv()
     args = parse_commandline()
-    files = args.files
-    ignore_errors = args.ignore_errors
-    all_files = args.all
-    global_progress = args.global_progress
-    safe = args.safe
-    interactive = args.interactive
+    args.move = is_pymv()
 
+    files = args.files
     sources, destination = parse_filelist(files)
 
-    # FIXME: this is a hack until we have proper 'style' support
-    if args.pacman:
-        os.environ["PYCP_PACMAN"] = True
+    transfer_options = TransferOptions()
+    transfer_options.update(args)
 
-    transfer_manager = TransferManager(sources, destination,
-                                       move=move, ignore_errors=ignore_errors,
-                                       all_files=all_files, global_progress=global_progress,
-                                       safe=safe, interactive=interactive)
+    transfer_manager = TransferManager(sources, destination, transfer_options)
     try:
         errors = transfer_manager.do_transfer()
     except TransferError as err:
