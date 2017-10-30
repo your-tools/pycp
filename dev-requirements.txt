@@ -1,0 +1,6 @@
+path.py
+pycodestyle
+pyflakes
+pylint
+mccabe
+pytest

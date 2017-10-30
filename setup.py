@@ -12,6 +12,7 @@ setup(name='pycp',
       packages=['pycp'],
       license='COPYING',
       install_requires=[
+          "attrs",
           "python-cli-ui",
       ],
       entry_points={
