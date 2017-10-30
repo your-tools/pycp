@@ -9,7 +9,7 @@ import sys
 
 import pkg_resources
 
-from pycp.transfer import TransferManager, TransferError
+from pycp.transfer import TransferManager, TransferError, TransferOptions
 
 
 def is_pymv():
@@ -56,15 +56,10 @@ def parse_commandline():
                         help="silently overwrite existing files "
                              "(this is the default)")
 
-    parser.add_argument("-a", "--all",
-                        action="store_true",
-                        dest="all",
-                        help="transfer all files (including hidden files)")
-
     parser.add_argument("-p", "--preserve",
                         action="store_true",
                         dest="preserve",
-                        help="preserve time stamps while copying")
+                        help="preserve time stamps and ownership")
 
     parser.add_argument("--ignore-errors",
                         action="store_true",
@@ -85,7 +80,6 @@ def parse_commandline():
     parser.set_defaults(
         safe=False,
         interactive=False,
-        all=False,
         ignore_errors=False,
         preserve=False,
         global_progress=False)
@@ -113,25 +107,16 @@ def parse_filelist(filelist):
 
 
 def main():
-    move = is_pymv()
     args = parse_commandline()
-    files = args.files
-    ignore_errors = args.ignore_errors
-    all_files = args.all
-    global_progress = args.global_progress
-    safe = args.safe
-    interactive = args.interactive
+    args.move = is_pymv()
 
+    files = args.files
     sources, destination = parse_filelist(files)
 
-    # FIXME: this is a hack until we have proper 'style' support
-    if args.pacman:
-        os.environ["PYCP_PACMAN"] = True
+    transfer_options = TransferOptions()
+    transfer_options.update(args)
 
-    transfer_manager = TransferManager(sources, destination,
-                                       move=move, ignore_errors=ignore_errors,
-                                       all_files=all_files, global_progress=global_progress,
-                                       safe=safe, interactive=interactive)
+    transfer_manager = TransferManager(sources, destination, transfer_options)
     try:
         errors = transfer_manager.do_transfer()
     except TransferError as err:

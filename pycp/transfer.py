@@ -8,9 +8,12 @@ pycp.progress
 
 import os
 import stat
+import time
+
+import ui
 
 from pycp.util import debug
-from pycp.progress import FilePbar, GlobalPbar
+from pycp.progress import OneFileIndicator, GlobalIndicator, Progress
 
 
 class TransferError(Exception):
@@ -23,6 +26,21 @@ class TransferError(Exception):
 
     def __str__(self):
         return self.message
+
+
+class TransferOptions:
+    def __init__(self):
+        self.ignore_errors = False
+        self.global_progress = False
+        self.interactive = False
+        self.preserve = False
+        self.safe = False
+        self.move = False
+
+    def update(self, args):
+        for name, value in vars(args).items():
+            if hasattr(self, name):
+                setattr(self, name, value)
 
 
 def samefile(src, dest):
@@ -47,54 +65,6 @@ def samefile(src, dest):
         return res
 
     return normalise(src) == normalise(dest)
-
-
-def transfer_file(src, dest, callback, *, move=False, preserve=False):
-    """Transfer src to dest, calling
-    callback(xferd) while doing so,
-    where xferd is the size of the buffer successfully transferred
-
-    src and dest must be two valid file paths.
-
-    If move is True, remove src when done.
-    """
-    check_same_file(src, dest)
-    if os.path.islink(src):
-        handle_symlink(src, dest)
-        callback(0)
-        return
-
-    src_file, dest_file = open_files(src, dest)
-    buff_size = 100 * 1024
-    xferd = 0
-    try:
-        while True:
-            data = src_file.read(buff_size)
-            if not data:
-                callback(0)
-                break
-            xferd = len(data)
-            callback(xferd)
-            dest_file.write(data)
-    except IOError as err:
-        mess = "Problem when transferring %s to %s\n" % (src, dest)
-        mess += "Error was: %s" % err
-        raise TransferError(mess)
-    finally:
-        src_file.close()
-        dest_file.close()
-
-    try:
-        post_transfer(src, dest, preserve=preserve)
-    except OSError as err:
-        print("Warning: failed to finalize transfer of %s: %s" % (dest, err))
-
-    if move:
-        try:
-            debug("removing %s" % src)
-            os.remove(src)
-        except OSError:
-            print("Warning: could not remove %s" % src)
 
 
 def check_same_file(src, dest):
@@ -122,32 +92,6 @@ def open_files(src, dest):
     return src_file, dest_file
 
 
-def post_transfer(src, dest, preserve=False):
-    """Handle stat of transferred file
-
-    By default, preserve only permissions.
-    If "preserve" option was given, preserve also
-    utime and flags.
-
-    """
-    src_st = os.stat(src)
-    if hasattr(os, 'chmod'):
-        mode = stat.S_IMODE(src_st.st_mode)
-        os.chmod(dest, mode)
-    if not preserve:
-        return
-    if hasattr(os, 'utime'):
-        os.utime(dest, (src_st.st_atime, src_st.st_mtime))
-    uid = src_st.st_uid
-    gid = src_st.st_gid
-    try:
-        os.chown(dest, uid, gid)
-    except OSError:
-        # we likely don't have enough permissions to do this
-        # just ignore
-        pass
-
-
 class TransferInfo():
     """This class contains:
     * a list of tuples: to_transfer (src, dest) where:
@@ -155,11 +99,10 @@ class TransferInfo():
        - basename(dest) is guaranteed to exist)
     * an add(src, dest) method
     * a get_size() which is the total size of the files to be
-    transferred
+    transfered
 
     """
-    def __init__(self, sources, destination, *, all_files=False):
-        self.all_files = all_files
+    def __init__(self, sources, destination):
         self.size = 0
         # List of tuples (src, dest) of files to transfer
         self.to_transfer = list()
@@ -169,7 +112,7 @@ class TransferInfo():
 
     def parse(self, sources, destination):
         """Recursively go through the sources, creating missing
-        directories, computing total size to be transferred, and
+        directories, computing total size to be transfered, and
         so on.
 
         """
@@ -204,8 +147,6 @@ class TransferInfo():
         if not os.path.exists(destination):
             os.mkdir(destination)
         file_names = sorted(os.listdir(source))
-        if not self.all_files:
-            file_names = [f for f in file_names if not f.startswith(".")]
         file_names = [os.path.join(source, f) for f in file_names]
         self.parse(file_names, destination)
         self.to_remove.append(source)
@@ -218,25 +159,18 @@ class TransferInfo():
         self.to_transfer.append((src, dest, file_size))
 
 
-# pylint: disable=too-many-instance-attributes
 class FileTransferManager():
     """This class handles transfering one file to an other
-    It is initialized with a source and a destination, which
-    should be correct files.
-
-    The parent will be updated during transfer to monitor progress
 
     """
-    def __init__(self, parent, src, dest, *, ignore_errors=False,
-                 move=False, safe=False, interactive=False):
-        self.safe = safe
-        self.interactive = interactive
-        self.ignore_errors = ignore_errors
-        self.move = move
-        self.parent = parent
+    def __init__(self, src, dest, options):
         self.src = src
         self.dest = dest
-        self.pbar = None
+        self.options = options
+        self.callback = lambda _: None
+
+    def set_callback(self, callback):
+        self.callback = callback
 
     def do_transfer(self):
         """Called transfer_file, catch TransferError depending
@@ -253,13 +187,12 @@ class FileTransferManager():
             if should_skip:
                 return
         try:
-            transfer_file(self.src, self.dest, self.callback,
-                          move=self.move)
+            self.transfer_file()
         except TransferError as exception:
-            if self.ignore_errors:
+            if self.options.ignore_errors:
                 error = exception
                 # remove dest file
-                if not self.move:
+                if not self.options.move:
                     try:
                         os.remove(self.dest)
                     except OSError:
@@ -271,6 +204,78 @@ class FileTransferManager():
                 raise
         return error
 
+    def transfer_file(self):
+        """Transfer src to dest, calling
+        callback(transfered) while doing so,
+        where transfered is the size of the buffer successfully transfered
+
+        src and dest must be two valid file paths.
+
+        If move is True, remove src when done.
+        """
+        check_same_file(self.src, self.dest)
+        if os.path.islink(self.src):
+            handle_symlink(self.src, self.dest)
+            self.callback(0)
+            return
+
+        src_file, dest_file = open_files(self.src, self.dest)
+        buff_size = 100 * 1024
+        transfered = 0
+        try:
+            while True:
+                data = src_file.read(buff_size)
+                if not data:
+                    self.callback(0)
+                    break
+                transfered = len(data)
+                self.callback(transfered)
+                dest_file.write(data)
+        except IOError as err:
+            mess = "Problem when transferring %s to %s\n" % (self.src, self.dest)
+            mess += "Error was: %s" % err
+            raise TransferError(mess)
+        finally:
+            src_file.close()
+            dest_file.close()
+
+        try:
+            self.post_transfer()
+        except OSError as err:
+            ui.warning("Failed to finalize transfer of %s: %s" % (self.dest, err))
+
+        if self.options.move:
+            try:
+                debug("removing %s" % self.src)
+                os.remove(self.src)
+            except OSError:
+                ui.warning("Could not remove %s" % self.src)
+
+    def post_transfer(self):
+        """Handle stat of transfered file
+
+        By default, preserve only permissions.
+        If "preserve" option was given, preserve also
+        utime and flags.
+
+        """
+        src_st = os.stat(self.src)
+        if hasattr(os, 'chmod'):
+            mode = stat.S_IMODE(src_st.st_mode)
+            os.chmod(self.dest, mode)
+        if not self.options.preserve:
+            return
+        if hasattr(os, 'utime'):
+            os.utime(self.dest, (src_st.st_atime, src_st.st_mtime))
+        uid = src_st.st_uid
+        gid = src_st.st_gid
+        try:
+            os.chown(self.dest, uid, gid)
+        except OSError:
+            # we likely don't have enough permissions to do this
+            # just ignore
+            pass
+
     def handle_overwrite(self):
         """Return True if we should skip the file.
         Ask user for confirmation if we were called
@@ -278,12 +283,12 @@ class FileTransferManager():
 
         """
         # Safe: always skip
-        if self.safe:
-            print("Warning: skipping", self.dest)
+        if self.options.safe:
+            ui.warning("Skipping", self.dest)
             return True
 
         # Not safe and not interactive => overwrite
-        if not self.interactive:
+        if not self.options.interactive:
             return False
 
         # Interactive
@@ -295,12 +300,7 @@ class FileTransferManager():
         else:
             return True
 
-    def callback(self, xferd):
-        """Called by transfer_file"""
-        self.parent.update(xferd)
 
-
-# pylint: disable=too-many-instance-attributes
 class TransferManager():
     """Handles transfer of a one or several sources to a destination
 
@@ -308,69 +308,60 @@ class TransferManager():
     to transfer.
 
     """
-    def __init__(self, sources, destination, *, global_progress=False, move=False,
-                 ignore_errors=False, all_files=False, safe=False, interactive=False):
+    def __init__(self, sources, destination, options):
         self.sources = sources
         self.destination = destination
+        self.options = options
         self.transfer_info = TransferInfo(sources, destination)
-        self.global_progress = global_progress
-        self.ignore_errors = ignore_errors
-        self.move = move
-        self.all_files = all_files
-        self.safe = safe
-        self.interactive = interactive
-        self.global_pbar = None
-        self.file_pbar = None
-        self.num_files = 0
-        self.file_index = 0
+
+        if self.options.global_progress:
+            self.progress_indicator = GlobalIndicator()
+        else:
+            self.progress_indicator = OneFileIndicator()
 
     def do_transfer(self):
         """Performs the real transfer"""
         errors = dict()
-        self.num_files = len(self.transfer_info.to_transfer)
-        if self.global_progress:
-            total_size = self.transfer_info.size
-            self.global_pbar = GlobalPbar(self.num_files, total_size)
-            self.global_pbar.start()
+        progress = Progress()
+        total_start = time.time()
+        progress.total_done = 0
+        progress.total_size = self.transfer_info.size
+        progress.index = 0
+        progress.count = len(self.transfer_info.to_transfer)
+        self.progress_indicator.on_start()
+
+        def on_file_transfer(transfered):
+            progress.file_done += transfered
+            progress.total_done += transfered
+            now = time.time()
+            progress.total_elapsed = now - total_start
+            progress.file_elapsed = now - file_start
+            self.progress_indicator.on_progress(progress)
+
         for (src, dest, file_size) in self.transfer_info.to_transfer:
-            self.file_index += 1
-            ftm = FileTransferManager(self, src, dest,
-                                      safe=self.safe, interactive=self.interactive,
-                                      ignore_errors=self.ignore_errors, move=self.move)
-            self.on_new_transfer(src, dest, file_size)
+            file_start = time.time()
+            progress.index += 1
+            progress.src = src
+            progress.dest = dest
+            progress.file_size = file_size
+            progress.file_start = time.time()
+            progress.file_done = 0
+
+            ftm = FileTransferManager(src, dest, self.options)
+            ftm.set_callback(on_file_transfer)
+            self.progress_indicator.on_new_file(progress)
             error = ftm.do_transfer()
+            self.progress_indicator.on_file_done()
             if error:
                 errors[src] = error
 
-        if self.move and not self.ignore_errors:
+        self.progress_indicator.on_finish()
+        if self.options.move and not self.options.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
-                os.rmdir(to_remove)
+                try:
+                    os.rmdir(to_remove)
+                except OSError as error:
+                    ui.warning("Failed to remove ", to_remove, ":\n",
+                               error, end="\n", sep="")
 
         return errors
-
-    def update(self, xferd):
-        """Called during transfer of one file"""
-        self.on_file_transfer(xferd)
-
-    def on_new_transfer(self, src, dest, size):
-        """If global pbar is false:
-        create a new progress bar for just one file
-
-        """
-        if self.global_progress:
-            self.global_pbar.new_file(src, size)
-        else:
-            self.file_pbar = FilePbar(src, dest, size,
-                                      self.file_index,
-                                      self.num_files)
-            self.file_pbar.start()
-
-    def on_file_transfer(self, xferd):
-        """If global pbar is False:
-        update the file_pbar
-
-        """
-        if self.global_progress:
-            self.global_pbar.update(xferd)
-        else:
-            self.file_pbar.update(xferd)

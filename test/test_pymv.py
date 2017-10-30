@@ -1,16 +1,8 @@
-import tempfile  # for mkdtemp
-import shutil
 import sys
 import os
-import stat
-import time
 
 
-import pycp
 from pycp.main import main as pycp_main
-from pycp.util import pprint_transfer
-
-import pytest
 
 
 def test_mv_file_file(test_dir):
@@ -49,3 +41,13 @@ def test_mv_dir_dir_2(test_dir):
     assert os.path.exists(c_file)
     assert os.path.exists(d_file)
     assert not os.path.exists(a_dir)
+
+
+def test_hidden(test_dir):
+    a_dir = os.path.join(test_dir, "a_dir")
+    dest = os.path.join(test_dir, "dest")
+    os.mkdir(dest)
+    sys.argv = ["pymv", a_dir, dest]
+    pycp_main()
+    hidden_copy = os.path.join(dest, "a_dir", ".hidden")
+    assert os.path.exists(hidden_copy)

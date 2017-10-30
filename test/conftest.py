@@ -17,3 +17,16 @@ def test_dir():
         print("not removing", test_dir)
     else:
         shutil.rmtree(test_dir)
+
+
+class TerminalSize:
+    def __init__(self):
+        self.lines = 25
+        self.columns = 80
+
+
+def mock_term_size(mocker, width):
+    size = TerminalSize()
+    size.columns = width
+    patcher = mocker.patch('shutil.get_terminal_size')
+    patcher.return_value = size

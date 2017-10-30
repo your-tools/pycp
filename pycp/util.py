@@ -2,6 +2,8 @@
 
 import os
 
+import ui
+
 
 def debug(message):
     """Print debug mesages when env. var PYCP_DEBUG is set."""
@@ -72,10 +74,17 @@ def pprint_transfer(src, dest):
         dest_mid = os.path.sep + dest_mid
 
     if not pfx and not sfx:
-        return "%s => %s" % (src, dest)
+        return [
+            ui.bold, src, ui.reset,
+            ui.blue, " => ", ui.reset,
+            ui.bold, dest
+        ]
 
-    res = "%s{%s => %s}%s" % (pfx, src_mid, dest_mid, sfx)
-    return res
+    return [
+        ui.bold, pfx, ui.reset,
+        ui.lightgray, "{", src_mid, " => ", dest_mid, "}", ui.reset,
+        ui.bold, sfx
+    ]
 
 
 def shorten_path(path, length):

@@ -1,566 +1,314 @@
-"""This module contains two kinds of ProgressBars.
-
-FilePbar  : one progressbar for each file
-GlobalPbar : one progressbar for the whole transfer
-
-"""
-
-from array import array
-from fcntl import ioctl
 import abc
-import os
-import signal
+import itertools
+import shutil
 import sys
-import termios
 import time
 
-from pycp.util import pprint_transfer, shorten_path
+import attr
+import ui
 
-
-def cursor_up(file_desc, nb_lines):
-    """Move the cursor up by nb_lines"""
-    file_desc.write("\033[%dA" % nb_lines)
-
-
-class Widget(metaclass=abc.ABCMeta):
-    """A Widget has a single update()
-    method that returns a string
-
-    """
-    def __init__(self, line):
-        self.line = line
-        self.parent = line.parent
-        self.fill = False
-
-    @abc.abstractmethod
-    def update(self, *args, **kwargs):
-        """Called by line.update"""
-
-    def curval(self):
-        """Returns the current value.
-        By default, calls line.curval()
-
-        """
-        return self.line.curval()
-
-    def maxval(self):
-        """Returns the maximum value.
-        By default, calls line.maxval()
-
-        """
-        return self.line.maxval()
-
-    def fraction(self):
-        """Must return a float between 0 and 1
-        using self.parent
-
-        """
-        curval = self.curval()
-        maxval = self.maxval()
-        if maxval == 0 and curval == 0:
-            return 1
-        if maxval == 0:
-            return 0
-        if curval == 0:
-            return 0
-        if curval == maxval:
-            return 1
-        res = float(curval) / maxval
-        assert res > 0
-        if res >= 1:
-            res = 1
-        return res
-
-
-class FillWidget(Widget, metaclass=abc.ABCMeta):
-    """A FillWidget MUST fill the width given
-    as parameter of the update() method
-    """
-    def __init__(self, line):
-        Widget.__init__(self, line)
-        self.fill = True
-
-    # pylint: disable=arguments-differ
-    @abc.abstractmethod
-    def update(self, width):
-        """Return a string of size width using self.parent
-
-        """
-
-
-class DoneNumber(Widget):
-    """Print '3 on 42' """
-    def __init__(self, line):
-        Widget.__init__(self, line)
-
-    # pylint: disable=arguments-differ
-    def update(self):
-        """Overwrite Widget.update """
-        done = self.parent.num_files_done
-        total = self.parent.num_files
-        return "%d on %d" % (done, total)
-
-
-class FileName(FillWidget):
-    """Print the name of the file being transferred. """
-    def __init__(self, line):
-        FillWidget.__init__(self, line)
-
-    def update(self, width):
-        """Overwrite Widget.update """
-        short_path = shorten_path(self.parent.file_name, width)
-        to_fill = width - len(short_path)
-        res = short_path + ' ' * to_fill
-        return res
-
-
-class Line(metaclass=abc.ABCMeta):
-    """A Line is a list of Widgets
-
-    """
-    def __init__(self, parent):
-        self.parent = parent
-        self.widgets = list()
-        self.fill_indexes = list()
-
-    def set_widgets(self, widgets):
-        """Set the widgets of the lines"""
-        self.widgets = widgets
-        for i, widget in enumerate(self.widgets):
-            if isinstance(widget, str):
-                continue
-            if widget.fill:
-                self.fill_indexes.append(i)
-
-    @abc.abstractmethod
-    def curval(self):
-        """The current value of the line.
-
-        To be implemented using self.parent.
-        """
-
-    @abc.abstractmethod
-    def maxval(self):
-        """The maximum value of the line.
-
-        To be implemented using self.parent.
-        """
-
-    @abc.abstractmethod
-    def elapsed(self):
-        """The elapsed time of the line.
-
-        To be implemented using self.parent.
-        """
-
-    def update(self):
-        """Call widget.update() for each widget in self.widget,
-        dealing with FillWidgets
-
-        """
-        res = []
-        currwidth = 0
-        for widget in self.widgets:
-            if isinstance(widget, str):
-                res.append(widget)
-                currwidth += len(widget)
-                continue
-            if widget.fill:
-                # Handle this widget later, because we don't
-                # know the available width yet
-                # But keep filling full_res with the widget
-                # value, so that the indexes are consistent,
-                # and that we can access the widget later
-                res.append(widget)
-            else:
-                widget_res = widget.update()
-                currwidth += len(widget_res)
-                res.append(widget_res)
-        for fill_index in self.fill_indexes:
-            fill_widget = res[fill_index]
-            term_width = self.parent.term_width
-            # Each fill_widget should fill the same width:
-            # (why not?)
-            width = (term_width - currwidth) / len(self.fill_indexes)
-            widget_res = fill_widget.update(int(width))
-            res[fill_index] = widget_res
-        return "".join(res)
-
-
-class ProgressBar(metaclass=abc.ABCMeta):
-    """A ProgressBar is simply a list of Lines
-
-    """
-    def __init__(self, fd=sys.stderr):
-        self.fd = fd
-        self.lines = list()
-        self.nb_lines = 0
-        self.term_width = 80
-        signal.signal(signal.SIGWINCH, self.handle_resize)
-        # Call handle_resize once so that self.term_width is
-        # correct.
-        self.handle_resize(None, None)
-        self.started = False
-
-    def start(self):
-        """Called at the first update() if not already called before.
-
-        To be overloaded like this:
-        class MyPbar
-           ...
-
-           def start(self):
-               self.start_time = ....
-
-               ProgressBar.start(self)
-
-        """
-        self.fd.write("\n" * self.nb_lines)
-        self.started = True
-        self.update(0)
-
-    def handle_resize(self, _signum, _frame):
-        """When the term is resized, a siganl is send.
-        Catch it and update self.term_width
-
-        """
-        try:
-            ioctl_out = ioctl(self.fd, termios.TIOCGWINSZ, '\0'*8)
-            unused_height, width = array('h', ioctl_out)[:2]
-            self.term_width = width
-        # self.fd may not be a terminal
-        except OSError:
-            self.term_width = 80
-
-    def set_lines(self, lines):
-        """Set the lines of the ProgressBar """
-        self.lines = lines
-        self.nb_lines = len(lines)
-
-    def update(self, params):
-        """Make sure the ProgressBar is started, then call _update,
-        (which should set a few attributes.)
-
-        Then call update() for each line in self.lines.
-        The lines should be able to use self.parent to acess the
-        attibute of the ProgressBar set during self._update
-
-        """
-        if not self.started:
-            self.start()
-        self._update(params)
-        self.display()
-
-    @abc.abstractmethod
-    def _update(self, *args):
-        """Set the attributes used by line.update()
-
-        """
-
-    def display(self):
-        """Display the lines, taking care of always moving
-        the cursor up before printing new lines
-
-        """
-        if self.fd is None:
-            return
-        cursor_up(self.fd, self.nb_lines)
-        for line in self.lines:
-            self.fd.write("\r" + line.update() + "\n")
-        self.fd.flush()
-
-
-class OneFileProgressLine(Line):
-    """A progress line for just one file"""
-    def __init__(self, parent):
-        Line.__init__(self, parent)
-        file_count = FileCountWidget(self,
-                                     parent.file_index,
-                                     parent.num_files)
-        percent = PercentWidget(self)
-        file_bar = BarWidget(self)
-        file_eta = ETAWidget(self)
-        file_speed = FileTransferSpeed(self)
-        self.set_widgets([file_count,
-                          " ",
-                          percent,
-                          " ",
-                          file_bar,
-                          " - ",
-                          file_speed,
-                          " | ",
-                          file_eta])
-
-    def curval(self):
-        """Implements Line.curval"""
-        return self.parent.file_done
-
-    def maxval(self):
-        """Implements Line.maxval"""
-        return self.parent.file_size
-
-    def elapsed(self):
-        """Implements Line.elapsed"""
-        return self.parent.file_elapsed
+import pycp.util
 
 
 # pylint: disable=too-many-instance-attributes
-class FilePbar(ProgressBar):
-    """A file progress bar is initialized with
-    a src, a dest, and a size
+class Progress:
+    def __init__(self):
+        self.total_done = 0
+        self.total_size = 0
+        self.total_elapsed = 0
 
-    """
-    # pylint: disable=too-many-arguments
-    def __init__(self, src, dest, size, file_index, num_files):
-        self.src = src
-        self.dest = dest
-        self.file_done = 0
-        self.file_size = size
-        self.start_time = 0
-        self.file_elapsed = 0
-        self.num_files = num_files
-        self.file_index = file_index
-        ProgressBar.__init__(self, fd=sys.stderr)
-        file_progress_line = OneFileProgressLine(self)
-        self.set_lines([file_progress_line])
-
-    def start(self):
-        """Print what is going to be transferred,
-        initialized self.start_time
-
-        """
-        to_print = pprint_transfer(self.src, self.dest)
-        self.fd.write(to_print + "\n")
-        self.start_time = time.time()
-        ProgressBar.start(self)
-
-    # pylint: disable=arguments-differ
-    def _update(self, xferd):
-        """Implement ProgressBar._update """
-        self.file_done += xferd
-        if self.file_done > self.file_size:
-            # can happen if file grew since the time we computed
-            # its size
-            self.file_done = self.file_size
-        self.file_elapsed = time.time() - self.start_time
-
-
-class FileProgressLine(Line):
-    """A progress line for one file"""
-    def __init__(self, parent):
-        Line.__init__(self, parent)
-        percent = PercentWidget(self)
-        file_bar = BarWidget(self)
-        file_name = FileName(self)
-        file_eta = ETAWidget(self)
-        self.set_widgets([percent,
-                          " ",
-                          file_name,
-                          " ",
-                          file_bar,
-                          " ",
-                          file_eta])
-
-    def curval(self):
-        """Implement Line.curval"""
-        return self.parent.file_done
-
-    def maxval(self):
-        """Implement Line.maxval"""
-        return self.parent.file_size
-
-    def elapsed(self):
-        """Implement Line.elapsed"""
-        return self.parent.file_elapsed
-
-
-class TotalLine(Line):
-    """A progress line for the whole transfer """
-    def __init__(self, parent):
-        Line.__init__(self, parent)
-        done_number = DoneNumber(self)
-        total_percent = PercentWidget(self)
-        total_bar = BarWidget(self)
-        total_eta = ETAWidget(self)
-        speed = FileTransferSpeed(self)
-        self.set_widgets([total_percent,
-                          " - ",
-                          speed,
-                          " - ",
-                          total_bar,
-                          " - ",
-                          done_number,
-                          " ",
-                          total_eta])
-
-    def curval(self):
-        """Implement Line.curval"""
-        return self.parent.total_done
-
-    def maxval(self):
-        """Implement Line.maxval"""
-        return self.parent.total_size
-
-    def elapsed(self):
-        """Implement Line.elapsed"""
-        return self.parent.total_elapsed
-
-
-# pylint: disable=too-many-instance-attributes
-class GlobalPbar(ProgressBar):
-    """The Global progressbar.
-    First line is a TotalLine, the second is a FileProgressLine
-
-    """
-    def __init__(self, num_files, total_size):
-        self.num_files = num_files
-        self.num_files_done = 0
+        self.index = 0
+        self.count = 0
+        self.src = ""
+        self.dest = ""
         self.file_done = 0
         self.file_size = 0
-        self.file_name = ""
         self.file_elapsed = 0
-        self.file_start_time = 0
-        self.total_size = total_size
-        self.total_done = 0
-        self.total_elapsed = 0
-        self.start_time = 0
-        ProgressBar.__init__(self, fd=sys.stderr)
-        file_progress_line = FileProgressLine(self)
-        total_line = TotalLine(self)
-        self.set_lines([total_line, file_progress_line])
-
-    def start(self):
-        """Overwrite ProgressBar.start """
-        self.start_time = time.time()
-        ProgressBar.start(self)
-
-    # pylint: disable=arguments-differ
-    def _update(self, xferd):
-        """Implement ProgressBar._update """
-        self.file_done += xferd
-        self.total_done += xferd
-        self.file_elapsed = time.time() - self.file_start_time
-        self.total_elapsed = time.time() - self.start_time
-
-    def new_file(self, src, size):
-        """Called when a new file is being transferred"""
-        self.file_name = src
-        self.file_done = 0
-        self.file_size = size
-        self.num_files_done += 1
-        self.file_start_time = time.time()
 
 
-class BarWidget(FillWidget):
-    """A Bar widget fills the line"""
-    def __init__(self, line):
-        FillWidget.__init__(self, line)
+def cursor_up(nb_lines):
+    """Move the cursor up by nb_lines"""
+    sys.stdout.write("\033[%dA" % nb_lines)
+    sys.stdout.flush()
 
-    def update(self, width):
-        """Create a progress bar of size width, looking like
-        [#####   ]
 
-        or if I like candy
-        [--Co  o ]
-        """
-        fraction = self.fraction()
+def get_fraction(current_value, max_value):
+    if max_value == 0 and current_value == 0:
+        return 1
+    if max_value == 0:
+        return 0
+    if current_value == 0:
+        return 0
+    if current_value == max_value:
+        return 1
+    return float(current_value) / max_value
+
+
+class Component(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def render(self, props):
+        pass
+
+
+class FixedWidthComponent(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def render(self, props, width):
+        pass
+
+
+class Counter(Component):
+    def render(self, props):
+        index = props["index"]
+        count = props["count"]
+        num_digits = len(str(count))
+        counter_format = "[%{}d/%d]".format(num_digits)
+        return [counter_format % (index, count)]
+
+
+class Percent(Component):
+    def render(self, props):
+        current_value = props["current_value"]
+        max_value = props["max_value"]
+        fraction = get_fraction(current_value, max_value)
+        return ["%3d%%" % int(fraction * 100)]
+
+
+class Bar(FixedWidthComponent):
+    def render(self, props, width):
+        current_value = props["current_value"]
+        max_value = props["max_value"]
+
+        marker = "#"
+        fraction = get_fraction(current_value, max_value)
         cwidth = width - 2
         marked_width = int(fraction * cwidth)
-
-        if os.environ.get("PYCP_PACMAN"):
-            marker = "-"
-            if marked_width == cwidth:
-                res = marker * marked_width
-            else:
-                if marked_width % 2:
-                    pacman = "\033[1;33mc\033[m"
-                else:
-                    pacman = "\033[1;33mC\033[m"
-                pac_dots = (" o " * (1 + cwidth // 3))[marked_width + 1:cwidth]
-                markers = marker * marked_width
-                res = markers + pacman + "\033[0;37m" + pac_dots + "\033[m"
-        else:
-            marker = "#"
-            res = (marker * marked_width).ljust(cwidth)
-        return "[%s]" % res
+        res = (marker * marked_width).ljust(cwidth)
+        return ["[%s]" % res]
 
 
-class FileTransferSpeed(Widget):
-    "Widget for showing the transfer speed (useful for file transfers)."
-    def __init__(self, line):
-        self.fmt = '%6.2f %s'
-        self.units = ['B', 'K', 'M', 'G', 'T', 'P']
-        Widget.__init__(self, line)
-
-    # pylint: disable=arguments-differ
-    def update(self):
-        """Implement Widget.update """
-        elapsed = self.line.elapsed()
-        curval = self.line.curval()
+class Speed(Component):
+    def render(self, props):
+        elapsed = props["elapsed"]
+        current_value = props["current_value"]
         if elapsed < 2e-6:
-            bps = 0.0
+            bits_per_second = 0.0
         else:
-            bps = float(curval) / elapsed
-        spd = bps
+            bits_per_second = float(current_value) / elapsed
+        speed = bits_per_second
+
+        units = ['B', 'K', 'M', 'G', 'T', 'P']
         unit = None
-        for unit in self.units:
-            if spd < 1000:
+        for unit in units:
+            if speed < 1000:
                 break
-            spd /= 1000
-        return self.fmt % (spd, unit+'/s')
+            speed /= 1000
+        speed_format = "%.2f %s"
+
+        return [speed_format % (speed, unit + "/s")]
 
 
-class PercentWidget(Widget):
-    """A widget for percentages """
-    # pylint: disable=arguments-differ
-    def update(self):
-        """By default, simply use self.fraction """
-        fraction = self.fraction()
-        return "%3d%%" % int(fraction * 100)
-
-
-class FileCountWidget(Widget):
-    """ Return something like [ 4/ 10] """
-    def __init__(self, line, file_index, num_files):
-        Widget.__init__(self, line)
-        self.file_index = file_index
-        self.num_files = num_files
-
-    # pylint: disable=arguments-differ
-    def update(self):
-        num_digits = len(str(self.num_files))
-        counter_format = "[%{}d/%d]".format(num_digits)
-        counter_str = counter_format % (self.file_index, self.num_files)
-        return counter_str
-
-
-class ETAWidget(Widget):
-    """A widget to display Estimated Time of Arrival at first,
-    and then total time spent when finish.
-
-    """
-    def __init__(self, line):
-        Widget.__init__(self, line)
-
-    # pylint: disable=arguments-differ
-    def update(self):
-        """Implement Widget.update """
-        elapsed = self.elapsed()
-        fraction = self.fraction()
+class ETA(Component):
+    @classmethod
+    def get_eta(cls, fraction, elapsed):
         if fraction == 0:
             return "ETA  : --:--:--"
         if fraction == 1:
-            return "Time : " + self.format_time(elapsed)
+            return "Time : " + cls.format_time(elapsed)
         eta = elapsed / fraction - elapsed
-        return "ETA  : " + self.format_time(eta)
+        return cls.format_time(eta)
 
     @staticmethod
     def format_time(seconds):
-        """Simple way of formating time """
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
-    def elapsed(self):
-        """Must return the elapsed time, in seconds.
-        By default, call self.line.elapsed.
-        """
-        return self.line.elapsed()
+    def render(self, props):
+        elapsed = props["elapsed"]
+        current_value = props["current_value"]
+        max_value = props["max_value"]
+        fraction = get_fraction(current_value, max_value)
+        eta = self.get_eta(fraction, elapsed)
+        return [eta]
+
+
+class Filename(Component):
+    def render(self, props):
+        filename = props["filename"]
+        return [pycp.util.shorten_path(filename, 40)]
+
+
+@attr.s
+class FixedTuple:
+    index = attr.ib()
+    component = attr.ib()
+
+
+def tokens_length(tokens):
+    _, without_color = ui.process_tokens(tokens, end="", sep="")
+    return len(without_color)
+
+
+class Line():
+    def __init__(self):
+        self.components = list()
+        self.fixed = None
+
+    def set_components(self, components):
+        self.components = components
+        fixed = list()
+        for (i, component) in enumerate(components):
+            if isinstance(component, FixedWidthComponent):
+                fixed.append(FixedTuple(i, component))
+        assert len(fixed) == 1, "Expecting exactly one fixed width component"
+        self.fixed = fixed[0]
+
+    def render(self, **kwargs):
+        accumulator = [None] * len(self.components)
+        term_width = shutil.get_terminal_size().columns
+        current_width = 0
+        for i, component in enumerate(self.components):
+            if i == self.fixed.index:
+                continue
+            elif isinstance(component, Component):
+                tokens = component.render(kwargs)
+                accumulator[i] = tokens
+                current_width += tokens_length(tokens)
+            elif isinstance(component, ui.Color):
+                accumulator[i] = [component]
+            else:
+                accumulator[i] = [component]
+                current_width += len(component)
+
+        fixed_width = term_width - current_width
+        accumulator[self.fixed.index] = self.fixed.component.render(kwargs, fixed_width)
+
+        return list(itertools.chain.from_iterable(accumulator))
+
+
+class ProgressIndicator:
+    def __init__(self):
+        pass
+
+    def on_new_file(self, progress):
+        pass
+
+    def on_file_done(self):
+        pass
+
+    def on_progress(self, progress):
+        pass
+
+    def on_start(self):
+        pass
+
+    def on_finish(self):
+        pass
+
+
+class OneFileIndicator(ProgressIndicator):
+    def __init__(self):
+        super().__init__()
+        percent = Percent()
+        bar = Bar()
+        speed = Speed()
+        eta = ETA()
+        self.line = Line()
+        self.line.set_components([
+            ui.blue, percent, ui.reset, " ",
+            ui.lightgray, bar, ui.reset, " - ",
+            ui.standout, speed, ui.reset, " | ",
+            ui.yellow, eta, ui.reset
+        ])
+
+    def on_new_file(self, progress):
+        tokens = list()
+        counter = Counter()
+        counter_tokens = counter.render({
+            "index": progress.index,
+            "count": progress.count,
+        })
+        colored_transfer = pycp.util.pprint_transfer(progress.src, progress.dest)
+        tokens = [ui.blue] + counter_tokens + [" "] + colored_transfer
+        ui.info(*tokens, end="\n", sep="")
+        tokens = self.line.render(
+            current_value=0,
+            elapsed=0,
+            max_value=progress.file_size)
+        ui.info(*tokens, end="\r", sep="")
+
+    def on_progress(self, progress):
+        tokens = self.line.render(
+            index=progress.index,
+            count=progress.count,
+            current_value=progress.file_done,
+            elapsed=progress.file_elapsed,
+            max_value=progress.file_size)
+        ui.info(*tokens, end="\r", sep="")
+
+    def on_file_done(self):
+        ui.info()
+
+
+class GlobalIndicator(ProgressIndicator):
+    def __init__(self):
+        super().__init__()
+        self.first_line = self.build_first_line()
+        self.second_line = self.build_second_line()
+
+    # pylint: disable=no-self-use
+    def on_start(self):
+        ui.info()
+
+    @staticmethod
+    def build_first_line():
+        res = Line()
+        counter = Counter()
+        percent = Percent()
+        bar = Bar()
+        eta = ETA()
+        res.set_components([
+            ui.green, counter, ui.reset, " ",
+            ui.blue, percent, ui.reset, " - ",
+            ui.lightgray, bar, ui.reset, " - ",
+            ui.yellow, eta, ui.reset,
+        ])
+        return res
+
+    @staticmethod
+    def build_second_line():
+        res = Line()
+        percent = Percent()
+        bar = Bar()
+        eta = ETA()
+        speed = Speed()
+        filename = Filename()
+        res.set_components([
+            ui.blue, percent, ui.reset, " ",
+            ui.bold, filename, ui.reset, " ",
+            ui.lightgray, bar, ui.reset, " - ",
+            ui.standout, speed, ui.reset, " | ",
+            ui.yellow, eta, ui.reset,
+        ])
+        return res
+
+    def _render_first_line(self, progress):
+        tokens = self.first_line.render(
+            index=progress.index,
+            count=progress.count,
+            current_value=progress.total_done,
+            elapsed=progress.total_elapsed,
+            max_value=progress.total_size)
+        cursor_up(2)
+        ui.info("\r", *tokens, end="\n", sep="")
+
+    def _render_second_line(self, progress):
+        tokens = self.second_line.render(
+            current_value=progress.file_done,
+            max_value=progress.file_size,
+            elapsed=progress.file_elapsed,
+            filename=progress.src,
+        )
+        ui.info("\r", *tokens, end="\n", sep="")
+
+    def on_progress(self, progress):
+        self._render_first_line(progress)
+        self._render_second_line(progress)

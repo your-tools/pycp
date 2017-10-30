@@ -2,6 +2,8 @@
 ---
 
 * New feature: colors by default
+* Breaking change: remove ``--all`` see `#19 <https://github.com/dmerejkowsky/pycp/issues/19>`_
+  for details.
 * Drop Windows support
 * Drop Python2 support
 * Massive refactoring
@@ -73,7 +75,7 @@ Bug fix: ``pymv a_dir b_dir`` left an empty ``a_dir`` behind
 
 4.3
 ----
-Nicer print of what is being transferred::
+Nicer print of what is being transfered::
 
   /path/to/{foo => bar}/a/b
 
