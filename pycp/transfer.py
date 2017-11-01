@@ -314,6 +314,8 @@ class TransferManager():
             self.progress_indicator = GlobalIndicator()
         else:
             self.progress_indicator = OneFileIndicator()
+        self.last_progress_update = 0
+        self.last_progress = None
 
     def do_transfer(self):
         """Performs the real transfer"""
@@ -332,7 +334,10 @@ class TransferManager():
             now = time.time()
             progress.total_elapsed = now - total_start
             progress.file_elapsed = now - file_start
-            self.progress_indicator.on_progress(progress)
+            self.last_progress = progress
+            if now - self.last_progress_update > 0.1:
+                self.progress_indicator.on_progress(progress)
+                self.last_progress_update = now
 
         for (src, dest, file_size) in self.transfer_info.to_transfer:
             file_start = time.time()
@@ -347,6 +352,8 @@ class TransferManager():
             ftm.set_callback(on_file_transfer)
             self.progress_indicator.on_new_file(progress)
             error = ftm.do_transfer()
+            if self.last_progress:
+                self.progress_indicator.on_progress(self.last_progress)
             self.progress_indicator.on_file_done()
             if error:
                 errors[src] = error
