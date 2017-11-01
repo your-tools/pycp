@@ -6,13 +6,14 @@ pycp.progress
 
 """
 
+import multiprocessing
 import os
 import stat
 import time
 
 import ui
 
-from pycp.progress import OneFileIndicator, GlobalIndicator, Progress
+from pycp.progress import Progress
 
 BUFFER_SIZE = 100 * 1024
 
@@ -297,34 +298,32 @@ class FileTransferManager():
             return True
 
 
-class TransferManager():
+class TransferProcess(multiprocessing.Process):
     """Handles transfer of a one or several sources to a destination
 
     One FileTransferManager object will be created for each file
     to transfer.
 
     """
-    def __init__(self, sources, destination, options):
+    def __init__(self, pipe, sources, destination, options):
+        super().__init__(name="TransferProcess")
+        self.pipe = pipe
         self.sources = sources
         self.destination = destination
         self.options = options
         self.transfer_info = TransferInfo(sources, destination)
+        self.errors = dict()
 
-        if self.options.global_progress:
-            self.progress_indicator = GlobalIndicator()
-        else:
-            self.progress_indicator = OneFileIndicator()
-
-    def do_transfer(self):
-        """Performs the real transfer"""
-        errors = dict()
+    def run(self):
+        """ Performs the transfer, sending progress indications via a pipe """
+        self.errors = dict()
         progress = Progress()
         total_start = time.time()
         progress.total_done = 0
         progress.total_size = self.transfer_info.size
         progress.index = 0
         progress.count = len(self.transfer_info.to_transfer)
-        self.progress_indicator.on_start()
+        self.pipe.send(('on_start',))
 
         def on_file_transfer(transfered):
             progress.file_done += transfered
@@ -332,7 +331,7 @@ class TransferManager():
             now = time.time()
             progress.total_elapsed = now - total_start
             progress.file_elapsed = now - file_start
-            self.progress_indicator.on_progress(progress)
+            self.pipe.send(('on_progress', progress))
 
         for (src, dest, file_size) in self.transfer_info.to_transfer:
             file_start = time.time()
@@ -345,13 +344,17 @@ class TransferManager():
 
             ftm = FileTransferManager(src, dest, self.options)
             ftm.set_callback(on_file_transfer)
-            self.progress_indicator.on_new_file(progress)
-            error = ftm.do_transfer()
-            self.progress_indicator.on_file_done()
+            self.pipe.send(('on_new_file', progress))
+            error = None
+            try:
+                error = ftm.do_transfer()
+                self.pipe.send(('on_file_done',))
+            except TransferError as fatal_error:
+                self.pipe.send(('error', str(fatal_error)))
             if error:
-                errors[src] = error
+                self.errors[src] = error
 
-        self.progress_indicator.on_finish()
+        self.pipe.send(('on_finish',))
         if self.options.move and not self.options.ignore_errors:
             for to_remove in self.transfer_info.to_remove:
                 try:
@@ -359,5 +362,3 @@ class TransferManager():
                 except OSError as error:
                     ui.warning("Failed to remove ", to_remove, ":\n",
                                error, end="\n", sep="")
-
-        return errors
