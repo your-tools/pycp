@@ -5,3 +5,7 @@ pylint
 mccabe
 pytest
 pytest-mock
+
+bumpversion
+twine
+wheel
