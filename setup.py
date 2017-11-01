@@ -5,7 +5,7 @@ import pycp
 
 
 setup(name='pycp',
-      version="8.0.1",
+      version="8.0.2",
       description='cp and mv with a progressbar',
       author="Dimitri Merejkowsky",
       author_email="d.merej@gmail.com",
