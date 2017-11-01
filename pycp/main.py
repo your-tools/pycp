@@ -7,6 +7,7 @@ import argparse
 import multiprocessing
 import os
 import sys
+import time
 
 from pycp.transfer import TransferProcess, TransferError, TransferOptions
 from pycp.progress import GlobalIndicator, OneFileIndicator
@@ -101,6 +102,7 @@ def parse_filelist(filelist):
     return sources, destination
 
 
+# pylint: disable=too-many-instance-attributes
 class Application():
     def __init__(self, sources, destination, options):
         self.sources = sources
@@ -113,6 +115,8 @@ class Application():
         self.parent_pipe = None
         self.transfer_process = None
         self.done = False
+        self.last_progress = None
+        self.last_progress_update = 0
 
     def run(self):
         self.parent_pipe, child_pipe = multiprocessing.Pipe()
@@ -131,18 +135,28 @@ class Application():
 
     def handle_pipe_data(self, data):
         key = data[0]
-        if key == "error":
-            sys.exit(data[1])
         if len(data) == 2:
             value = data[1]
         else:
             value = ()
-        func = getattr(self.progress_indicator, key)
-        if value:
-            func(value)
-        else:
-            func()
-        if key == 'on_finish':
+        if key == "error":
+            sys.exit(value)
+        elif key == "on_progress":
+            # Throttle calls to progress_indicator.on_progress,
+            # but still save the value so we can dispaly it right before on_finish()
+            self.last_progress = value
+            now = time.time()
+            if now - self.last_progress_update > 0.1:
+                self.progress_indicator.on_progress(self.last_progress)
+                self.last_progress_update = now
+        elif key == 'on_new_file':
+            self.progress_indicator.on_new_file(value)
+        elif key == 'on_file_done':
+            if self.last_progress:
+                self.progress_indicator.on_progress(self.last_progress)
+            self.progress_indicator.on_file_done()
+        elif key == 'on_finish':
+            self.progress_indicator.on_finish()
             self.transfer_process.join()
             self.done = True
 
