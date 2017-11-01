@@ -12,8 +12,9 @@ import time
 
 import ui
 
-from pycp.util import debug
 from pycp.progress import OneFileIndicator, GlobalIndicator, Progress
+
+BUFFER_SIZE = 100 * 1024
 
 
 class TransferError(Exception):
@@ -129,7 +130,6 @@ class TransferInfo():
         """Parse a new source file
 
         """
-        debug(":: file %s -> %s" % (source, destination))
         if os.path.isdir(destination):
             basename = os.path.basename(os.path.normpath(source))
             destination = os.path.join(destination, basename)
@@ -139,11 +139,9 @@ class TransferInfo():
         """Parse a new source directory
 
         """
-        debug(":: dir %s -> %s" % (source, destination))
         if os.path.isdir(destination):
             basename = os.path.basename(os.path.normpath(source))
             destination = os.path.join(destination, basename)
-        debug(":: making dir %s" % destination)
         if not os.path.exists(destination):
             os.mkdir(destination)
         file_names = sorted(os.listdir(source))
@@ -220,11 +218,10 @@ class FileTransferManager():
             return
 
         src_file, dest_file = open_files(self.src, self.dest)
-        buff_size = 100 * 1024
         transfered = 0
         try:
             while True:
-                data = src_file.read(buff_size)
+                data = src_file.read(BUFFER_SIZE)
                 if not data:
                     self.callback(0)
                     break
@@ -246,7 +243,6 @@ class FileTransferManager():
 
         if self.options.move:
             try:
-                debug("removing %s" % self.src)
                 os.remove(self.src)
             except OSError:
                 ui.warning("Could not remove %s" % self.src)
