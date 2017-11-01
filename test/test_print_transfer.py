@@ -1,12 +1,12 @@
-import ui
+from pycp.progress import TransferText
 
-from pycp.util import pprint_transfer
+from conftest import strip_ansi_colors
 
 
 def assert_pprint(src, dest, actual):
-    res = pprint_transfer(src, dest)
-    _, without_color = ui.process_tokens(res, sep="", end="")
-    assert without_color == actual
+    transfer_text = TransferText()
+    out = transfer_text.render(dict(src=src, dest=dest), 40)
+    assert strip_ansi_colors(out) == actual
 
 
 def test_01():

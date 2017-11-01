@@ -4,10 +4,13 @@ to parse command line
 """
 
 import argparse
+import multiprocessing
 import os
 import sys
+import time
 
-from pycp.transfer import TransferManager, TransferError, TransferOptions
+from pycp.transfer import TransferProcess, TransferError, TransferOptions
+from pycp.progress import GlobalIndicator, OneFileIndicator
 
 
 def is_pymv():
@@ -99,28 +102,86 @@ def parse_filelist(filelist):
     return sources, destination
 
 
-def main():
+# pylint: disable=too-many-instance-attributes
+class Application():
+    def __init__(self, sources, destination, options):
+        self.sources = sources
+        self.destination = destination
+        self.options = options
+        if options.global_progress:
+            self.progress_indicator = GlobalIndicator()
+        else:
+            self.progress_indicator = OneFileIndicator()
+        self.parent_pipe = None
+        self.transfer_process = None
+        self.done = False
+        self.last_progress = None
+        self.last_progress_update = 0
+
+    def run(self):
+        self.parent_pipe, child_pipe = multiprocessing.Pipe()
+        self.transfer_process = TransferProcess(child_pipe, self.sources, self.destination,
+                                                self.options)
+        self.transfer_process.start()
+        while not self.done:
+            data = self.parent_pipe.recv()
+            self.handle_pipe_data(data)
+        errors = self.transfer_process.errors
+        if errors:
+            print("Error occurred when transferring the following files:")
+            for (file_name, error) in errors.items():
+                print(file_name, error)
+            sys.exit(1)
+
+    def handle_pipe_data(self, data):
+        key = data[0]
+        if len(data) == 2:
+            value = data[1]
+        else:
+            value = ()
+        if key == "error":
+            sys.exit(value)
+        elif key == "on_progress":
+            # Throttle calls to progress_indicator.on_progress,
+            # but still save the value so we can dispaly it right before on_finish()
+            self.last_progress = value
+            now = time.time()
+            if now - self.last_progress_update > 0.1:
+                self.progress_indicator.on_progress(self.last_progress)
+                self.last_progress_update = now
+        elif key == 'on_new_file':
+            self.progress_indicator.on_new_file(value)
+        elif key == 'on_file_done':
+            if self.last_progress:
+                self.progress_indicator.on_progress(self.last_progress)
+            self.progress_indicator.on_file_done()
+        elif key == 'on_finish':
+            self.progress_indicator.on_finish()
+            self.transfer_process.join()
+            self.done = True
+
+
+def _main():
     args = parse_commandline()
     args.move = is_pymv()
 
     files = args.files
     sources, destination = parse_filelist(files)
 
-    transfer_options = TransferOptions()
-    transfer_options.update(args)
+    options = TransferOptions()
+    options.update(args)
 
-    transfer_manager = TransferManager(sources, destination, transfer_options)
+    app = Application(sources, destination, options)
+    app.run()
+
+
+def main():
     try:
-        errors = transfer_manager.do_transfer()
+        _main()
     except TransferError as err:
         sys.exit(err)
     except KeyboardInterrupt as err:
         sys.exit("Interrputed by user")
-
-    if errors:
-        print("Error occurred when transferring the following files:")
-        for (file_name, error) in errors.items():
-            print(file_name, error)
 
 
 if __name__ == "__main__":

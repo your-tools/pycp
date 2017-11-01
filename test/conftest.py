@@ -1,6 +1,7 @@
 import os
-import tempfile
+import re
 import shutil
+import tempfile
 
 import pytest
 
@@ -30,3 +31,8 @@ def mock_term_size(mocker, width):
     size.columns = width
     patcher = mocker.patch('shutil.get_terminal_size')
     patcher.return_value = size
+
+
+def strip_ansi_colors(string):
+    ansi_escape = re.compile(r'\x1b[^m]*m')
+    return re.sub(ansi_escape, '', string)

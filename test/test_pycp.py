@@ -8,7 +8,7 @@ import time
 
 
 from pycp.main import main as pycp_main
-from conftest import mock_term_size
+from conftest import mock_term_size, strip_ansi_colors
 
 import pytest
 
@@ -245,7 +245,7 @@ def test_output_does_not_wrap_1(test_dir, capsys, mocker):
     out, err = capsys.readouterr()
     lines = re.split(r"\r|\n", out)
     for line in lines:
-        assert len(line) <= expected_width
+        assert len(strip_ansi_colors(line)) <= expected_width
 
 
 def test_output_does_not_wrap_2(test_dir, capsys, mocker):
@@ -260,7 +260,6 @@ def test_output_does_not_wrap_2(test_dir, capsys, mocker):
     pycp_main()
 
     out, err = capsys.readouterr()
-    print(out)
     lines = re.split(r"\r|\n", out)
     for line in lines:
-        assert len(line) <= expected_width
+        assert len(strip_ansi_colors(line)) <= expected_width
