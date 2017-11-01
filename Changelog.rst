@@ -1,3 +1,15 @@
+8.0.4
+-----
+
+* Partial revert of 8.0.3: ``pycp`` is now still fast even with just one CPU
+
+
+8.0.3
+-----
+
+* Performance improvements (see #20). We are now faster than v7 :)
+  Note that ``pycp`` will be still be slow if only one CPU is available.
+
 8.0.2
 -----
 
