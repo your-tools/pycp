@@ -1,3 +1,4 @@
 include *.txt
 include *.rst
 recursive-include test/test_dir *
+recursive-include test/ *.py
