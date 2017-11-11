@@ -86,18 +86,18 @@ def shorten_path(path, length):
     if path.startswith(os.path.sep):
         short_base = os.path.sep
         path = path[1:]
-        parts = path.split(os.path.sep)
-        short_base += os.path.sep.join([p[0] for p in parts[:-1]])
-        if len(short_base) > length:
-            short_base = ""
+    parts = path.split(os.path.sep)
+    short_base += os.path.sep.join([p[0] for p in parts[:-1]])
+    if len(short_base) > length:
+        short_base = ""
 
     # Shorten the last part:
-        short_name = parts[-1]
-        last_length = length - len(short_base)
-        if short_base:
-            last_length = last_length - 1
-            short_name = shorten_string(short_name, last_length)
-            return os.path.join(short_base, short_name)
+    short_name = parts[-1]
+    last_length = length - len(short_base)
+    if short_base:
+        last_length = last_length - 1
+    short_name = shorten_string(short_name, last_length)
+    return os.path.join(short_base, short_name)
 
 
 def shorten_string(input_string, length):
