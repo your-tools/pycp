@@ -1,7 +1,12 @@
+8.0.6
+-----
+
+* Fix packaging issue: ``pycp`` wheels are no longer universal.
+
 8.0.5
 -----
 
-* Fix crash in `pycp -g`. Reported by @z1lt0id
+* Fix crash in ``pycp -g``. Reported by @z1lt0id
 
 8.0.4
 -----
