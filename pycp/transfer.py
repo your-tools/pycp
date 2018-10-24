@@ -170,6 +170,7 @@ class FileTransferManager():
     def set_callback(self, callback):
         self.callback = callback
 
+    # pylint: disable=inconsistent-return-statements
     def do_transfer(self):
         """Called transfer_file, catch TransferError depending
         on the options.
