@@ -11,7 +11,7 @@ pycp: cp and mv with a progressbar
 
 What it looks like:
 
-.. image:: https://dmerej.info/pub/pycp-colors.png
+.. image:: https://raw.githubusercontent.com/dmerejkowsky/pycp/master/scrot/pycp.png
   :target: https://github.com/dmerejkowsky/pycp
 
 
