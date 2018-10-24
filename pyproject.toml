@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pycp"
+version = "0.1.0"
+description = "cp and mv with a progressbar"
+license="MIT"
+authors = ["Dimitri Merejkowsky <d.merej@gmail.com>"]
+
+[tool.poetry.dependencies]
+attrs = "*"
+"python-cli-ui" = "*"
+
+[tool.poetry.dev-dependencies]
+"path.py" = "*"
+pycodestyle= "*"
+pyflakes= "*"
+pylint= "*"
+mccabe= "*"
+pytest= "*"
+pytest-mock= "*"
+
+bumpversion= "*"
+twine= "*"
+wheel= "*"
