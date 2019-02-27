@@ -32,7 +32,7 @@ def parse_commandline():
 
     parser = argparse.ArgumentParser(usage=usage, prog=prog_name)
 
-    parser.add_argument("-v", "--version", action="version", version="8.0.7")
+    parser.add_argument("-v", "--version", action="version", version="8.0.8")
     parser.add_argument("-i", "--interactive",
                         action="store_true",
                         dest="interactive",

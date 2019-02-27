@@ -7,7 +7,7 @@ def read_readme():
 
 
 setup(name='pycp',
-      version="8.0.7",
+      version="8.0.8",
       description='cp and mv with a progressbar',
       long_description=read_readme(),
       author="Dimitri Merejkowsky",
