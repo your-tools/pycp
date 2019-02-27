@@ -12,9 +12,9 @@ matrix:
       sudo: true
 
 install:
-  - curl -L https://github.com/TankerHQ/dmenv/releases/download/v0.5.0/dmenv-linux -o dmenv
-  - chmod u+x dmenv
-  - ./dmenv install
+  - curl -L https://github.com/TankerHQ/dmenv/releases/download/v0.5.0/dmenv-linux -o ${VIRTUAL_ENV}/bin/dmenv
+  - chmod u+x ${VIRTUAL_ENV}/bin/dmenv
+  - dmenv install
 
 script:
   - ./ci.sh
