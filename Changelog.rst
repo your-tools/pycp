@@ -1,3 +1,7 @@
+8.0.7
+-----
+* Remove dependency on `python-cli-ui`
+
 8.0.6
 -----
 
