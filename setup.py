@@ -1,12 +1,15 @@
 from setuptools import setup
-import os
-import sys
-import pycp
+
+
+def read_readme():
+    with open("README.rst") as file:
+        return file.read()
 
 
 setup(name='pycp',
       version="8.0.7",
       description='cp and mv with a progressbar',
+      long_description=read_readme(),
       author="Dimitri Merejkowsky",
       author_email="d.merej@gmail.com",
       url='http://github.com/dmerejkowsky/pycp',
