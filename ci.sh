@@ -1,11 +1,11 @@
 #!//bin/bash
 set -e
 echo "pycodestyle"
-pycodestyle .
+dmenv run pycodestyle .
 echo "pyflakes"
-pyflakes $(find pycp test -name "*.py")
+dmenv run pyflakes $(find pycp test -name "*.py")
 echo "mccabe"
-python run-mccabe.py 15
+dmenv run python run-mccabe.py 15
 echo "pylint"
-pylint pycp
-pytest
+dmenv run pylint pycp
+dmenv run pytest

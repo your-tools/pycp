@@ -5,7 +5,6 @@ import sys
 import time
 
 import attr
-import ui
 
 
 # pylint: disable=too-many-instance-attributes
@@ -448,7 +447,7 @@ class GlobalIndicator(ProgressIndicator):
 
     # pylint: disable=no-self-use
     def on_start(self):
-        ui.info()
+        print()
 
     @staticmethod
     def build_first_line():

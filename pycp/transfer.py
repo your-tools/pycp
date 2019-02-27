@@ -240,13 +240,13 @@ class FileTransferManager():
         try:
             self.post_transfer()
         except OSError as err:
-            ui.warning("Failed to finalize transfer of %s: %s" % (self.dest, err))
+            print("Warning: failed to finalize transfer of %s: %s" % (self.dest, err))
 
         if self.options.move:
             try:
                 os.remove(self.src)
             except OSError:
-                ui.warning("Could not remove %s" % self.src)
+                print("Warting: could not remove %s" % self.src)
 
     def post_transfer(self):
         """Handle stat of transfered file
@@ -281,7 +281,7 @@ class FileTransferManager():
         """
         # Safe: always skip
         if self.options.safe:
-            ui.warning("Skipping", self.dest)
+            print("Waning: skipping", self.dest)
             return True
 
         # Not safe and not interactive => overwrite
@@ -365,7 +365,7 @@ class TransferManager():
                 try:
                     os.rmdir(to_remove)
                 except OSError as error:
-                    ui.warning("Failed to remove ", to_remove, ":\n",
+                    print("Warning: Failed to remove ", to_remove, ":\n",
                                error, end="\n", sep="")
 
         return errors

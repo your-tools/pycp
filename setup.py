@@ -14,8 +14,21 @@ setup(name='pycp',
       license='COPYING',
       install_requires=[
           "attrs",
-          "python-cli-ui",
       ],
+      extras_require={
+          "dev": [
+              "path.py",
+              "pycodestyle",
+              "pyflakes",
+              "pylint",
+              "mccabe",
+              "pytest",
+              "pytest-mock",
+              "bumpversion",
+              "twine",
+              "wheel",
+         ]
+      },
       entry_points={
           "console_scripts": [
               "pycp = pycp.main:main",
