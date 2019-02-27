@@ -2,13 +2,14 @@ sudo: false
 
 language: python
 
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "3.7"
-    dist: xenial
-    sudo: true
+matrix:
+  include:
+    - python: "3.4"
+    - python: "3.5"
+    - python: "3.6"
+    - python: "3.7"
+      dist: xenial
+      sudo: true
 
 install:
   - curl -L https://github.com/TankerHQ/dmenv/releases/download/v0.5.0/dmenv-linux -o dmenv
