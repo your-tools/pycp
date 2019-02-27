@@ -27,7 +27,7 @@ setup(name='pycp',
               "bumpversion",
               "twine",
               "wheel",
-         ]
+          ]
       },
       entry_points={
           "console_scripts": [

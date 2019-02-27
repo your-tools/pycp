@@ -156,7 +156,6 @@ class Component(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def render(self, props):
         """ Should return a tuple with a length and a string """
-        pass
 
 
 class AnsiEscapeSequence(Component):

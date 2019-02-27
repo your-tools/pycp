@@ -10,8 +10,6 @@ import os
 import stat
 import time
 
-import ui
-
 from pycp.progress import OneFileIndicator, GlobalIndicator, Progress
 
 BUFFER_SIZE = 100 * 1024
@@ -366,6 +364,6 @@ class TransferManager():
                     os.rmdir(to_remove)
                 except OSError as error:
                     print("Warning: Failed to remove ", to_remove, ":\n",
-                               error, end="\n", sep="")
+                          error, end="\n", sep="")
 
         return errors
