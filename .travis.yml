@@ -17,4 +17,4 @@ install:
   - ./dmenv install
 
 script:
-  - poetry run ./ci.sh
+  - ./ci.sh
