@@ -16,3 +16,6 @@ pkg/
 
 # Created by pip
 *.egg-info
+
+# Created by pytest
+.coverage
