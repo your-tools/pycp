@@ -28,54 +28,74 @@ def parse_commandline():
     %s [options] SOURCE... DIRECTORY
 
     %s SOURCE to DESTINATION or mutliple SOURCE(s) to DIRECTORY
-    """ % (prog_name, prog_name, action)
+    """ % (
+        prog_name,
+        prog_name,
+        action,
+    )
 
     parser = argparse.ArgumentParser(usage=usage, prog=prog_name)
 
     parser.add_argument("-v", "--version", action="version", version="8.0.8")
-    parser.add_argument("-i", "--interactive",
-                        action="store_true",
-                        dest="interactive",
-                        help="ask before overwriting existing files")
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        dest="interactive",
+        help="ask before overwriting existing files",
+    )
 
-    parser.add_argument("-s", "--safe",
-                        action="store_true",
-                        dest="safe",
-                        help="never overwrite existing files")
+    parser.add_argument(
+        "-s",
+        "--safe",
+        action="store_true",
+        dest="safe",
+        help="never overwrite existing files",
+    )
 
-    parser.add_argument("-f", "--force",
-                        action="store_false",
-                        dest="safe",
-                        help="silently overwrite existing files "
-                             "(this is the default)")
+    parser.add_argument(
+        "-f",
+        "--force",
+        action="store_false",
+        dest="safe",
+        help="silently overwrite existing files " "(this is the default)",
+    )
 
-    parser.add_argument("-p", "--preserve",
-                        action="store_true",
-                        dest="preserve",
-                        help="preserve time stamps and ownership")
+    parser.add_argument(
+        "-p",
+        "--preserve",
+        action="store_true",
+        dest="preserve",
+        help="preserve time stamps and ownership",
+    )
 
-    parser.add_argument("--ignore-errors",
-                        action="store_true",
-                        dest="ignore_errors",
-                        help="ignore errors, remove destination if cp\n"
-                             "Print problematic files at the end")
+    parser.add_argument(
+        "--ignore-errors",
+        action="store_true",
+        dest="ignore_errors",
+        help="ignore errors, remove destination if cp\n"
+        "Print problematic files at the end",
+    )
 
-    parser.add_argument("-g", "--global-pbar",
-                        action="store_true",
-                        dest="global_progress",
-                        help="display only one progress bar during transfer")
+    parser.add_argument(
+        "-g",
+        "--global-pbar",
+        action="store_true",
+        dest="global_progress",
+        help="display only one progress bar during transfer",
+    )
 
-    parser.add_argument("--i-love-candy",
-                        action="store_true",
-                        dest="pacman",
-                        help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--i-love-candy", action="store_true", dest="pacman", help=argparse.SUPPRESS
+    )
 
     parser.set_defaults(
         safe=False,
         interactive=False,
         ignore_errors=False,
         preserve=False,
-        global_progress=False)
+        global_progress=False,
+    )
     parser.add_argument("files", nargs="+")
 
     return parser.parse_args()

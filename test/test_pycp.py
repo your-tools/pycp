@@ -203,7 +203,7 @@ def test_overwrite_2(test_dir):
     "a_file -> b_file and b_file already exists (safe)"
     a_file = os.path.join(test_dir, "a_file")
     b_file = os.path.join(test_dir, "b_file")
-    sys.argv = ["pycp", "--safe",  a_file, b_file]
+    sys.argv = ["pycp", "--safe", a_file, b_file]
     pycp_main()
     b_file_desc = open(b_file, "r")
     b_contents = b_file_desc.read()
@@ -226,7 +226,7 @@ def test_preserve(test_dir):
     a_file = os.path.join(test_dir, "a_file")
     long_ago = time.time() - 10000
     os.utime(a_file, (long_ago, long_ago))
-    a_copy = os.path.join(test_dir,  "a_copy")
+    a_copy = os.path.join(test_dir, "a_copy")
     sys.argv = ["pycp", "--preserve", a_file, a_copy]
     pycp_main()
     copy_stat = os.stat(a_copy)
