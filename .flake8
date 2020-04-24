@@ -1,0 +1,5 @@
+[flake8]
+exclude = build/
+max-line-length=100
+ignore = E203, W503
+max-complexity = 12
