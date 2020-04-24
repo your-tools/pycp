@@ -19,6 +19,7 @@ class TransferError(Exception):
     """Custom exception: wraps IOError
 
     """
+
     def __init__(self, message):
         Exception.__init__(self)
         self.message = message
@@ -48,7 +49,7 @@ def samefile(src, dest):
 
     """
     # If os.path.samefile exists, use it:
-    if hasattr(os.path, 'samefile'):
+    if hasattr(os.path, "samefile"):
         try:
             return os.path.samefile(src, dest)
         except OSError:
@@ -91,7 +92,7 @@ def open_files(src, dest):
     return src_file, dest_file
 
 
-class TransferInfo():
+class TransferInfo:
     """This class contains:
     * a list of tuples: to_transfer (src, dest) where:
        - src and dest are both files
@@ -101,6 +102,7 @@ class TransferInfo():
     transfered
 
     """
+
     def __init__(self, sources, destination):
         self.size = 0
         # List of tuples (src, dest) of files to transfer
@@ -155,10 +157,11 @@ class TransferInfo():
         self.to_transfer.append((src, dest, file_size))
 
 
-class FileTransferManager():
+class FileTransferManager:
     """This class handles transfering one file to an other
 
     """
+
     def __init__(self, src, dest, options):
         self.src = src
         self.dest = dest
@@ -255,12 +258,12 @@ class FileTransferManager():
 
         """
         src_st = os.stat(self.src)
-        if hasattr(os, 'chmod'):
+        if hasattr(os, "chmod"):
             mode = stat.S_IMODE(src_st.st_mode)
             os.chmod(self.dest, mode)
         if not self.options.preserve:
             return
-        if hasattr(os, 'utime'):
+        if hasattr(os, "utime"):
             os.utime(self.dest, (src_st.st_atime, src_st.st_mtime))
         uid = src_st.st_uid
         gid = src_st.st_gid
@@ -296,13 +299,14 @@ class FileTransferManager():
             return True
 
 
-class TransferManager():
+class TransferManager:
     """Handles transfer of a one or several sources to a destination
 
     One FileTransferManager object will be created for each file
     to transfer.
 
     """
+
     def __init__(self, sources, destination, options):
         self.sources = sources
         self.destination = destination
@@ -363,7 +367,13 @@ class TransferManager():
                 try:
                     os.rmdir(to_remove)
                 except OSError as error:
-                    print("Warning: Failed to remove ", to_remove, ":\n",
-                          error, end="\n", sep="")
+                    print(
+                        "Warning: Failed to remove ",
+                        to_remove,
+                        ":\n",
+                        error,
+                        end="\n",
+                        sep="",
+                    )
 
         return errors

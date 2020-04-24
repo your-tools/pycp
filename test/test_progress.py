@@ -1,7 +1,6 @@
-
 from conftest import mock_term_size
 import pycp.progress
-from pycp.progress import Text, Blue, Bold, Reset, LightGray,  Standout, Brown
+from pycp.progress import Text, Blue, Bold, Reset, LightGray, Standout, Brown
 from pycp.progress import shorten_path, shorten_string
 
 
@@ -23,20 +22,30 @@ def test_can_build_lines_out_of_widgets(mocker):
     space = Text(" ")
     dash = Text(" - ")
     pipe = Text(" | ")
-    line.set_components([
-        blue, counter, reset, space,
-        bold, percent, reset, space,
-        lightgray, bar, reset, dash,
-        standout, speed, reset, pipe,
-        brown, eta, reset,
-    ])
-    out = line.render(
-        index=1,
-        count=3,
-        current_value=20,
-        max_value=100,
-        elapsed=10,
+    line.set_components(
+        [
+            blue,
+            counter,
+            reset,
+            space,
+            bold,
+            percent,
+            reset,
+            space,
+            lightgray,
+            bar,
+            reset,
+            dash,
+            standout,
+            speed,
+            reset,
+            pipe,
+            brown,
+            eta,
+            reset,
+        ]
     )
+    out = line.render(index=1, count=3, current_value=20, max_value=100, elapsed=10,)
     print(out)
 
 
@@ -68,19 +77,21 @@ def test_indicates_progress_file_by_file():
 
 
 def test_shorten_path():
-    assert shorten_path("bazinga", 6) == 'baz...'
-    assert shorten_path("foo/bar/baz", 12) == 'foo/bar/baz'
-    assert shorten_path("foo/bar/baz", 10) == 'f/b/baz'
-    assert shorten_path("/foo/bar/baz", 11) == '/f/b/baz'
-    assert shorten_path("foo/bar/bazinga", 10) == 'f/b/baz...'
-    assert shorten_path("foo/bar/baz/spam/eggs", 6) == 'eggs'
-    assert shorten_path("foo/bar/baz/spam/elephant", 4) == 'e...'
-    assert shorten_path(
-        "Songs/17 Hippies/Sirba/02 Mad Bad Cat.mp3", 40) == 'S/1/S/02 Mad Bad Cat.mp3'
+    assert shorten_path("bazinga", 6) == "baz..."
+    assert shorten_path("foo/bar/baz", 12) == "foo/bar/baz"
+    assert shorten_path("foo/bar/baz", 10) == "f/b/baz"
+    assert shorten_path("/foo/bar/baz", 11) == "/f/b/baz"
+    assert shorten_path("foo/bar/bazinga", 10) == "f/b/baz..."
+    assert shorten_path("foo/bar/baz/spam/eggs", 6) == "eggs"
+    assert shorten_path("foo/bar/baz/spam/elephant", 4) == "e..."
+    assert (
+        shorten_path("Songs/17 Hippies/Sirba/02 Mad Bad Cat.mp3", 40)
+        == "S/1/S/02 Mad Bad Cat.mp3"
+    )
 
 
 def test_shorten_string():
-    assert shorten_string("foobar", 5) == 'fo...'
-    assert shorten_string("foobar", 3) == 'f..'
-    assert shorten_string("foobar", 2) == 'f.'
-    assert shorten_string("foobar", 1) == 'f'
+    assert shorten_string("foobar", 5) == "fo..."
+    assert shorten_string("foobar", 3) == "f.."
+    assert shorten_string("foobar", 2) == "f."
+    assert shorten_string("foobar", 1) == "f"

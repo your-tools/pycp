@@ -46,14 +46,14 @@ def human_readable(size):
     bytes
 
     """
-    if size < 1024**2:
-        hreadable = float(size)/1024.0
+    if size < 1024 ** 2:
+        hreadable = float(size) / 1024.0
         return "%.0fK" % hreadable
-    elif size < (1024**3):
-        hreadable = float(size)/(1024**2)
+    elif size < (1024 ** 3):
+        hreadable = float(size) / (1024 ** 2)
         return "%.1fM" % round(hreadable, 1)
     else:
-        hreadable = float(size)/(1024.0**3)
+        hreadable = float(size) / (1024.0 ** 3)
         return "%.2fG" % round(hreadable, 2)
 
 
@@ -94,7 +94,7 @@ def shorten_string(input_string, length):
     if len(input_string) < length:
         return input_string
     if length > 3:
-        return input_string[:length-3] + "..."
+        return input_string[: length - 3] + "..."
     if length == 3:
         return input_string[0] + ".."
     if length == 2:
@@ -137,9 +137,9 @@ def describe_transfer(src, dest):
     dest_midlen = len_dest - pfx_length - sfx_length
 
     pfx = src[:pfx_length]
-    sfx = dest[len_dest - sfx_length:]
-    src_mid = src[pfx_length:pfx_length + src_midlen]
-    dest_mid = dest[pfx_length:pfx_length + dest_midlen]
+    sfx = dest[len_dest - sfx_length :]
+    src_mid = src[pfx_length : pfx_length + src_midlen]
+    dest_mid = dest[pfx_length : pfx_length + dest_midlen]
 
     if pfx == os.path.sep:
         # The common prefix is / ,
@@ -231,7 +231,6 @@ class DynamicText(Component, metaclass=abc.ABCMeta):
 
 
 class FixedWidthComponent(metaclass=abc.ABCMeta):
-
     @abc.abstractmethod
     def render(self, props, width):
         pass
@@ -241,21 +240,32 @@ class TransferText(FixedWidthComponent):
     """
 
     """
+
     def render(self, props, width):
         src = props["src"]
         dest = props["dest"]
         pfx, src_mid, dest_mid, sfx = describe_transfer(src, dest)
         if not pfx and not sfx:
             components = [
-                Bold(), Text(src), Reset(),
-                Blue(), Text(" => "), Reset(),
-                Bold(), Text(dest)
+                Bold(),
+                Text(src),
+                Reset(),
+                Blue(),
+                Text(" => "),
+                Reset(),
+                Bold(),
+                Text(dest),
             ]
         else:
             components = [
-                Bold(), Text(pfx), Reset(),
-                LightGray(), Text("{%s => %s}" % (src_mid, dest_mid)), Reset(),
-                Bold(), Text(sfx)
+                Bold(),
+                Text(pfx),
+                Reset(),
+                LightGray(),
+                Text("{%s => %s}" % (src_mid, dest_mid)),
+                Reset(),
+                Bold(),
+                Text(sfx),
             ]
         return "".join(x.render(None)[1] for x in components)
 
@@ -345,7 +355,7 @@ class FixedTuple:
     component = attr.ib()
 
 
-class Line():
+class Line:
     def __init__(self):
         self.components = list()
         self.fixed = None
@@ -400,29 +410,39 @@ class OneFileIndicator(ProgressIndicator):
     def __init__(self):
         super().__init__()
         self.first_line = Line()
-        self.first_line.set_components([
-            Blue(), Counter(), TransferText(), Reset()
-        ])
+        self.first_line.set_components([Blue(), Counter(), TransferText(), Reset()])
         self.second_line = Line()
-        self.second_line.set_components([
-            Blue(), Percent(), Reset(), Space(),
-            LightGray(), Bar(), Reset(), Dash(),
-            Standout(), Speed(), Reset(), Pipe(),
-            Yellow(), ETA(), Reset(),
-        ])
+        self.second_line.set_components(
+            [
+                Blue(),
+                Percent(),
+                Reset(),
+                Space(),
+                LightGray(),
+                Bar(),
+                Reset(),
+                Dash(),
+                Standout(),
+                Speed(),
+                Reset(),
+                Pipe(),
+                Yellow(),
+                ETA(),
+                Reset(),
+            ]
+        )
 
     def on_new_file(self, progress):
         out1 = self.first_line.render(
             index=progress.index,
             count=progress.count,
             src=progress.src,
-            dest=progress.dest
+            dest=progress.dest,
         )
         print(out1)
         out2 = self.second_line.render(
-            current_value=0,
-            elapsed=0,
-            max_value=progress.file_size)
+            current_value=0, elapsed=0, max_value=progress.file_size
+        )
         print(out2, end="\r")
 
     def on_progress(self, progress):
@@ -431,7 +451,8 @@ class OneFileIndicator(ProgressIndicator):
             count=progress.count,
             current_value=progress.file_done,
             elapsed=progress.file_elapsed,
-            max_value=progress.file_size)
+            max_value=progress.file_size,
+        )
         print(out, end="\r")
 
     def on_file_done(self):
@@ -451,24 +472,53 @@ class GlobalIndicator(ProgressIndicator):
     @staticmethod
     def build_first_line():
         res = Line()
-        res.set_components([
-            Green(), Counter(), Reset(), Space(),
-            Blue(), Percent(), Reset(), Dash(),
-            LightGray(), Bar(), Reset(), Dash(),
-            Yellow(), ETA(), Reset(),
-        ])
+        res.set_components(
+            [
+                Green(),
+                Counter(),
+                Reset(),
+                Space(),
+                Blue(),
+                Percent(),
+                Reset(),
+                Dash(),
+                LightGray(),
+                Bar(),
+                Reset(),
+                Dash(),
+                Yellow(),
+                ETA(),
+                Reset(),
+            ]
+        )
         return res
 
     @staticmethod
     def build_second_line():
         res = Line()
-        res.set_components([
-            Blue(), Percent(), Reset(), Space(),
-            Bold(), Filename(), Reset(), Space(),
-            LightGray(), Bar(), Reset(), Dash(),
-            Standout(), Speed(), Reset(), Pipe(),
-            Yellow(), ETA(), Reset(),
-        ])
+        res.set_components(
+            [
+                Blue(),
+                Percent(),
+                Reset(),
+                Space(),
+                Bold(),
+                Filename(),
+                Reset(),
+                Space(),
+                LightGray(),
+                Bar(),
+                Reset(),
+                Dash(),
+                Standout(),
+                Speed(),
+                Reset(),
+                Pipe(),
+                Yellow(),
+                ETA(),
+                Reset(),
+            ]
+        )
         return res
 
     def _render_first_line(self, progress):
@@ -477,7 +527,8 @@ class GlobalIndicator(ProgressIndicator):
             count=progress.count,
             current_value=progress.total_done,
             elapsed=progress.total_elapsed,
-            max_value=progress.total_size)
+            max_value=progress.total_size,
+        )
         cursor_up(2)
         print("\r", out, sep="")
 
