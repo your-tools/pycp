@@ -18,7 +18,7 @@ python = "^3.6"
 attrs = "^19.3.0"
 
 [tool.poetry.dev-dependencies]
-black = "^19.10b0"
+black = { version = "^19.10b0", markers = "implementation_name != 'pypy'" }
 path = "^13.2.0"
 flake8 = "^3.7.9"
 pytest = "^5.4.1"
