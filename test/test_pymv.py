@@ -5,7 +5,7 @@ import os
 from pycp.main import main as pycp_main
 
 
-def test_mv_file_file(test_dir):
+def test_mv_file_file(test_dir: str) -> None:
     """mv a_file -> a_file.back should work"""
     a_file = os.path.join(test_dir, "a_file")
     a_file_back = os.path.join(test_dir, "a_file.back")
@@ -16,7 +16,7 @@ def test_mv_file_file(test_dir):
     assert not os.path.exists(a_file)
 
 
-def test_mv_dir_dir_1(test_dir):
+def test_mv_dir_dir_1(test_dir: str) -> None:
     """"mv a_dir -> b_dir should work when b_dir does not exist"""
     a_dir = os.path.join(test_dir, "a_dir")
     b_dir = os.path.join(test_dir, "b_dir")
@@ -29,7 +29,7 @@ def test_mv_dir_dir_1(test_dir):
     assert not os.path.exists(a_dir)
 
 
-def test_mv_dir_dir_2(test_dir):
+def test_mv_dir_dir_2(test_dir: str) -> None:
     """mv a_dir -> b_dir should work when b_dir exists"""
     a_dir = os.path.join(test_dir, "a_dir")
     b_dir = os.path.join(test_dir, "b_dir")
@@ -43,7 +43,7 @@ def test_mv_dir_dir_2(test_dir):
     assert not os.path.exists(a_dir)
 
 
-def test_hidden(test_dir):
+def test_hidden(test_dir: str) -> None:
     """Check that hidden files are be moved too"""
     a_dir = os.path.join(test_dir, "a_dir")
     dest = os.path.join(test_dir, "dest")

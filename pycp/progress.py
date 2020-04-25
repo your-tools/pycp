@@ -3,15 +3,16 @@ import os
 import shutil
 import sys
 import time
+import typing
 
 import attr
 
 
 class Progress:
-    def __init__(self):
+    def __init__(self) -> None:
         self.total_done = 0
         self.total_size = 0
-        self.total_elapsed = 0
+        self.total_elapsed = 0.0
 
         self.index = 0
         self.count = 0
@@ -19,16 +20,17 @@ class Progress:
         self.dest = ""
         self.file_done = 0
         self.file_size = 0
-        self.file_elapsed = 0
+        self.file_start = 0.0
+        self.file_elapsed = 0.0
 
 
-def cursor_up(nb_lines):
+def cursor_up(nb_lines: int) -> None:
     """Move the cursor up by nb_lines"""
     sys.stdout.write("\033[%dA" % nb_lines)
     sys.stdout.flush()
 
 
-def get_fraction(current_value, max_value):
+def get_fraction(current_value: int, max_value: int) -> float:
     if max_value == 0 and current_value == 0:
         return 1
     if max_value == 0:
@@ -40,7 +42,7 @@ def get_fraction(current_value, max_value):
     return float(current_value) / max_value
 
 
-def human_readable(size):
+def human_readable(size: int) -> str:
     """Build a nice human readable string from a size given in
     bytes
 
@@ -56,7 +58,7 @@ def human_readable(size):
         return "%.2fG" % round(hreadable, 2)
 
 
-def shorten_path(path, length):
+def shorten_path(path: str, length: int) -> str:
     """Shorten a path so that it is never longer
     that the given length
 
@@ -84,7 +86,7 @@ def shorten_path(path, length):
     return os.path.join(short_base, short_name)
 
 
-def shorten_string(input_string, length):
+def shorten_string(input_string: str, length: int) -> str:
     """Shorten a string in a nice way:
 
     >>> shorten_string("foobar", 5)
@@ -103,7 +105,7 @@ def shorten_string(input_string, length):
     return ""
 
 
-def describe_transfer(src, dest):
+def describe_transfer(src: str, dest: str) -> typing.Tuple[str, str, str, str]:
     """ Returns pfx, src_mid, dest_mid, sfx, the 4 components
     required to build the "foo/{bar => baz}/qux" string
 
@@ -151,16 +153,20 @@ def describe_transfer(src, dest):
     return pfx, src_mid, dest_mid, sfx
 
 
+Props = typing.Dict[str, typing.Any]
+SizedString = typing.Tuple[int, str]
+
+
 class Component(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def render(self, props):
+    def render(self, props: Props) -> SizedString:
         """ Should return a tuple with a length and a string """
 
 
 class AnsiEscapeSequence(Component):
     seq = "\0"
 
-    def render(self, props):
+    def render(self, props: Props) -> SizedString:
         return 0, self.seq
 
 
@@ -197,46 +203,52 @@ class Yellow(AnsiEscapeSequence):
 
 
 class Text(Component):
-    def __init__(self, text):
+    def __init__(self, text: str) -> None:
         self.text = text
 
-    def render(self, props):
+    def render(self, props: Props) -> SizedString:
         return len(self.text), self.text
 
 
 class Space(Text):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(" ")
 
 
 class Dash(Text):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(" - ")
 
 
 class Pipe(Text):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(" | ")
 
 
 class DynamicText(Component, metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def get_text(self, props):
+    def get_text(self, props: Props) -> str:
         pass
 
-    def render(self, props):
+    def render(self, props: Props) -> SizedString:
         text = self.get_text(props)
         return len(text), text
 
 
-class FixedWidthComponent(metaclass=abc.ABCMeta):
+# TODO: fix name
+class FixedWidthComponent(Component, metaclass=abc.ABCMeta):
+    def render(self, props: Props) -> SizedString:
+        width = props["width"]
+        text = self.render_props_for_width(props, width)
+        return len(text), text
+
     @abc.abstractmethod
-    def render(self, props, width):
+    def render_props_for_width(self, props: Props, width: int) -> str:
         pass
 
 
 class TransferText(FixedWidthComponent):
-    def render(self, props, width):
+    def render_props_for_width(self, props: Props, width: int) -> str:
         src = props["src"]
         dest = props["dest"]
         pfx, src_mid, dest_mid, sfx = describe_transfer(src, dest)
@@ -262,11 +274,11 @@ class TransferText(FixedWidthComponent):
                 Bold(),
                 Text(sfx),
             ]
-        return "".join(x.render(None)[1] for x in components)
+        return "".join(x.render({})[1] for x in components)
 
 
 class Counter(DynamicText):
-    def get_text(self, props):
+    def get_text(self, props: Props) -> str:
         index = props["index"]
         count = props["count"]
         num_digits = len(str(count))
@@ -275,7 +287,7 @@ class Counter(DynamicText):
 
 
 class Percent(DynamicText):
-    def get_text(self, props):
+    def get_text(self, props: Props) -> str:
         current_value = props["current_value"]
         max_value = props["max_value"]
         fraction = get_fraction(current_value, max_value)
@@ -283,7 +295,7 @@ class Percent(DynamicText):
 
 
 class Bar(FixedWidthComponent):
-    def render(self, props, width):
+    def render_props_for_width(self, props: Props, width: int) -> str:
         current_value = props["current_value"]
         max_value = props["max_value"]
 
@@ -296,7 +308,7 @@ class Bar(FixedWidthComponent):
 
 
 class Speed(DynamicText):
-    def get_text(self, props):
+    def get_text(self, props: Props) -> str:
         elapsed = props["elapsed"]
         current_value = props["current_value"]
         if elapsed < 2e-6:
@@ -317,7 +329,7 @@ class Speed(DynamicText):
 
 class ETA(DynamicText):
     @classmethod
-    def get_eta(cls, fraction, elapsed):
+    def get_eta(cls, fraction: float, elapsed: int) -> str:
         if fraction == 0:
             return "ETA  : --:--:--"
         if fraction == 1:
@@ -326,10 +338,10 @@ class ETA(DynamicText):
         return cls.format_time(eta)
 
     @staticmethod
-    def format_time(seconds):
+    def format_time(seconds: float) -> str:
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
-    def get_text(self, props):
+    def get_text(self, props: Props) -> str:
         elapsed = props["elapsed"]
         current_value = props["current_value"]
         max_value = props["max_value"]
@@ -339,23 +351,23 @@ class ETA(DynamicText):
 
 
 class Filename(DynamicText):
-    def get_text(self, props):
+    def get_text(self, props: Props) -> str:
         filename = props["filename"]
         return shorten_path(filename, 40)
 
 
 @attr.s
 class FixedTuple:
-    index = attr.ib()
-    component = attr.ib()
+    index: int = attr.ib()
+    component: Component = attr.ib()
 
 
 class Line:
-    def __init__(self):
-        self.components = list()
-        self.fixed = None
+    def __init__(self) -> None:
+        self.components: typing.List[Component] = list()
+        self.fixed: typing.Optional[FixedTuple] = None
 
-    def set_components(self, components):
+    def set_components(self, components: typing.List[Component]) -> None:
         self.components = components
         fixed = list()
         for (i, component) in enumerate(components):
@@ -364,11 +376,13 @@ class Line:
         assert len(fixed) == 1, "Expecting exactly one fixed width component"
         self.fixed = fixed[0]
 
-    def render(self, **kwargs):
-        accumulator = [None] * len(self.components)
+    def render(self, **kwargs: typing.Any) -> str:
+        accumulator = [""] * len(self.components)
         term_width = shutil.get_terminal_size().columns
         current_width = 0
         for i, component in enumerate(self.components):
+            # TODO: call set_components() in __init__
+            assert self.fixed
             if i == self.fixed.index:
                 continue
             length, string = component.render(kwargs)
@@ -376,33 +390,36 @@ class Line:
             current_width += length
 
         fixed_width = term_width - current_width
-        accumulator[self.fixed.index] = self.fixed.component.render(kwargs, fixed_width)
+        kwargs["width"] = fixed_width
+        # TODO: call set_components() in __init__
+        assert self.fixed
+        accumulator[self.fixed.index] = self.fixed.component.render(kwargs)[1]
 
         return "".join(accumulator)
 
 
 class ProgressIndicator:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def on_new_file(self, progress):
+    def on_new_file(self, progress: Progress) -> None:
         pass
 
-    def on_file_done(self):
+    def on_file_done(self) -> None:
         pass
 
-    def on_progress(self, progress):
+    def on_progress(self, progress: Progress) -> None:
         pass
 
-    def on_start(self):
+    def on_start(self) -> None:
         pass
 
-    def on_finish(self):
+    def on_finish(self) -> None:
         pass
 
 
 class OneFileIndicator(ProgressIndicator):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.first_line = Line()
         self.first_line.set_components([Blue(), Counter(), TransferText(), Reset()])
@@ -427,7 +444,7 @@ class OneFileIndicator(ProgressIndicator):
             ]
         )
 
-    def on_new_file(self, progress):
+    def on_new_file(self, progress: Progress) -> None:
         out1 = self.first_line.render(
             index=progress.index,
             count=progress.count,
@@ -440,7 +457,7 @@ class OneFileIndicator(ProgressIndicator):
         )
         print(out2, end="\r")
 
-    def on_progress(self, progress):
+    def on_progress(self, progress: Progress) -> None:
         out = self.second_line.render(
             index=progress.index,
             count=progress.count,
@@ -450,21 +467,21 @@ class OneFileIndicator(ProgressIndicator):
         )
         print(out, end="\r")
 
-    def on_file_done(self):
+    def on_file_done(self) -> None:
         print()
 
 
 class GlobalIndicator(ProgressIndicator):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.first_line = self.build_first_line()
         self.second_line = self.build_second_line()
 
-    def on_start(self):
+    def on_start(self) -> None:
         print()
 
     @staticmethod
-    def build_first_line():
+    def build_first_line() -> Line:
         res = Line()
         res.set_components(
             [
@@ -488,7 +505,7 @@ class GlobalIndicator(ProgressIndicator):
         return res
 
     @staticmethod
-    def build_second_line():
+    def build_second_line() -> Line:
         res = Line()
         res.set_components(
             [
@@ -515,7 +532,7 @@ class GlobalIndicator(ProgressIndicator):
         )
         return res
 
-    def _render_first_line(self, progress):
+    def _render_first_line(self, progress: Progress) -> None:
         out = self.first_line.render(
             index=progress.index,
             count=progress.count,
@@ -526,7 +543,7 @@ class GlobalIndicator(ProgressIndicator):
         cursor_up(2)
         print("\r", out, sep="")
 
-    def _render_second_line(self, progress):
+    def _render_second_line(self, progress: Progress) -> None:
         out = self.second_line.render(
             current_value=progress.file_done,
             max_value=progress.file_size,
@@ -535,6 +552,6 @@ class GlobalIndicator(ProgressIndicator):
         )
         print("\r", out, sep="")
 
-    def on_progress(self, progress):
+    def on_progress(self, progress: Progress) -> None:
         self._render_first_line(progress)
         self._render_second_line(progress)

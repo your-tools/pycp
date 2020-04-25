@@ -1,3 +1,4 @@
+import typing
 from conftest import mock_term_size
 import pycp.progress
 from pycp.progress import (
@@ -8,7 +9,7 @@ from pycp.progress import (
 )
 
 
-def test_shorten_path():
+def test_shorten_path() -> None:
     assert shorten_path("bazinga", 6) == "baz..."
     assert shorten_path("foo/bar/baz", 12) == "foo/bar/baz"
     assert shorten_path("foo/bar/baz", 10) == "f/b/baz"
@@ -22,7 +23,7 @@ def test_shorten_path():
     )
 
 
-def test_shorten_string():
+def test_shorten_string() -> None:
     assert shorten_string("foobar", 5) == "fo..."
     assert shorten_string("foobar", 3) == "f.."
     assert shorten_string("foobar", 2) == "f."
@@ -34,7 +35,7 @@ def test_shorten_string():
 # I keep them because it helps when tweaking pycp's output
 
 
-def test_global_indicator(mocker):
+def test_global_indicator(mocker: typing.Any) -> None:
     expected_width = 90
     mock_term_size(mocker, expected_width)
     global_indicator = GlobalIndicator()
@@ -59,7 +60,7 @@ def test_global_indicator(mocker):
     global_indicator.on_finish()
 
 
-def test_indicates_progress_file_by_file():
+def test_indicates_progress_file_by_file() -> None:
     one_file_indicator = OneFileIndicator()
     one_file_indicator.on_start()
 
@@ -75,7 +76,7 @@ def test_indicates_progress_file_by_file():
     one_file_indicator.on_progress(progress)
     progress.file_done = 75
     one_file_indicator.on_progress(progress)
-    progress.on_file_done = 100
+    progress.file_done = 100
     one_file_indicator.on_progress(progress)
     one_file_indicator.on_file_done()
 

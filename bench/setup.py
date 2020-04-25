@@ -1,7 +1,7 @@
 import pycp.transfer
 
 
-def main():
+def main() -> None:
     with open("src.dat", "wb") as fp:
         for i in range(0, 5):
             data = [i] * pycp.transfer.BUFFER_SIZE
