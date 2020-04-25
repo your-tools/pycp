@@ -1,3 +1,13 @@
+""" Tests for the TransferText component, used to print each file transfer
+one by one.
+Like:
+
+```
+pycp /path/to/foo /path/to/bar
+/path/to/{foo => bar}
+```
+"""
+
 from pycp.progress import TransferText
 
 from conftest import strip_ansi_colors
