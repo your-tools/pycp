@@ -7,7 +7,6 @@ import time
 import attr
 
 
-# pylint: disable=too-many-instance-attributes
 class Progress:
     def __init__(self):
         self.total_done = 0
@@ -461,7 +460,6 @@ class GlobalIndicator(ProgressIndicator):
         self.first_line = self.build_first_line()
         self.second_line = self.build_second_line()
 
-    # pylint: disable=no-self-use
     def on_start(self):
         print()
 
