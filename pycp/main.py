@@ -27,7 +27,7 @@ def parse_commandline():
     %s [options] SOURCE DESTINATION
     %s [options] SOURCE... DIRECTORY
 
-    %s SOURCE to DESTINATION or mutliple SOURCE(s) to DIRECTORY
+    %s SOURCE to DESTINATION or multiple SOURCE(s) to DIRECTORY
     """ % (
         prog_name,
         prog_name,
@@ -58,7 +58,7 @@ def parse_commandline():
         "--force",
         action="store_false",
         dest="safe",
-        help="silently overwrite existing files " "(this is the default)",
+        help="silently overwrite existing files (this is the default)",
     )
 
     parser.add_argument(
@@ -73,8 +73,7 @@ def parse_commandline():
         "--ignore-errors",
         action="store_true",
         dest="ignore_errors",
-        help="ignore errors, remove destination if cp\n"
-        "Print problematic files at the end",
+        help="do not abort immediately if one file transfer fails",
     )
 
     parser.add_argument(

@@ -217,7 +217,7 @@ class Dash(Text):
 
 class Pipe(Text):
     def __init__(self):
-        super().__init__(" - ")
+        super().__init__(" | ")
 
 
 class DynamicText(Component, metaclass=abc.ABCMeta):
@@ -237,10 +237,6 @@ class FixedWidthComponent(metaclass=abc.ABCMeta):
 
 
 class TransferText(FixedWidthComponent):
-    """
-
-    """
-
     def render(self, props, width):
         src = props["src"]
         dest = props["dest"]
