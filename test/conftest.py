@@ -2,12 +2,13 @@ import os
 import re
 import shutil
 import tempfile
+import typing
 
 import pytest
 
 
 @pytest.fixture()
-def test_dir():
+def test_dir() -> typing.Iterator[str]:
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     cur_test = os.path.join(cur_dir, "test_dir")
     temp_dir = tempfile.mkdtemp("pycp-test")
@@ -21,18 +22,18 @@ def test_dir():
 
 
 class TerminalSize:
-    def __init__(self):
+    def __init__(self) -> None:
         self.lines = 25
         self.columns = 80
 
 
-def mock_term_size(mocker, width):
+def mock_term_size(mocker: typing.Any, width: int) -> None:
     size = TerminalSize()
     size.columns = width
     patcher = mocker.patch("shutil.get_terminal_size")
     patcher.return_value = size
 
 
-def strip_ansi_colors(string):
+def strip_ansi_colors(string: str) -> str:
     ansi_escape = re.compile(r"\x1b[^m]*m")
     return re.sub(ansi_escape, "", string)

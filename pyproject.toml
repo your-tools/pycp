@@ -24,6 +24,7 @@ flake8 = "^3.7.9"
 pytest = "^5.4.1"
 pytest-mock = "^3.1.0"
 pytest-cov = "^2.8.1"
+mypy = { version = "^0.770", markers = "implementation_name != 'pypy'" }
 
 [tool.poetry.scripts]
 pycp = "pycp.main:main"

@@ -5,6 +5,7 @@ import stat
 import sys
 import tempfile
 import time
+import typing
 
 
 from pycp.main import main as pycp_main
@@ -13,13 +14,13 @@ from conftest import mock_term_size, strip_ansi_colors
 import pytest
 
 
-def test_zero():
+def test_zero() -> None:
     sys.argv = ["pycp"]
     with pytest.raises(SystemExit):
         pycp_main()
 
 
-def test_cp_self_1(test_dir):
+def test_cp_self_1(test_dir: str) -> None:
     """cp a_file -> a_file should fail (same file)"""
     a_file = os.path.join(test_dir, "a_file")
     sys.argv = ["pycp", a_file, a_file]
@@ -27,7 +28,7 @@ def test_cp_self_1(test_dir):
         pycp_main()
 
 
-def test_cp_self_2(test_dir):
+def test_cp_self_2(test_dir: str) -> None:
     """cp a_file -> . should fail (same file)"""
     a_file = os.path.join(test_dir, "a_file")
     sys.argv = ["pycp", a_file, test_dir]
@@ -35,7 +36,7 @@ def test_cp_self_2(test_dir):
         pycp_main()
 
 
-def test_cp_file_file(test_dir):
+def test_cp_file_file(test_dir: str) -> None:
     """cp a_file -> a_file.back should work"""
     # cp a_file a_file.back
     a_file = os.path.join(test_dir, "a_file")
@@ -46,7 +47,7 @@ def test_cp_file_file(test_dir):
     assert os.path.exists(a_file_back)
 
 
-def test_cp_asbsolute_symlink(test_dir):
+def test_cp_asbsolute_symlink(test_dir: str) -> None:
     """
     Scenario:
     * a_link is a link to /path/to/abs/target
@@ -69,7 +70,7 @@ def test_cp_asbsolute_symlink(test_dir):
     assert b_target == a_target
 
 
-def test_cp_relative_symlink(test_dir):
+def test_cp_relative_symlink(test_dir: str) -> None:
     """
     Scenario:
     * a_link is a link to a_target
@@ -91,7 +92,7 @@ def test_cp_relative_symlink(test_dir):
     assert b_target == "a_target"
 
 
-def test_cp_exe_file(test_dir):
+def test_cp_exe_file(test_dir: str) -> None:
     """Copied exe file should still be executable"""
     exe_file = os.path.join(test_dir, "file.exe")
     exe_file_2 = os.path.join(test_dir, "file2.exe")
@@ -100,7 +101,7 @@ def test_cp_exe_file(test_dir):
     assert os.access(exe_file_2, os.X_OK)
 
 
-def test_cp_file_dir(test_dir):
+def test_cp_file_dir(test_dir: str) -> None:
     """cp a_file -> b_dir should work"""
     a_file = os.path.join(test_dir, "a_file")
     b_dir = os.path.join(test_dir, "b_dir")
@@ -111,7 +112,7 @@ def test_cp_file_dir(test_dir):
     assert os.path.exists(dest)
 
 
-def test_cp_dir_dir_1(test_dir):
+def test_cp_dir_dir_1(test_dir: str) -> None:
     """cp a_dir -> b_dir should work when b_dir does not exist"""
     a_dir = os.path.join(test_dir, "a_dir")
     b_dir = os.path.join(test_dir, "b_dir")
@@ -123,7 +124,7 @@ def test_cp_dir_dir_1(test_dir):
     assert os.path.exists(d_file)
 
 
-def test_cp_dir_dir_2(test_dir):
+def test_cp_dir_dir_2(test_dir: str) -> None:
     """cp a_dir -> b_dir should work when b_dir exists"""
     a_dir = os.path.join(test_dir, "a_dir")
     b_dir = os.path.join(test_dir, "b_dir")
@@ -136,7 +137,7 @@ def test_cp_dir_dir_2(test_dir):
     assert os.path.exists(d_file)
 
 
-def test_cp_dir_dir2_global(test_dir):
+def test_cp_dir_dir2_global(test_dir: str) -> None:
     """cp a_dir -> b_dir should work when using `--global"""
     a_dir = os.path.join(test_dir, "a_dir")
     b_dir = os.path.join(test_dir, "b_dir")
@@ -149,7 +150,7 @@ def test_cp_dir_dir2_global(test_dir):
     assert os.path.exists(d_file)
 
 
-def test_no_source(test_dir):
+def test_no_source(test_dir: str) -> None:
     """cp d_file -> d_file.back should fail if d_file does not exist"""
     d_file = os.path.join(test_dir, "d_file")
     sys.argv = ["pycp", d_file, "d_file.back"]
@@ -157,7 +158,7 @@ def test_no_source(test_dir):
         pycp_main()
 
 
-def test_no_dest(test_dir):
+def test_no_dest(test_dir: str) -> None:
     """cp a_file -> d_dir should fail if d_dir does not exist"""
     a_file = os.path.join(test_dir, "a_file")
     d_dir = os.path.join(test_dir, "d_dir" + os.path.sep)
@@ -166,7 +167,7 @@ def test_no_dest(test_dir):
         pycp_main()
 
 
-def test_several_sources_1(test_dir):
+def test_several_sources_1(test_dir: str) -> None:
     """cp a_file b_file -> c_dir should work"""
     a_file = os.path.join(test_dir, "a_file")
     b_file = os.path.join(test_dir, "b_file")
@@ -176,7 +177,7 @@ def test_several_sources_1(test_dir):
     pycp_main()
 
 
-def test_several_sources_2(test_dir):
+def test_several_sources_2(test_dir: str) -> None:
     """cp a_file b_file -> c_file should fail"""
     a_file = os.path.join(test_dir, "a_file")
     b_file = os.path.join(test_dir, "b_file")
@@ -186,7 +187,7 @@ def test_several_sources_2(test_dir):
         pycp_main()
 
 
-def test_several_sources_3(test_dir):
+def test_several_sources_3(test_dir: str) -> None:
     """cp a_file b_file -> c_dir should fail if c_dir does not exist"""
     a_file = os.path.join(test_dir, "a_file")
     b_file = os.path.join(test_dir, "b_file")
@@ -196,7 +197,7 @@ def test_several_sources_3(test_dir):
         pycp_main()
 
 
-def test_overwrite_1(test_dir):
+def test_overwrite_1(test_dir: str) -> None:
     """cp a_file -> b_file should overwrite b_file when not using --safe"""
     a_file = os.path.join(test_dir, "a_file")
     b_file = os.path.join(test_dir, "b_file")
@@ -208,7 +209,7 @@ def test_overwrite_1(test_dir):
     assert b_contents == "a\n"
 
 
-def test_overwrite_2(test_dir):
+def test_overwrite_2(test_dir: str) -> None:
     """cp a_file -> b_file should not overwrite b_file when using --safe"""
     a_file = os.path.join(test_dir, "a_file")
     b_file = os.path.join(test_dir, "b_file")
@@ -220,7 +221,7 @@ def test_overwrite_2(test_dir):
     assert b_contents == "b\n"
 
 
-def test_copy_readonly(test_dir):
+def test_copy_readonly(test_dir: str) -> None:
     """cp a_file -> ro_dir should fail if ro_dir is read only"""
     a_file = os.path.join(test_dir, "a_file")
     ro_dir = tempfile.mkdtemp("pycp-test-ro")
@@ -231,7 +232,7 @@ def test_copy_readonly(test_dir):
     shutil.rmtree(ro_dir)
 
 
-def test_preserve(test_dir):
+def test_preserve(test_dir: str) -> None:
     """ Check that mtimes are preserved"""
     a_file = os.path.join(test_dir, "a_file")
     long_ago = time.time() - 10000
@@ -244,7 +245,9 @@ def test_preserve(test_dir):
 
 
 @pytest.mark.xfail()
-def test_output_does_not_wrap_1(test_dir, capsys, mocker):
+def test_output_does_not_wrap_1(
+    test_dir: str, capsys: typing.Any, mocker: typing.Any
+) -> None:
     """
     When not using --global, each printed line length
     should be less that the terminal size
@@ -264,7 +267,9 @@ def test_output_does_not_wrap_1(test_dir, capsys, mocker):
         assert len(strip_ansi_colors(line)) <= expected_width
 
 
-def test_output_does_not_wrap_2(test_dir, capsys, mocker):
+def test_output_does_not_wrap_2(
+    test_dir: str, capsys: typing.Any, mocker: typing.Any
+) -> None:
     """
     When using --global, each printed line length
     should be less that the terminal size

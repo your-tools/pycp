@@ -6,15 +6,16 @@ to parse command line
 import argparse
 import os
 import sys
+import typing
 
 from pycp.transfer import TransferManager, TransferError, TransferOptions
 
 
-def is_pymv():
+def is_pymv() -> bool:
     return sys.argv[0].endswith("pymv")
 
 
-def parse_commandline():
+def parse_commandline() -> argparse.Namespace:
     """Parses command line arguments"""
     if is_pymv():
         prog_name = "pymv"
@@ -100,7 +101,10 @@ def parse_commandline():
     return parser.parse_args()
 
 
-def parse_filelist(filelist):
+SourcesAndDest = typing.Tuple[typing.List[str], str]
+
+
+def parse_filelist(filelist: typing.List[str]) -> SourcesAndDest:
     if len(filelist) < 2:
         sys.exit("Incorrect number of arguments")
 
@@ -118,7 +122,7 @@ def parse_filelist(filelist):
     return sources, destination
 
 
-def main():
+def main() -> None:
     args = parse_commandline()
     args.move = is_pymv()
 
@@ -126,7 +130,7 @@ def main():
     sources, destination = parse_filelist(files)
 
     transfer_options = TransferOptions()
-    transfer_options.update(args)
+    transfer_options.update(args)  # type: ignore
 
     transfer_manager = TransferManager(sources, destination, transfer_options)
     try:

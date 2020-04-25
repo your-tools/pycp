@@ -9,8 +9,9 @@ pycp.progress
 import os
 import stat
 import time
+import typing
 
-from pycp.progress import OneFileIndicator, GlobalIndicator, Progress
+from pycp.progress import OneFileIndicator, GlobalIndicator, Progress, ProgressIndicator
 
 BUFFER_SIZE = 100 * 1024
 
@@ -20,16 +21,16 @@ class TransferError(Exception):
 
     """
 
-    def __init__(self, message):
+    def __init__(self, message: str) -> None:
         Exception.__init__(self)
         self.message = message
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.message
 
 
 class TransferOptions:
-    def __init__(self):
+    def __init__(self) -> None:
         self.ignore_errors = False
         self.global_progress = False
         self.interactive = False
@@ -37,42 +38,29 @@ class TransferOptions:
         self.safe = False
         self.move = False
 
-    def update(self, args):
+    def update(self, args: typing.Dict[str, typing.Any]) -> None:
         for name, value in vars(args).items():
             if hasattr(self, name):
                 setattr(self, name, value)
 
 
-def samefile(src, dest):
+def samefile(src: str, dest: str) -> bool:
     """Check if two files are the same in a
     crossplatform way
 
     """
-    # If os.path.samefile exists, use it:
-    if hasattr(os.path, "samefile"):
-        try:
-            return os.path.samefile(src, dest)
-        except OSError:
-            return False
-
-    # All other platforms: check for same pathname.
-    def normalise(path):
-        """trying to be sure two paths are *really*
-        equivalents
-
-        """
-        res = os.path.normcase(os.path.normpath(os.path.abspath(path)))
-        return res
-
-    return normalise(src) == normalise(dest)
+    try:
+        return os.path.samefile(src, dest)
+    except OSError:
+        return False
 
 
-def check_same_file(src, dest):
+def check_same_file(src: str, dest: str) -> None:
     if samefile(src, dest):
         raise TransferError("%s and %s are the same file!" % (src, dest))
 
 
-def handle_symlink(src, dest):
+def handle_symlink(src: str, dest: str) -> None:
     target = os.readlink(src)
     # remove existing stuff
     if os.path.lexists(dest):
@@ -80,7 +68,7 @@ def handle_symlink(src, dest):
     os.symlink(target, dest)
 
 
-def open_files(src, dest):
+def open_files(src: str, dest: str) -> typing.Tuple[typing.BinaryIO, typing.BinaryIO]:
     try:
         src_file = open(src, "rb")
     except IOError:
@@ -103,15 +91,15 @@ class TransferInfo:
 
     """
 
-    def __init__(self, sources, destination):
+    def __init__(self, sources: typing.List[str], destination: str) -> None:
         self.size = 0
-        # List of tuples (src, dest) of files to transfer
-        self.to_transfer = list()
+        # List of tuples (src, dest, size) of files to transfer
+        self.to_transfer: typing.List[typing.Tuple[str, str, int]] = list()
         # List of directories to remove
-        self.to_remove = list()
+        self.to_remove: typing.List[str] = list()
         self.parse(sources, destination)
 
-    def parse(self, sources, destination):
+    def parse(self, sources: typing.List[str], destination: str) -> None:
         """Recursively go through the sources, creating missing
         directories, computing total size to be transfered, and
         so on.
@@ -126,7 +114,7 @@ class TransferInfo:
         for directory in directories:
             self._parse_dir(directory, destination)
 
-    def _parse_file(self, source, destination):
+    def _parse_file(self, source: str, destination: str) -> None:
         """Parse a new source file
 
         """
@@ -135,7 +123,7 @@ class TransferInfo:
             destination = os.path.join(destination, basename)
         self.add(source, destination)
 
-    def _parse_dir(self, source, destination):
+    def _parse_dir(self, source: str, destination: str) -> None:
         """Parse a new source directory
 
         """
@@ -149,7 +137,7 @@ class TransferInfo:
         self.parse(file_names, destination)
         self.to_remove.append(source)
 
-    def add(self, src, dest):
+    def add(self, src: str, dest: str) -> None:
         """Add a new tuple to the transfer list. """
         file_size = os.path.getsize(src)
         if not os.path.islink(src):
@@ -157,21 +145,24 @@ class TransferInfo:
         self.to_transfer.append((src, dest, file_size))
 
 
+Callback = typing.Callable[[int], None]
+
+
 class FileTransferManager:
     """This class handles transfering one file to an other
 
     """
 
-    def __init__(self, src, dest, options):
+    def __init__(self, src: str, dest: str, options: TransferOptions) -> None:
         self.src = src
         self.dest = dest
         self.options = options
-        self.callback = lambda _: None
+        self.callback: Callback = lambda _: None
 
-    def set_callback(self, callback):
+    def set_callback(self, callback: Callback) -> None:
         self.callback = callback
 
-    def do_transfer(self):
+    def do_transfer(self) -> typing.Optional[Exception]:
         """Called transfer_file, catch TransferError depending
         on the options.
 
@@ -184,7 +175,7 @@ class FileTransferManager:
         if os.path.exists(self.dest):
             should_skip = self.handle_overwrite()
             if should_skip:
-                return
+                return None
         try:
             self.transfer_file()
         except TransferError as exception:
@@ -203,7 +194,7 @@ class FileTransferManager:
                 raise
         return error
 
-    def transfer_file(self):
+    def transfer_file(self) -> None:
         """Transfer src to dest, calling
         callback(transfered) while doing so,
         where transfered is the size of the buffer successfully transfered
@@ -248,8 +239,8 @@ class FileTransferManager:
             except OSError:
                 print("Warting: could not remove %s" % self.src)
 
-    def post_transfer(self):
-        """Handle stat of transfered file
+    def post_transfer(self) -> None:
+        """Handle state of transfered file
 
         By default, preserve only permissions.
         If "preserve" option was given, preserve also
@@ -273,7 +264,7 @@ class FileTransferManager:
             # just ignore
             pass
 
-    def handle_overwrite(self):
+    def handle_overwrite(self) -> bool:
         """Return True if we should skip the file.
         Ask user for confirmation if we were called
         with an 'interactive' option.
@@ -306,22 +297,23 @@ class TransferManager:
 
     """
 
-    def __init__(self, sources, destination, options):
+    def __init__(
+        self, sources: typing.List[str], destination: str, options: TransferOptions
+    ) -> None:
         self.sources = sources
         self.destination = destination
         self.options = options
         self.transfer_info = TransferInfo(sources, destination)
 
-        if self.options.global_progress:
-            self.progress_indicator = GlobalIndicator()
-        else:
-            self.progress_indicator = OneFileIndicator()
-        self.last_progress_update = 0
-        self.last_progress = None
+        self.progress_indicator: ProgressIndicator = (
+            GlobalIndicator() if self.options.global_progress else OneFileIndicator()
+        )
+        self.last_progress_update = 0.0
+        self.last_progress: typing.Optional[Progress] = None
 
-    def do_transfer(self):
+    def do_transfer(self) -> typing.Dict[str, Exception]:
         """Performs the real transfer"""
-        errors = dict()
+        errors: typing.Dict[str, Exception] = dict()
         progress = Progress()
         total_start = time.time()
         progress.total_done = 0
@@ -330,7 +322,7 @@ class TransferManager:
         progress.count = len(self.transfer_info.to_transfer)
         self.progress_indicator.on_start()
 
-        def on_file_transfer(transfered):
+        def on_file_transfer(transfered: int) -> None:
             progress.file_done += transfered
             progress.total_done += transfered
             now = time.time()
