@@ -233,8 +233,14 @@ def test_preserve(test_dir):
     assert copy_stat.st_mtime == long_ago
 
 
+@pytest.mark.xfail()
 def test_output_does_not_wrap_1(test_dir, capsys, mocker):
     "Not using --global"
+    # Note: this would fail on mac because:
+    # * test_dir is a really long string (something like
+    # /var/folders/g3/5kdxl54n3jlf84_mwq9mwt2c0000gn/T/tmpt54sxgatpycp-test/...)
+    # and we'll trigger this bug:
+    # https://github.com/dmerejkowsky/pycp/issues/29
     a_file = os.path.join(test_dir, "a_file")
     a_file_back = os.path.join(test_dir, "a_file.back")
 
