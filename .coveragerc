@@ -1,0 +1,7 @@
+[run]
+source = pycp
+
+omit =
+  test/*
+
+branch = True
