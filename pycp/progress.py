@@ -363,11 +363,7 @@ class FixedTuple:
 
 
 class Line:
-    def __init__(self) -> None:
-        self.components: typing.List[Component] = list()
-        self.fixed: typing.Optional[FixedTuple] = None
-
-    def set_components(self, components: typing.List[Component]) -> None:
+    def __init__(self, components: typing.List[Component]) -> None:
         self.components = components
         fixed = list()
         for (i, component) in enumerate(components):
@@ -381,8 +377,6 @@ class Line:
         term_width = shutil.get_terminal_size().columns
         current_width = 0
         for i, component in enumerate(self.components):
-            # TODO: call set_components() in __init__
-            assert self.fixed
             if i == self.fixed.index:
                 continue
             length, string = component.render(kwargs)
@@ -391,8 +385,6 @@ class Line:
 
         fixed_width = term_width - current_width
         kwargs["width"] = fixed_width
-        # TODO: call set_components() in __init__
-        assert self.fixed
         accumulator[self.fixed.index] = self.fixed.component.render(kwargs)[1]
 
         return "".join(accumulator)
@@ -421,10 +413,8 @@ class ProgressIndicator:
 class OneFileIndicator(ProgressIndicator):
     def __init__(self) -> None:
         super().__init__()
-        self.first_line = Line()
-        self.first_line.set_components([Blue(), Counter(), TransferText(), Reset()])
-        self.second_line = Line()
-        self.second_line.set_components(
+        self.first_line = Line([Blue(), Counter(), TransferText(), Reset()])
+        self.second_line = Line(
             [
                 Blue(),
                 Percent(),
@@ -482,8 +472,7 @@ class GlobalIndicator(ProgressIndicator):
 
     @staticmethod
     def build_first_line() -> Line:
-        res = Line()
-        res.set_components(
+        return Line(
             [
                 Green(),
                 Counter(),
@@ -502,12 +491,10 @@ class GlobalIndicator(ProgressIndicator):
                 Reset(),
             ]
         )
-        return res
 
     @staticmethod
     def build_second_line() -> Line:
-        res = Line()
-        res.set_components(
+        return Line(
             [
                 Blue(),
                 Percent(),
@@ -530,7 +517,6 @@ class GlobalIndicator(ProgressIndicator):
                 Reset(),
             ]
         )
-        return res
 
     def _render_first_line(self, progress: Progress) -> None:
         out = self.first_line.render(
