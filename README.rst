@@ -35,7 +35,7 @@ Notes
 
 * Implementation heavily inspired by the wonderful library ``progressbar`` by Nilton Volpato.
 
-* I also maintain a similary tool written in rust called `rusync <https://github.com/dmerejkowsky/rusync>`_. It has a different set of features (so you may want to stick with pycpy), but is much faster.
+* I also maintain a similarly tool written in rust called `rusync <https://github.com/dmerejkowsky/rusync>`_. It has a different set of features (so you may want to stick with pycpy), but is much faster.
 
 * If you are looking for a ncurses-based solution, vcp maybe the right choice
   for you http://www.freebsdsoftware.org/sysutils/vcp.html
