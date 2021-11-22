@@ -1,6 +1,6 @@
 """This module contains the TransferManager class.
 
-This will do the work of transfering the files,
+This will do the work of transferring the files,
 while using the FilePbar or the GlobalPbar from
 pycp.progress
 
@@ -87,7 +87,7 @@ class TransferInfo:
        - basename(dest) is guaranteed to exist)
     * an add(src, dest) method
     * a get_size() which is the total size of the files to be
-    transfered
+    transferred
 
     """
 
@@ -101,7 +101,7 @@ class TransferInfo:
 
     def parse(self, sources: typing.List[str], destination: str) -> None:
         """Recursively go through the sources, creating missing
-        directories, computing total size to be transfered, and
+        directories, computing total size to be transferred, and
         so on.
 
         """
@@ -149,7 +149,7 @@ Callback = typing.Callable[[int], None]
 
 
 class FileTransferManager:
-    """This class handles transfering one file to an other
+    """This class handles transferring one file to an other
 
     """
 
@@ -196,8 +196,8 @@ class FileTransferManager:
 
     def transfer_file(self) -> None:
         """Transfer src to dest, calling
-        callback(transfered) while doing so,
-        where transfered is the size of the buffer successfully transfered
+        callback(transferred) while doing so,
+        where transferred is the size of the buffer successfully transferred
 
         src and dest must be two valid file paths.
 
@@ -210,15 +210,15 @@ class FileTransferManager:
             return
 
         src_file, dest_file = open_files(self.src, self.dest)
-        transfered = 0
+        transferred = 0
         try:
             while True:
                 data = src_file.read(BUFFER_SIZE)
                 if not data:
                     self.callback(0)
                     break
-                transfered = len(data)
-                self.callback(transfered)
+                transferred = len(data)
+                self.callback(transferred)
                 dest_file.write(data)
         except IOError as err:
             mess = "Problem when transferring %s to %s\n" % (self.src, self.dest)
@@ -240,7 +240,7 @@ class FileTransferManager:
                 print("Warting: could not remove %s" % self.src)
 
     def post_transfer(self) -> None:
-        """Handle state of transfered file
+        """Handle state of transferred file
 
         By default, preserve only permissions.
         If "preserve" option was given, preserve also
@@ -322,9 +322,9 @@ class TransferManager:
         progress.count = len(self.transfer_info.to_transfer)
         self.progress_indicator.on_start()
 
-        def on_file_transfer(transfered: int) -> None:
-            progress.file_done += transfered
-            progress.total_done += transfered
+        def on_file_transfer(transferred: int) -> None:
+            progress.file_done += transferred
+            progress.total_done += transferred
             now = time.time()
             progress.total_elapsed = now - total_start
             progress.file_elapsed = now - file_start
