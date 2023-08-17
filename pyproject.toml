@@ -5,7 +5,7 @@ description = "cp, mv and rm with a progress bar"
 authors = ["Dimitri Merejkowsky <d.merej@gmail.com>"]
 license = "MIT"
 readme = "README.rst"
-repository = "http://github.com/dmerejkowsky/pycp"
+repository = "http://github.com/your-tools/pycp"
 keywords = ["command line"]
 classifiers=[
   "Environment :: Console",
