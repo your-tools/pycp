@@ -136,7 +136,7 @@ def main() -> None:
     try:
         errors = transfer_manager.do_transfer()
     except TransferError as err:
-        sys.exit(err)
+        sys.exit(str(err))
     except KeyboardInterrupt:
         sys.exit("Interrputed by user")
 
