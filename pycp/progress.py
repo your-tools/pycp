@@ -47,14 +47,14 @@ def human_readable(size: int) -> str:
     bytes
 
     """
-    if size < 1024 ** 2:
+    if size < 1024**2:
         hreadable = float(size) / 1024.0
         return "%.0fK" % hreadable
-    elif size < (1024 ** 3):
-        hreadable = float(size) / (1024 ** 2)
+    elif size < (1024**3):
+        hreadable = float(size) / (1024**2)
         return "%.1fM" % round(hreadable, 1)
     else:
-        hreadable = float(size) / (1024.0 ** 3)
+        hreadable = float(size) / (1024.0**3)
         return "%.2fG" % round(hreadable, 2)
 
 
@@ -106,7 +106,7 @@ def shorten_string(input_string: str, length: int) -> str:
 
 
 def describe_transfer(src: str, dest: str) -> typing.Tuple[str, str, str, str]:
-    """ Returns pfx, src_mid, dest_mid, sfx, the 4 components
+    """Returns pfx, src_mid, dest_mid, sfx, the 4 components
     required to build the "foo/{bar => baz}/qux" string
 
     """
@@ -160,7 +160,7 @@ SizedString = typing.Tuple[int, str]
 class Component(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def render(self, props: Props) -> SizedString:
-        """ Should return a tuple with a length and a string """
+        """Should return a tuple with a length and a string"""
 
 
 class AnsiEscapeSequence(Component):
@@ -366,7 +366,7 @@ class Line:
     def __init__(self, components: typing.List[Component]) -> None:
         self.components = components
         fixed = list()
-        for (i, component) in enumerate(components):
+        for i, component in enumerate(components):
             if isinstance(component, FixedWidthComponent):
                 fixed.append(FixedTuple(i, component))
         assert len(fixed) == 1, "Expecting exactly one fixed width component"

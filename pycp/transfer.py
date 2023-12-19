@@ -17,9 +17,7 @@ BUFFER_SIZE = 100 * 1024
 
 
 class TransferError(Exception):
-    """Custom exception: wraps IOError
-
-    """
+    """Custom exception: wraps IOError"""
 
     def __init__(self, message: str) -> None:
         Exception.__init__(self)
@@ -115,18 +113,14 @@ class TransferInfo:
             self._parse_dir(directory, destination)
 
     def _parse_file(self, source: str, destination: str) -> None:
-        """Parse a new source file
-
-        """
+        """Parse a new source file"""
         if os.path.isdir(destination):
             basename = os.path.basename(os.path.normpath(source))
             destination = os.path.join(destination, basename)
         self.add(source, destination)
 
     def _parse_dir(self, source: str, destination: str) -> None:
-        """Parse a new source directory
-
-        """
+        """Parse a new source directory"""
         if os.path.isdir(destination):
             basename = os.path.basename(os.path.normpath(source))
             destination = os.path.join(destination, basename)
@@ -138,7 +132,7 @@ class TransferInfo:
         self.to_remove.append(source)
 
     def add(self, src: str, dest: str) -> None:
-        """Add a new tuple to the transfer list. """
+        """Add a new tuple to the transfer list."""
         file_size = os.path.getsize(src)
         if not os.path.islink(src):
             self.size += file_size
@@ -149,9 +143,7 @@ Callback = typing.Callable[[int], None]
 
 
 class FileTransferManager:
-    """This class handles transferring one file to an other
-
-    """
+    """This class handles transferring one file to an other"""
 
     def __init__(self, src: str, dest: str, options: TransferOptions) -> None:
         self.src = src
@@ -333,7 +325,7 @@ class TransferManager:
                 self.progress_indicator.on_progress(progress)
                 self.last_progress_update = now
 
-        for (src, dest, file_size) in self.transfer_info.to_transfer:
+        for src, dest, file_size in self.transfer_info.to_transfer:
             file_start = time.time()
             progress.index += 1
             progress.src = src
