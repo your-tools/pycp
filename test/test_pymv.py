@@ -17,7 +17,7 @@ def test_mv_file_file(test_dir: str) -> None:
 
 
 def test_mv_dir_dir_1(test_dir: str) -> None:
-    """"mv a_dir -> b_dir should work when b_dir does not exist"""
+    """ "mv a_dir -> b_dir should work when b_dir does not exist"""
     a_dir = os.path.join(test_dir, "a_dir")
     b_dir = os.path.join(test_dir, "b_dir")
     sys.argv = ["pymv", a_dir, b_dir]

@@ -233,7 +233,7 @@ def test_copy_readonly(test_dir: str) -> None:
 
 
 def test_preserve(test_dir: str) -> None:
-    """ Check that mtimes are preserved"""
+    """Check that mtimes are preserved"""
     a_file = os.path.join(test_dir, "a_file")
     long_ago = time.time() - 10000
     os.utime(a_file, (long_ago, long_ago))

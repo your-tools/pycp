@@ -142,7 +142,7 @@ def main() -> None:
 
     if errors:
         print("Error occurred when transferring the following files:")
-        for (file_name, error) in errors.items():
+        for file_name, error in errors.items():
             print(file_name, error)
 
 
