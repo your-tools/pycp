@@ -277,21 +277,6 @@ files = [
 ]
 
 [[package]]
-name = "path"
-version = "13.3.0"
-description = "A module wrapper for os.path"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "path-13.3.0-py3-none-any.whl", hash = "sha256:cf54ccca59236bd3b61dcb65927f60b0aba9369339050f32dd20278d29b2a67d"},
-    {file = "path-13.3.0.tar.gz", hash = "sha256:70898996369de11161d5d7648a7830d03746ef3df619e6d15a247186acde8fb0"},
-]
-
-[package.extras]
-docs = ["jaraco.packaging (>=3.2)", "rst.linker (>=1.9)", "sphinx"]
-testing = ["appdirs", "packaging", "pygments", "pytest (>=3.5,!=3.7.3)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=1.2.3)", "pytest-cov", "pytest-flake8", "pytest-mypy"]
-
-[[package]]
 name = "pathspec"
 version = "0.12.1"
 description = "Utility library for gitignore style pattern matching of file paths."
@@ -436,4 +421,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "ec59ab851b70f7769f20afe23eed2a17d8399589b771d0eb837e1a63f093cda6"
+content-hash = "1a4fc25af009d1b977f044409cf3d6030af31aa7bad19ea2bb9eed4bb3c09b7d"
