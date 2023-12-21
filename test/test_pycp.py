@@ -7,11 +7,10 @@ import tempfile
 import time
 import typing
 
-
-from pycp.main import main as pycp_main
+import pytest
 from conftest import mock_term_size, strip_ansi_colors
 
-import pytest
+from pycp.main import main as pycp_main
 
 
 def test_zero() -> None:

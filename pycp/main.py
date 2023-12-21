@@ -8,7 +8,7 @@ import os
 import sys
 import typing
 
-from pycp.transfer import TransferManager, TransferError, TransferOptions
+from pycp.transfer import TransferError, TransferManager, TransferOptions
 
 
 def is_pymv() -> bool:
