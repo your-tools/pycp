@@ -11,7 +11,7 @@ import stat
 import time
 import typing
 
-from pycp.progress import OneFileIndicator, GlobalIndicator, Progress, ProgressIndicator
+from pycp.progress import GlobalIndicator, OneFileIndicator, Progress, ProgressIndicator
 
 BUFFER_SIZE = 100 * 1024
 

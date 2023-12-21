@@ -1,10 +1,10 @@
-from dataclasses import dataclass
 import abc
 import os
 import shutil
 import sys
 import time
 import typing
+from dataclasses import dataclass
 
 
 class Progress:

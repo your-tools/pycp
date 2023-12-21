@@ -8,9 +8,9 @@ pycp /path/to/foo /path/to/bar
 ```
 """
 
-from pycp.progress import TransferText
-
 from conftest import strip_ansi_colors
+
+from pycp.progress import TransferText
 
 
 def assert_pprint(src: str, dest: str, actual: str) -> None:

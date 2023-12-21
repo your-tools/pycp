@@ -1,6 +1,5 @@
-import sys
 import os
-
+import sys
 
 from pycp.main import main as pycp_main
 

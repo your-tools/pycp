@@ -1,11 +1,13 @@
 import typing
+
 from conftest import mock_term_size
+
 import pycp.progress
 from pycp.progress import (
+    GlobalIndicator,
+    OneFileIndicator,
     shorten_path,
     shorten_string,
-    OneFileIndicator,
-    GlobalIndicator,
 )
 
 
