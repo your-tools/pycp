@@ -1,11 +1,10 @@
+from dataclasses import dataclass
 import abc
 import os
 import shutil
 import sys
 import time
 import typing
-
-import attr
 
 
 class Progress:
@@ -356,10 +355,10 @@ class Filename(DynamicText):
         return shorten_path(filename, 40)
 
 
-@attr.s
+@dataclass
 class FixedTuple:
-    index: int = attr.ib()
-    component: Component = attr.ib()
+    index: int
+    component: Component
 
 
 class Line:

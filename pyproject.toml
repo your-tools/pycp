@@ -15,7 +15,6 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
-attrs = "^19.3.0"
 
 [tool.poetry.dev-dependencies]
 black = "^23"
