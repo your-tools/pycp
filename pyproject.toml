@@ -19,7 +19,7 @@ classifiers=[
 [tool.poetry.dependencies]
 python = "^3.8.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^23"
 isort = "^5.13.2"
 flake8 = "^6.1"
